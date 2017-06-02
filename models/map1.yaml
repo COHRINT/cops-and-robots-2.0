@@ -77,22 +77,20 @@ wall_1:
   shape: rectangle
 
 wall_2:
-  name: wall_2
+  name: wall_3
   color: brown
   centroid_x: -1.724
-  centroid_y: -3.568
+  centroid_y: 0.54
   maj_ax: 5.0
   min_ax: 0.15
   orientation: 0.0
   shape: rectangle
 
-# switch wall 2 and 3
-
 wall_3:
-  name: wall_3
+  name: wall_2
   color: brown
   centroid_x: -1.724
-  centroid_y: 0.54
+  centroid_y: -3.568
   maj_ax: 5.0
   min_ax: 0.15
   orientation: 0.0
