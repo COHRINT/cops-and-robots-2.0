@@ -1,4 +1,4 @@
-# Map1's yaml file
+# Map1's yaml file (located in models dir)
 # -general map info is included in the info array
 # -all other associative arrays are objects on the map
 # -orientation [radians] is between obj's major axis and map's pos-x axis

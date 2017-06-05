@@ -3,7 +3,7 @@ import yaml
 import os 			# path capabilities
 
 """ Summary: 
-	Creates a map object from an inputed 'map.yaml' file
+	Creates a map object from an inputed 'map.yaml' file (in models dir)
 	Map includes:
 		1) General info: name, size, origin
 		2) Object hash: 'self.objects', each member is a Map_Object
@@ -24,7 +24,7 @@ __status__ = "Development"
 
 
 class Map(object):
-	""" Map Object from map.yaml file 
+	""" Map Object from map.yaml file (located in models dir)
 
 	Map includes:
 		1) General info: self.name (str), 
@@ -84,7 +84,7 @@ class Map(object):
 class Map_Object(object):
 	""" 
 	Objects like chairs, bookcases, etc to be included in the map object
-	-Derived from a map.yaml file
+	-Derived from a map.yaml file (in models dir)
 
 	Map_Object includes:
 		name (str), color (str), centroid[x, y] (float list), major axis (float), 
