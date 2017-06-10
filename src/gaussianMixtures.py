@@ -19,7 +19,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2016, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.3"
+__version__ = "1.3.1"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -615,6 +615,35 @@ class GM:
 			allSamps.append(samp); 
 		return allSamps; 
 
+	def discretize2D(self,low = [0,0],high=[10,10], delta = 0.1):
+		#Added in version 1.3.1
+		#Inputs:
+		#	low, lower bounds on x and y axes
+		#	high, upper bounds on x and y axes
+		#	delta, discretization constant, grid-cell length
+		#Output:
+		#	A 2D numpy array with grid cells from low to high by delta	
+
+
+		x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
+
+
+		pos = np.dstack((x, y)) 
+		
+		#self.clean(); 
+		c = None; 
+		for g in self.Gs:
+			
+			try:
+				if(c == None):
+					c = mvn.pdf(pos,g.mean,g.var)*g.weight;
+				else:
+					c += mvn.pdf(pos,g.mean,g.var)*g.weight; 
+			except:
+				g.display();
+				raise; 
+
+		return c; 
 
 
 	def condense(self, max_num_mixands=None):
@@ -1047,6 +1076,17 @@ def TestSample2D():
 	plt.hist2d(sampsx,sampsy,normed = 1,bins=100); 
 	plt.show(); 
 
+def TestDiscretization():
+	test1 = GM(); 
+	test1.addG(Gaussian([0,0],[[1,0],[0,1]],.33)); 
+	test1.addG(Gaussian([3,3],[[1,0],[0,1]],.33));
+	test1.addG(Gaussian([-2,-2],[[1,0],[0,1]],.33));
+
+	grid = test1.discretize2D(low=[-15,-15],high=[15,15],delta=np.pi); 
+	print(grid.shape); 
+	plt.contourf(grid);
+	plt.show();  
+
 if __name__ == "__main__":
 
 	#TestGMProduct();
@@ -1057,12 +1097,8 @@ if __name__ == "__main__":
 	#TestCondense2D(); 
 	#TestComparison(); 
 	#TestSample(); 
-	TestSample2D(); 
-
-	#test change
-
-	
-	#test comment
+	#TestSample2D(); 
+	TestDiscretization(); 
 	
 	
 	
