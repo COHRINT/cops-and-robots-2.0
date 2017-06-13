@@ -52,8 +52,6 @@ class MAPTranslator(object):
     # belief is a 2D grid because of the discretization
     def getNextPose(self, belief):
 
-
-
         #grid from plot 2D function
         max_coord = self._find_array2D_max(belief)
         goal_pose = self._grid_coord_to_world_coord(max_coord)
@@ -62,18 +60,19 @@ class MAPTranslator(object):
         # belief is a GM instance, find MAP coords [x,y]
         return [belief, belief.findMAPN()]
 
-    """ Locates the max coord of the 2D array"""
+    """ Locates the max coord of the 2D array
+        and returns its index"""
     def _find_array2D_max(self, array2D):
         max_num = 0
-        max_coord = [0,0]
+        max_index = [0,0]
         size = array2D.shape # tuple of numpy array size
 
         for i in range(size[0]):
             for j in range(size[1]):
                 if (array2D[i,j] > max_num):
-                    max_coord = [i,j]
+                    max_index = [i,j]
                     max_num = array2D[i,j]  # set new max num
-        return max_coord
+        return max_index
 
     """ Inputs the max grid coord and returns the
         world map coord equivalent"""
@@ -107,6 +106,7 @@ def testGetNextPose(rndm=None):
         pos = [1,1]
 
     else:
+        print("Determined Test")
         means = [[2,3],[5,5],[3,1],[3,4]]               # Also the MAP location
         variances = [[1,0], [0,1]]
         weights = [1.5, 2, 1.5, 0.7]
@@ -120,23 +120,18 @@ def testGetNextPose(rndm=None):
     b.addG(Gaussian(means[3], variances, weights[3]))
     b.normalizeWeights()
 
-    # [b_updated, goal_pose] = MAP.getNextPose(b, None, None)
-    # print "Means: " + str(means)
-    # print "MAP Goal Pose: " + str(goal_pose)
+    min_x_y = [-10,-10]
+    # min_x_y = [-10,-10]
+    d = 0.15
+    grid = b.discretize2D(low=min_x_y, high=[10,10], delta=d)
 
+    max_pt = MAP._find_array2D_max(grid)
 
-    # plot using matplotlib contourf
-    [x, y, c] = b.plot2D(low=[0,0], high=[10,10], vis=False, res = 100)
-    max_pt = MAP._find_array2D_max(c)
-    min_x_y = [5.2, 8.752]
-    MAP.delta = 0.1
+    MAP.delta = d
     print(max_pt)
     print(MAP._grid_coord_to_world_coord(max_pt, min_x_y))
 
-    plt.contourf(x, y, c, cmap='viridis')
-    # plt.pause(0.1)
-    # raw_input('Show MAP?')
-    # plt.scatter(goal_pose[0], goal_pose[1])
+    plt.contourf(grid, cmap='viridis')
     plt.show()
 
 
@@ -145,4 +140,4 @@ def rdm():
     return random.randint(0, 5)
 
 if __name__ == '__main__':
-    testGetNextPose(1)
+    testGetNextPose()
