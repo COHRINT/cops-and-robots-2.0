@@ -107,7 +107,7 @@ def testGetNextPose(rndm=None):
 
     else:
         print("Determined Test")
-        means = [[2,3],[5,5],[3,1],[3,4]]               # Also the MAP location
+        means = [[2,3],[2,4],[3,1],[3,4]]               # Also the MAP location
         variances = [[1,0], [0,1]]
         weights = [1.5, 2, 1.5, 0.7]
         pos = [1,1]
@@ -118,20 +118,29 @@ def testGetNextPose(rndm=None):
     b.addG(Gaussian(means[1], variances, weights[1]))
     b.addG(Gaussian(means[2], variances, weights[2]))
     b.addG(Gaussian(means[3], variances, weights[3]))
-    b.normalizeWeights()
+    b.normalizeWeights()            # all GaussianMixtures must be normalized
 
-    min_x_y = [-10,-10]
-    # min_x_y = [-10,-10]
+    min_x_y = [0,0]
+    max_x_y = [10,10]
     d = 0.15
-    grid = b.discretize2D(low=min_x_y, high=[10,10], delta=d)
+    grid = b.discretize2D(low=min_x_y, high=max_x_y, delta=d)
 
     max_pt = MAP._find_array2D_max(grid)
 
+    # TODO why do these need to be reversed?
+    # switch x and y
+    x = max_pt[1]
+    y = max_pt[0]
+    max_pt = [x,y]
+
     MAP.delta = d
-    print(max_pt)
-    print(MAP._grid_coord_to_world_coord(max_pt, min_x_y))
+    print("Discretized MAX: "+ str(max_pt))
+    print("World Coord from "+ str(min_x_y) + " to " + str(max_x_y) + " is " + str(MAP._grid_coord_to_world_coord(max_pt, min_x_y)))
 
     plt.contourf(grid, cmap='viridis')
+    plt.pause(0.1)
+    raw_input("Show MAP?")
+    plt.scatter(max_pt[0], max_pt[1])
     plt.show()
 
 
