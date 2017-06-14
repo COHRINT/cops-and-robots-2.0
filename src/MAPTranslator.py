@@ -120,9 +120,9 @@ def testGetNextPose(rndm=None):
     b.addG(Gaussian(means[3], variances, weights[3]))
     b.normalizeWeights()            # all GaussianMixtures must be normalized
 
-    min_x_y = [0,0]
-    max_x_y = [10,10]
-    d = 0.15
+    min_x_y = [-6,-6]
+    max_x_y = [8,8]
+    d = 0.1
     grid = b.discretize2D(low=min_x_y, high=max_x_y, delta=d)
 
     max_pt = MAP._find_array2D_max(grid)
@@ -134,8 +134,8 @@ def testGetNextPose(rndm=None):
     max_pt = [x,y]
 
     MAP.delta = d
-    print("Discretized MAX: "+ str(max_pt))
-    print("World Coord from "+ str(min_x_y) + " to " + str(max_x_y) + " is " + str(MAP._grid_coord_to_world_coord(max_pt, min_x_y)))
+    print("In Luke's Discretized coords, the MAX is: "+ str(max_pt))
+    print("In World Coords from "+ str(min_x_y) + " to " + str(max_x_y) + " with delta: "+str(MAP.delta)+ ". The MAP would be: " + str(MAP._grid_coord_to_world_coord(max_pt, min_x_y)))
 
     plt.contourf(grid, cmap='viridis')
     plt.pause(0.1)
