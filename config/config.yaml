@@ -10,10 +10,10 @@ main:
 robots:
   Deckard:
     goal_planner_cfg:
-      type_: audio
+      type_: stationary
     pose_source: tf
     type_: cop
-    use: true
+    use: false
   Pris:
     goal_planner_cfg:
       type_: stationary
@@ -24,8 +24,8 @@ robots:
     goal_planner_cfg:
       type_: pomdp
     pose_source: tf
-    type_: robber
-    use: false
+    type_: cop
+    use: true
   Zhora:
     goal_planner_cfg:
       type_: stationary

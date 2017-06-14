@@ -17,12 +17,14 @@ import logging
 import math
 from shapely.geometry import Point, LineString
 import rospy
+import sys
 
 from core.robo_tools.planner import GoalPlanner
-from helpers.belief_handling import dehydrate_msg, rehydrate_msg
+from core.robo_tools.belief_handling import dehydrate_msg, rehydrate_msg
 
-from policy_translator.msg import *
+print(sys.path)
 from policy_translator.srv import *
+from policy_translator.msg import *
 
 class PomdpGoalPlanner(GoalPlanner):
 

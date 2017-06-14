@@ -39,6 +39,9 @@ class ObservationInterface(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self.initUI()
 
+        rospy.init_node('obs_interface')
+        print('Observation Interface ready.')
+
     def initUI(self):
 
         self.main_layout = QGridLayout()
@@ -52,15 +55,15 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        self.cop_video = CopVideo()
+        self.cop_video = CopVideo('pris')
         self.cam_1 = SecurityCamera(1,'Kitchen')
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Billiards Room')
 
-        self.main_layout.addWidget(self.cop_video,1,1,1,2)
-        self.main_layout.addWidget(self.cam_1,2,1)
-        self.main_layout.addWidget(self.cam_2,2,2)
-        self.main_layout.addWidget(self.cam_3,2,3)
+        self.main_layout.addWidget(self.cop_video,2,0,2,4)
+        self.main_layout.addWidget(self.cam_1,4,0,2,2)
+        self.main_layout.addWidget(self.cam_2,4,2,2,2)
+        self.main_layout.addWidget(self.cam_3,4,4,2,2)
         # self.left_column = QVBoxLayout()
         # self.main_layout.addLayout(self.left_column,0,1)
 
@@ -69,9 +72,9 @@ class ObservationInterface(QMainWindow):
         self.human_push = HumanPush()
         self.belief_map = MapDisplay()
 
-        self.main_layout.addWidget(self.robot_pull,1,3)
-        self.main_layout.addWidget(self.belief_map,1,4,1,2)
-        self.main_layout.addWidget(self.human_push,2,4,1,2)
+        self.main_layout.addWidget(self.robot_pull,2,3,2,4)
+        self.main_layout.addWidget(self.belief_map,2,7,2,1)
+        self.main_layout.addWidget(self.human_push,4,6,2,2)
         # self.right_column = QVBoxLayout()
         # self.right_column.addWidget(self.robot_pull)
         # self.main_layout.addLayout(self.right_column,0,2)
@@ -81,31 +84,29 @@ class ObservationInterface(QMainWindow):
 
         # self.main_layout.addWidget(self.robot_pull,1,1)
 
-        self.robot_pull.update([0,2,1])
+        # self.robot_pull.update([0,2,1])
 
-        self.main_layout.setColumnMinimumWidth(0,100)
+        # self.main_layout.setColumnMinimumWidth(0,100)
         # self.main_layout.setColumnMinimumWidth(1,800)
         # self.main_layout.setColumnMinimumWidth(4,300)
         # self.main_layout.setColumnMinimumWidth(5,1000)
         # self.main_layout.setRowMinimumHeight(1,600)
         # self.main_layout.setRowMinimumHeight(2,600)
-
+        # self.main_layout.setSizeConstraint(0)
         self.setWindowTitle(self.app_name)
         self.showMaximized()
         # self.robot_pull.show()
         # self.belief_map.show()
 
-    def quit(self):
-
+    def closeEvent(self,event):
         dialog_reply = QMessageBox.warning(self,'Quit', \
                     'Are you sure you want to quit?', \
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if dialog_reply == QMessageBox.Yes:
-            self.close()
-
-    def closeEvent(self,event):
-        self.quit()
+            event.accept()
+        else:
+            event.ignore()
 
 
 if __name__ == "__main__":

@@ -52,6 +52,9 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    ObservationRequest.msg
    ObservationResponse.msg
+   Question.msg
+   Answer.msg
+   PushAnswer.msg
  )
 
 ## Generate services in the 'srv' folder
