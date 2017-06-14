@@ -15,7 +15,7 @@ __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
 
 import matplotlib
-matplotlib.use('Qt4Agg')
+#matplotlib.use('Qt4Agg')
 
 import logging
 import time

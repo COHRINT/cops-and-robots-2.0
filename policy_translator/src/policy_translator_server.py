@@ -29,14 +29,18 @@ import math
 
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
+from MAPTranslator import MAPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg
 
 class PolicyTranslatorServer(object):
 
-    def __init__(self):
-
-        args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-        self.pt = PolicyTranslator(args)
+    def __init__(self, check="MAP"):
+        if check == 'MAP':
+            print("Running MAP Translator!")
+            self.pt = MAPTranslator()
+        else:
+            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
+            self.pt = PolicyTranslator(args)
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()

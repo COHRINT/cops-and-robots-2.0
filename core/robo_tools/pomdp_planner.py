@@ -19,7 +19,7 @@ from shapely.geometry import Point, LineString
 import rospy
 
 from core.robo_tools.planner import GoalPlanner
-from helpers.belief_handling import dehydrate_msg, rehydrate_msg
+from core.helpers.belief_handling import dehydrate_msg, rehydrate_msg
 
 from policy_translator.msg import *
 from policy_translator.srv import *
