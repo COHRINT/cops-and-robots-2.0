@@ -59,7 +59,8 @@ class Cop(Robot):
                                      **kwargs)
 
         self.found_cop = {}
-        self.belief = GM([[5,5],[4,4]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.5,0.5])
+        # give an intial belief
+        self.belief = GM([[2.5,2.5],[2.5,2.5]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.5,0.5])
         self.mission_planner = CopMissionPlanner(self, **mp_cfg)
 
     def update(self,i=0,positions=None):

@@ -24,6 +24,7 @@ class MAPTranslator(object):
 
     def __init__(self):
         self.delta = 0.1
+        self.ax = plt.subplots()
         pass
 
 
@@ -54,7 +55,10 @@ class MAPTranslator(object):
 
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
-        return [belief, belief.findMAPN()]
+        goal_pose = belief.findMAPN()
+        b_updated = belief
+        # self.plot_MAP(b_updated, goal_pose)
+        return [b_updated, goal_pose]
 
     def beliefUpdate(self, belief, action, observation):
         pass
@@ -62,6 +66,20 @@ class MAPTranslator(object):
 
     def getQuestions(self, belief):
         pass
+
+    def plot_MAP(self, b, goal_pose=[0,0]):
+        """ Simple function to plot the MAP """
+        [x, y, c] = b.plot2D(low=[0,0], high=[10,10], vis=False, res = 100)
+        self.ax.cla()
+        self.ax.contourf(x, y, c, cmap='viridis')
+        plt.pause(0.1)
+        means = b.getMeans()
+        print("Means: " + str(means))
+        print "MAP Goal Pose: " + str(goal_pose)
+        raw_input('Show MAP?')
+        self.ax.scatter(goal_pose[0], goal_pose[1])
+        plt.pause(0.1)
+        print("This code runs")
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -93,25 +111,6 @@ def testGetNextPose(rndm=None):
     b.normalizeWeights()
 
     [b_updated, goal_pose] = MAP.getNextPose(b, None, None)
-    print "Means: " + str(means)
-    print "MAP Goal Pose: " + str(goal_pose)
-
-
-    # plot using matplotlib contourf
-    [x, y, c] = b.plot2D(low=[0,0], high=[10,10], vis=False, res = 100)
-    # max_pt = MAP._find_array2D_max(c)
-    # min_x_y = [5.2, 8.752]
-    # MAP.delta = 0.1
-    # print(max_pt)
-    # print(MAP._grid_coord_to_world_coord(max_pt, min_x_y))
-
-    plt.contourf(x, y, c, cmap='viridis')
-    plt.pause(0.1)
-    raw_input('Show MAP?')
-    plt.scatter(goal_pose[0], goal_pose[1])
-    plt.show()
-
-
 
 def rdm():
     return random.randint(0, 5)
