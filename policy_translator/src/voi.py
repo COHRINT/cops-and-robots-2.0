@@ -9,13 +9,18 @@ current belief.
 """
 
 import numpy as np
+import rospy
 
 from gaussianMixtures import GM
+
+from policy_translator.msg import *
 
 class Questioner(object):
 
     def __init__(self,human_sensor,target_order,target_weights,bounds,delta,
                     repeat_annoyance=0.5, repeat_time_penalty=60):
+        rospy.init_node('questioner')
+
         self.all_likelihoods = np.load('likelihoods.npy')
         self.all_questions = self.all_likelihoods[0:len(self.all_likelihoods)]['question']
         self.target_order = target_order
@@ -25,11 +30,17 @@ class Questioner(object):
         self.bounds = bounds
         self.delta = delta
 
+        self.topic = 'robot_questions'
+        self.pub = rospy.Publisher(self.topic,Question)
+
     def weigh_questions(self, priors):
         q_weights = np.empty_like(self.all_questions, dtype=np.float64)
         for prior_name, prior in priors.iteritems():
             discretized_prior = prior.discretize2D(low=bounds[0:2],high=bounds[2:4], delta=0.1)
             prior_entropy = self.entropy_calc(discretized_prior)
+            # print(prior_entropy.sum())
+            # prior_entropy = np.divide(prior_entropy,prior_entropy.sum())
+            # print(prior_entropy.sum())
             # flat_prior_pdf = self.flatten(discretized_prior)
             # print(discretized_prior.shape)
             flat_prior_pdf = discretized_prior.flatten()
@@ -43,7 +54,7 @@ class Questioner(object):
 
                 # Use positive and negative answers for VOI
                 likelihood = likelihood_obj['probability']
-                q_weights[i] = self._calculate_VOI(likelihood, flat_prior_pdf, prior_entropy)
+                q_weights[i] = self.calculate_VOI(likelihood, flat_prior_pdf, prior_entropy)
 
                 # Add heuristic question cost based on target weight
                 for j, target in enumerate(self.target_order):
@@ -70,7 +81,7 @@ class Questioner(object):
             # print(q)
 
 
-    def _calculate_VOI(self, likelihood, flat_prior_pdf, prior_entropy=None):
+    def calculate_VOI(self, likelihood, flat_prior_pdf, prior_entropy=None):
         """Calculates the value of a specific question's information.
 
         VOI is defined as:
@@ -105,6 +116,10 @@ class Questioner(object):
         return - VOI  # keep value positive
 
     def entropy_calc(self,prior):
+        """
+        Computes entropy of prior belief. From Cops and Robots 1.0 Questioner
+        class in /fusion/question.py written by Nick Sweet.
+        """
         # prod = np.multiply(prior,np.log(prior))
         # p_sum = -np.sum(prod * self.delta ** 2)
         H = -np.sum(prior * np.log(prior)) * self.delta ** 2
@@ -112,6 +127,22 @@ class Questioner(object):
 
     def flatten(self,discretized_prior):
         return np.ndarray.tolist(discretized_prior)
+
+    def transmit_questions(self):
+        """
+        Publishes list of quesitons to ROS topic /robot_questions ordered sorted
+        high to low VOI.
+        """
+        msg = Question()
+        # msg.weights = self.weighted_questions[0:len(self.weighted_questions)][0]
+        msg.weights = [q[0] for q in self.weighted_questions]
+        # print([q[0] for q in self.weighted_questions])
+        msg.qids = [q[1] for q in self.weighted_questions]
+        # msg.qids = self.weighted_questions[0:len(self.weighted_questions)][1]
+        # msg.questions = self.weighted_questions[0:len(self.weighted_questions)][2]
+        msg.questions = [q[2] for q in self.weighted_questions]
+        print(msg)
+        self.pub.publish(msg)
 
 if __name__ == "__main__":
     prior = GM([[1, 1],
@@ -134,5 +165,10 @@ if __name__ == "__main__":
                    target_weights=[11., 10.],bounds=bounds,delta=delta)
 
     q.weigh_questions({'Roy':prior})
-    for qu in q.weighted_questions:
-        print qu
+
+    rospy.sleep(3)
+
+    # for qu in q.weighted_questions:
+        # print qu
+
+    q.transmit_questions()

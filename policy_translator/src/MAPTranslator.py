@@ -1,1 +1,1 @@
-/home/luke/catkin_ws/src/cops-and-robots-2.0/src/MAPTranslator.py
+../../src/MAPTranslator.py
