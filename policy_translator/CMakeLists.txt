@@ -53,6 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
    PolicyTranslatorRequest.msg
    PolicyTranslatorResponse.msg
    Question.msg
+   Answer.msg
  )
 
 ## Generate services in the 'srv' folder

@@ -21,6 +21,7 @@ from policy_translator.srv import *
 from policy_translator.msg import *
 from observation_interface.msg import *
 from observation_interface.srv import *
+from std_msgs.msg import String # human_push topic
 
 import rospy
 import tf
@@ -30,6 +31,9 @@ import math
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg
+
+# Observation Queue #TODO delete in CnR 2.0
+from obs_queue import Obs_Queue
 
 class PolicyTranslatorServer(object):
 
@@ -41,7 +45,14 @@ class PolicyTranslatorServer(object):
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
         s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
+
+        # Observations -> likelihood queue
+        rospy.Subscriber("/human_push", String, self.human_push_callback)
+        rospy.Subscriber("/answered", Question, self.human_pulled_callback)
+        self.Obs_Queue = Obs_Queue()
+
         print('Policy translator service ready.')
+
         rospy.spin()
 
     def handle_policy_translator(self,req):
@@ -132,6 +143,22 @@ class PolicyTranslatorServer(object):
         msg.variances_updated = variances
         msg.goal_pose = goal_pose
         return msg
+
+
+        def human_push_callback(self, data):
+            """
+            Mapping of human push observations to a likelihood index and pos_neg value
+            this one doesn't have the pos_neg value immediately available / the hard one
+            """
+            pass
+
+
+        def human_pulled_callback(self, data):
+            """"
+            Mapping of human response observations to likelihood index and pos_neg value
+            """
+            self.Obs_Queue.add(data.qids, data.ans)
+
 
 if __name__ == "__main__":
     PolicyTranslatorServer()
