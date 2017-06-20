@@ -13,7 +13,7 @@ import numpy as np
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -23,8 +23,9 @@ class MAPTranslator(object):
 
 
     def __init__(self):
+        print("Initializing")
         self.delta = 0.1
-        self.ax = plt.subplots()
+        self.ax = plt.subplot()
         pass
 
 
@@ -52,12 +53,16 @@ class MAPTranslator(object):
 
     # Observations and positions not needed here
     def getNextPose(self, belief, obs, positions=[]):
-
+        print("Requesting a pose")
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
         goal_pose = belief.findMAPN()
         b_updated = belief
-        # self.plot_MAP(b_updated, goal_pose)
+        self.plot_MAP(b_updated, goal_pose)
+        # means = b_updated.getMeans()
+        # print("\nMeans: " + str(means))
+        # print "\nMAP Goal Pose: " + str(goal_pose)
+        # raw_input("Move to MAP?")
         return [b_updated, goal_pose]
 
     def beliefUpdate(self, belief, action, observation):
@@ -72,14 +77,14 @@ class MAPTranslator(object):
         [x, y, c] = b.plot2D(low=[0,0], high=[10,10], vis=False, res = 100)
         self.ax.cla()
         self.ax.contourf(x, y, c, cmap='viridis')
-        plt.pause(0.1)
+        plt.show()
+        # plt.pause(0.1)
         means = b.getMeans()
         print("Means: " + str(means))
         print "MAP Goal Pose: " + str(goal_pose)
         raw_input('Show MAP?')
         self.ax.scatter(goal_pose[0], goal_pose[1])
         plt.pause(0.1)
-        print("This code runs")
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -118,3 +123,5 @@ def rdm():
 # does the policy translator server need to be running?
 if __name__ == '__main__':
     testGetNextPose()
+    while 1:
+        pass

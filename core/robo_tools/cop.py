@@ -60,7 +60,8 @@ class Cop(Robot):
 
         self.found_cop = {}
         # give an intial belief
-        self.belief = GM([[2.5,2.5],[2.5,2.5]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.5,0.5])
+        # self.belief = GM([[2.5,2.5],[2.5,2.5]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.5,0.5])
+        self.belief = GM([[1.0,1.0],[2.5,2.5]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.7,0.5])
         self.mission_planner = CopMissionPlanner(self, **mp_cfg)
 
     def update(self,i=0,positions=None):
