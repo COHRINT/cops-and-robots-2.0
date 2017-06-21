@@ -11,6 +11,7 @@ import sys
 import numpy as np
 import os; 
 import copy; 
+from map import Map
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -120,7 +121,7 @@ class MAPTranslator(object):
        	return post; 
 
 
-    def getQuestions(self, belief):
+    def makeBeliefMap(self, belief):
         pass
 
 """ Creates a belief, call getNextPose to find the MAP
@@ -184,7 +185,7 @@ def testBeliefUpdate():
     belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
     db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta); 
 
-    responses = [[50,False],[3,True],[15,True]]; 
+    responses = [[50,False],[3,True],[15,False]]; 
 
     post = MAP.beliefUpdate(db,responses); 
     # print(sum(sum(post))); 
@@ -215,3 +216,5 @@ def rdm():
 if __name__ == '__main__':
     #testGetNextPose();
     testBeliefUpdate(); 
+    #testMakeMap(); 
+    #m = Map('map1.yaml'); 
