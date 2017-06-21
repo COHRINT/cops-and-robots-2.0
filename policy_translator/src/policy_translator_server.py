@@ -153,7 +153,7 @@ class PolicyTranslatorServer(object):
             pass
 
 
-        def human_pulled_callback(self, data):
+        def _callback(self, data):
             """"
             Mapping of human response observations to likelihood index and pos_neg value
             """
