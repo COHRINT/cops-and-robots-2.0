@@ -37,10 +37,15 @@ from obs_queue import Obs_Queue
 
 class PolicyTranslatorServer(object):
 
-    def __init__(self):
-
-        args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-        self.pt = PolicyTranslator(args)
+    def __init__(self, check="MAP"):
+        if check == 'MAP':
+            print("Running MAP Translator!")
+            self.pt = MAPTranslator()
+            self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
+        else:
+            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
+            self.pt = PolicyTranslator(args)
+            self.trans = "POL"
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
