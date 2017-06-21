@@ -9,6 +9,8 @@ import random                   # testing getNextPose
 import matplotlib.pyplot as plt # testing getNextPose
 import sys
 import numpy as np
+import os; 
+import copy; 
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -24,10 +26,14 @@ class MAPTranslator(object):
 
     def __init__(self):
         self.delta = 0.1
-        pass
+        f = self.findFile('likelihoods.npy','../'); 
+        self.likelihoods = np.load(f); 
+        self.bounds = [-9.6, -3.6, 4, 3.6]
 
-
-
+    def findFile(self,name,path):
+    	for root,dirs,files in os.walk(path):
+    		if name in files:
+    			return os.path.join(root,name); 
 
 
     """
@@ -83,8 +89,35 @@ class MAPTranslator(object):
         world_coord[1] = world_min_x_y[1] + d * coord[1] # world y coord
         return world_coord
 
-    def beliefUpdate(self, belief, action, observation):
-        pass
+    def unFlatten(self,arr,shapes):
+    	newArr = np.zeros((shapes[0],shapes[1])); 
+    	for i in range(0,shapes[0]):
+    		for j in range(0,shapes[1]):
+    			newArr[i][j] = arr[i*shapes[1]+j]; 
+    	return newArr; 
+
+    def normalize(self,arr):
+   		suma = sum(arr); 
+   		for i in range(0,len(arr)):
+   			arr[i] = arr[i]/suma; 
+   		return arr; 
+
+
+    def beliefUpdate(self, belief, responses):
+
+    	flatBelief = belief.flatten();
+    	post = flatBelief; 
+    	for res in responses:
+    	    if(res[1] == True):
+    	        like = self.likelihoods[res[0]][1];
+            else:
+                like = 1-self.likelihoods[res[0]][1]; 
+            print(self.likelihoods[res[0]][0],res[1])
+            posterior = np.multiply(post,like); 
+            post = self.normalize(posterior); 
+        post = self.unFlatten(post,belief.shape); 
+       	
+       	return post; 
 
 
     def getQuestions(self, belief):
@@ -143,10 +176,42 @@ def testGetNextPose(rndm=None):
     plt.scatter(max_pt[0], max_pt[1])
     plt.show()
 
+def testBeliefUpdate():
+    print "Testing Belief Update!"
+    MAP = MAPTranslator(); 
+    belief = GM(); 
+    belief.addG(Gaussian([0,0],[[8,0],[0,8]],0.5)); 
+    belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
+    db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta); 
+
+    responses = [[50,False],[3,True],[15,True]]; 
+
+    post = MAP.beliefUpdate(db,responses); 
+    # print(sum(sum(post))); 
+    # print(db.shape); 
+
+
+    # like = MAP.unFlatten(MAP.likelihoods[questionNum][1],db.shape); 
+    #like = MAP.likelihoods[questionNum][1]; 
+    # print(like.shape); 
+    # print(post.shape); 
+
+    x_space,y_space = np.mgrid[MAP.bounds[0]:MAP.bounds[2]:MAP.delta,MAP.bounds[1]:MAP.bounds[3]:MAP.delta]; 
+
+    fig,axarr = plt.subplots(2); 
+    axarr[0].contourf(x_space,y_space ,db); 
+    axarr[0].set_title('Prior');
+    # axarr[1].contourf(x_space,y_space ,like); 
+    # axarr[1].set_title('Likelihood'); 
+    axarr[1].contourf(x_space,y_space ,post); 
+    axarr[1].set_title('Posterior'); 
+    #plt.suptitle('Belief Update for question:' + str(MAP.likelihoods[questionNum][0])); 
+    plt.show();  
 
 
 def rdm():
     return random.randint(0, 5)
 
 if __name__ == '__main__':
-    testGetNextPose()
+    #testGetNextPose();
+    testBeliefUpdate(); 
