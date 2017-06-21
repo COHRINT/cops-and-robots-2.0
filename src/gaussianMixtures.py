@@ -1082,7 +1082,7 @@ def TestDiscretization():
 	test1.addG(Gaussian([3,3],[[1,0],[0,1]],.33));
 	test1.addG(Gaussian([-2,-2],[[1,0],[0,1]],.33));
 
-	grid = test1.discretize2D(low=[-15,-15],high=[15,15],delta=np.pi); 
+	grid = test1.discretize2D(low=[-15,-15],high=[15,15],delta=0.01); 
 	print(grid.shape); 
 	plt.contourf(grid);
 	plt.show();  
