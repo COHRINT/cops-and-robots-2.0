@@ -67,15 +67,19 @@ class PolicyTranslatorServer(object):
         '''
         name = req.request.name
 
-        if not req.request.weights:
-            obs = None
-        else:
-            obs_msg = ObservationRequest()
-            obs = self.obs_server_client(obs_msg)
+        if self.trans == "MAP":
+            belief = self.translator_wrapper(req.request.name,req.request.weights,
+                                        req.request.means,req.request.variances,None)
+        else:      # run the observation observance
+            if not req.request.weights:
+                obs = None
+            else:
+                obs_msg = ObservationRequest()
+                obs = self.obs_server_client(obs_msg)
 
-        belief = self.translator_wrapper(req.request.name,req.request.weights,
+
+                belief = self.translator_wrapper(req.request.name,req.request.weights,
                                     req.request.means,req.request.variances,obs)
-
         weights_updated = belief[0]
         means_updated = belief[1]
         variances_updated = belief[2]
