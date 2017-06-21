@@ -37,10 +37,15 @@ from obs_queue import Obs_Queue
 
 class PolicyTranslatorServer(object):
 
-    def __init__(self):
-
-        args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-        self.pt = PolicyTranslator(args)
+    def __init__(self, check="MAP"):
+        if check == 'MAP':
+            print("Running MAP Translator!")
+            self.pt = MAPTranslator()
+            self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
+        else:
+            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
+            self.pt = PolicyTranslator(args)
+            self.trans = "POL"
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
@@ -62,15 +67,19 @@ class PolicyTranslatorServer(object):
         '''
         name = req.request.name
 
-        if not req.request.weights:
-            obs = None
-        else:
-            obs_msg = ObservationRequest()
-            obs = self.obs_server_client(obs_msg)
+        if self.trans == "MAP":
+            belief = self.translator_wrapper(req.request.name,req.request.weights,
+                                        req.request.means,req.request.variances,None)
+        else:      # run the observation observance
+            if not req.request.weights:
+                obs = None
+            else:
+                obs_msg = ObservationRequest()
+                obs = self.obs_server_client(obs_msg)
 
-        belief = self.translator_wrapper(req.request.name,req.request.weights,
+
+                belief = self.translator_wrapper(req.request.name,req.request.weights,
                                     req.request.means,req.request.variances,obs)
-
         weights_updated = belief[0]
         means_updated = belief[1]
         variances_updated = belief[2]
@@ -153,7 +162,7 @@ class PolicyTranslatorServer(object):
             pass
 
 
-        def human_pulled_callback(self, data):
+        def _callback(self, data):
             """"
             Mapping of human response observations to likelihood index and pos_neg value
             """
