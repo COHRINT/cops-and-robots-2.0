@@ -15,6 +15,143 @@ from gaussianMixtures import GM
 
 from policy_translator.msg import *
 
+obs_mapping = {'I know Roy is right of the dining table': ['Is Roy right of the dining table?', True],
+'I know Roy is near the dining room': ['Is Roy near the dining room?', True],
+'I know Roy is behind the checkers table': ['Is Roy behind the checkers table?', True],
+'I know Roy is in front of the cassini poster': ['Is Roy in front of the cassini poster?', True],
+'I know Roy is not left of the mars poster': ['Is Roy left of the mars poster?', False],
+'I know Roy is right of the desk': ['Is Roy right of the desk?', True],
+'I know Roy is not near the fridge': ['Is Roy near the fridge?', False],
+'I know Roy is near the chair': ['Is Roy near the chair?', True],
+'I know Roy is not near the fern': ['Is Roy near the fern?', False],
+'I know Roy is not near the kitchen': ['Is Roy near the kitchen?', False],
+'I know Roy is not in front of the desk': ['Is Roy in front of the desk?', False],
+'I know Roy is not right of the mars poster': ['Is Roy right of the mars poster?', False],
+'I know Roy is near the checkers table': ['Is Roy near the checkers table?', True],
+'I know Roy is right of the chair': ['Is Roy right of the chair?', True],
+'I know Roy is behind the bookcase': ['Is Roy behind the bookcase?', True],
+'I know Roy is not in front of the cassini poster': ['Is Roy in front of the cassini poster?', False],
+'I know Roy is not outside the study': ['Is Roy outside the study?', False],
+'I know Roy is not in front of the bookcase': ['Is Roy in front of the bookcase?', False],
+'I know Roy is behind the mars poster': ['Is Roy behind the mars poster?', True],
+'I know Roy is not inside the study': ['Is Roy inside the study?', False],
+'I know Roy is in front of the bookcase': ['Is Roy in front of the bookcase?', True],
+'I know Roy is left of the chair': ['Is Roy left of the chair?', True],
+'I know Roy is not outside the kitchen': ['Is Roy outside the kitchen?', False],
+'I know Roy is inside the kitchen': ['Is Roy inside the kitchen?', True],
+'I know Roy is behind the dining table': ['Is Roy behind the dining table?', True],
+'I know Roy is not left of the fridge': ['Is Roy left of the fridge?', False],
+'I know Roy is not near the billiard room': ['Is Roy near the billiard room?', False],
+'I know Roy is not near the chair': ['Is Roy near the chair?', False],
+'I know Roy is right of the filing cabinet': ['Is Roy right of the filing cabinet?', True],
+'I know Roy is not left of the bookcase': ['Is Roy left of the bookcase?', False],
+'I know Roy is right of the cassini poster': ['Is Roy right of the cassini poster?', True],
+'I know Roy is near the study': ['Is Roy near the study?', True],
+'I know Roy is inside the dining room': ['Is Roy inside the dining room?', True],
+'I know Roy is behind the chair': ['Is Roy behind the chair?', True],
+'I know Roy is not in front of the dining table': ['Is Roy in front of the dining table?', False],
+'I know Roy is behind the fridge': ['Is Roy behind the fridge?', True],
+'I know Roy is right of the checkers table': ['Is Roy right of the checkers table?', True],
+'I know Roy is not behind the mars poster': ['Is Roy behind the mars poster?', False],
+'I know Roy is not left of the cassini poster': ['Is Roy left of the cassini poster?', False],
+'I know Roy is near the fern': ['Is Roy near the fern?', True],
+'I know Roy is not outside the hallway': ['Is Roy outside the hallway?', False],
+'I know Roy is not near the library': ['Is Roy near the library?', False],
+'I know Roy is not inside the library': ['Is Roy inside the library?', False],
+'I know Roy is not behind the desk': ['Is Roy behind the desk?', False],
+'I know Roy is not near the hallway': ['Is Roy near the hallway?', False],
+'I know Roy is outside the hallway': ['Is Roy outside the hallway?', True],
+'I know Roy is not left of the fern': ['Is Roy left of the fern?', False],
+'I know Roy is not behind the checkers table': ['Is Roy behind the checkers table?', False],
+'I know Roy is right of the fern': ['Is Roy right of the fern?', True],
+'I know Roy is inside the hallway': ['Is Roy inside the hallway?', True],
+'I know Roy is left of the checkers table': ['Is Roy left of the checkers table?', True],
+'I know Roy is behind the desk': ['Is Roy behind the desk?', True],
+'I know Roy is not near the dining room': ['Is Roy near the dining room?', False],
+'I know Roy is not right of the checkers table': ['Is Roy right of the checkers table?', False],
+'I know Roy is in front of the dining table': ['Is Roy in front of the dining table?', True],
+'I know Roy is right of the bookcase': ['Is Roy right of the bookcase?', True],
+'I know Roy is not left of the dining table': ['Is Roy left of the dining table?', False],
+'I know Roy is not right of the desk': ['Is Roy right of the desk?', False],
+'I know Roy is not right of the filing cabinet': ['Is Roy right of the filing cabinet?', False],
+'I know Roy is left of the bookcase': ['Is Roy left of the bookcase?', True],
+'I know Roy is near the bookcase': ['Is Roy near the bookcase?', True],
+'I know Roy is not in front of the fern': ['Is Roy in front of the fern?', False],
+'I know Roy is inside the library': ['Is Roy inside the library?', True],
+'I know Roy is in front of the checkers table': ['Is Roy in front of the checkers table?', True],
+'I know Roy is not near the filing cabinet': ['Is Roy near the filing cabinet?', False],
+'I know Roy is not right of the fridge': ['Is Roy right of the fridge?', False],
+'I know Roy is near the billiard room': ['Is Roy near the billiard room?', True],
+'I know Roy is outside the study': ['Is Roy outside the study?', True],
+'I know Roy is not inside the billiard room': ['Is Roy inside the billiard room?', False],
+'I know Roy is left of the mars poster': ['Is Roy left of the mars poster?', True],
+'I know Roy is right of the fridge': ['Is Roy right of the fridge?', True],
+'I know Roy is near the mars poster': ['Is Roy near the mars poster?', True],
+'I know Roy is outside the library': ['Is Roy outside the library?', True],
+'I know Roy is not in front of the chair': ['Is Roy in front of the chair?', False],
+'I know Roy is not near the dining table': ['Is Roy near the dining table?', False],
+'I know Roy is not left of the filing cabinet': ['Is Roy left of the filing cabinet?', False],
+'I know Roy is near the filing cabinet': ['Is Roy near the filing cabinet?', True],
+'I know Roy is not right of the bookcase': ['Is Roy right of the bookcase?', False],
+'I know Roy is not near the cassini poster': ['Is Roy near the cassini poster?', False],
+'I know Roy is not right of the cassini poster': ['Is Roy right of the cassini poster?', False],
+'I know Roy is not near the desk': ['Is Roy near the desk?', False],
+'I know Roy is near the cassini poster': ['Is Roy near the cassini poster?', True],
+'I know Roy is not behind the bookcase': ['Is Roy behind the bookcase?', False],
+'I know Roy is not left of the desk': ['Is Roy left of the desk?', False],
+'I know Roy is not outside the dining room': ['Is Roy outside the dining room?', False],
+'I know Roy is near the library': ['Is Roy near the library?', True],
+'I know Roy is left of the fridge': ['Is Roy left of the fridge?', True],
+'I know Roy is not right of the chair': ['Is Roy right of the chair?', False],
+'I know Roy is not near the study': ['Is Roy near the study?', False],
+'I know Roy is not inside the hallway': ['Is Roy inside the hallway?', False],
+'I know Roy is left of the fern': ['Is Roy left of the fern?', True],
+'I know Roy is left of the filing cabinet': ['Is Roy left of the filing cabinet?', True],
+'I know Roy is right of the mars poster': ['Is Roy right of the mars poster?', True],
+'I know Roy is behind the cassini poster': ['Is Roy behind the cassini poster?', True],
+'I know Roy is outside the kitchen': ['Is Roy outside the kitchen?', True],
+'I know Roy is not behind the fern': ['Is Roy behind the fern?', False],
+'I know Roy is not inside the dining room': ['Is Roy inside the dining room?', False],
+'I know Roy is not near the bookcase': ['Is Roy near the bookcase?', False],
+'I know Roy is inside the study': ['Is Roy inside the study?', True],
+'I know Roy is not behind the cassini poster': ['Is Roy behind the cassini poster?', False],
+'I know Roy is not in front of the filing cabinet': ['Is Roy in front of the filing cabinet?', False],
+'I know Roy is not behind the chair': ['Is Roy behind the chair?', False],
+'I know Roy is not right of the fern': ['Is Roy right of the fern?', False],
+'I know Roy is not behind the dining table': ['Is Roy behind the dining table?', False],
+'I know Roy is not near the mars poster': ['Is Roy near the mars poster?', False],
+'I know Roy is in front of the filing cabinet': ['Is Roy in front of the filing cabinet?', True],
+'I know Roy is in front of the chair': ['Is Roy in front of the chair?', True],
+'I know Roy is behind the filing cabinet': ['Is Roy behind the filing cabinet?', True],
+'I know Roy is not behind the filing cabinet': ['Is Roy behind the filing cabinet?', False],
+'I know Roy is not inside the kitchen': ['Is Roy inside the kitchen?', False],
+'I know Roy is in front of the mars poster': ['Is Roy in front of the mars poster?', True],
+'I know Roy is not behind the fridge': ['Is Roy behind the fridge?', False],
+'I know Roy is not outside the library': ['Is Roy outside the library?', False],
+'I know Roy is not right of the dining table': ['Is Roy right of the dining table?', False],
+'I know Roy is left of the desk': ['Is Roy left of the desk?', True],
+'I know Roy is in front of the fern': ['Is Roy in front of the fern?', True],
+'I know Roy is left of the dining table': ['Is Roy left of the dining table?', True],
+'I know Roy is not outside the billiard room': ['Is Roy outside the billiard room?', False],
+'I know Roy is outside the billiard room': ['Is Roy outside the billiard room?', True],
+'I know Roy is in front of the desk': ['Is Roy in front of the desk?', True],
+'I know Roy is behind the fern': ['Is Roy behind the fern?', True],
+'I know Roy is near the kitchen': ['Is Roy near the kitchen?', True],
+'I know Roy is not near the checkers table': ['Is Roy near the checkers table?', False],
+'I know Roy is not in front of the checkers table': ['Is Roy in front of the checkers table?', False],
+'I know Roy is not in front of the fridge': ['Is Roy in front of the fridge?', False],
+'I know Roy is in front of the fridge': ['Is Roy in front of the fridge?', True],
+'I know Roy is left of the cassini poster': ['Is Roy left of the cassini poster?', True],
+'I know Roy is inside the billiard room': ['Is Roy inside the billiard room?', True],
+'I know Roy is not in front of the mars poster': ['Is Roy in front of the mars poster?', False],
+'I know Roy is not left of the chair': ['Is Roy left of the chair?', False],
+'I know Roy is outside the dining room': ['Is Roy outside the dining room?', True],
+'I know Roy is near the desk': ['Is Roy near the desk?', True],
+'I know Roy is near the hallway': ['Is Roy near the hallway?', True],
+'I know Roy is near the fridge': ['Is Roy near the fridge?', True],
+'I know Roy is not left of the checkers table': ['Is Roy left of the checkers table?', False],
+'I know Roy is near the dining table': ['Is Roy near the dining table?', True]}
+
 class Questioner(object):
 
     def __init__(self,human_sensor,target_order,target_weights,bounds,delta,
@@ -128,26 +265,30 @@ class Questioner(object):
     def flatten(self,discretized_prior):
         return np.ndarray.tolist(discretized_prior)
 
+    def get_questions(self,priors):
+        """
+        Weighs questions given priors, calculates VOI for each question and
+        sends questions in ROS message.
+        """
+        self.weigh_questions(priors)
+        self.transmit_questions()
+
     def transmit_questions(self):
         """
         Publishes list of quesitons to ROS topic /robot_questions ordered sorted
         high to low VOI.
         """
         msg = Question()
-        # msg.weights = self.weighted_questions[0:len(self.weighted_questions)][0]
         msg.weights = [q[0] for q in self.weighted_questions]
-        # print([q[0] for q in self.weighted_questions])
         msg.qids = [q[1] for q in self.weighted_questions]
-        # msg.qids = self.weighted_questions[0:len(self.weighted_questions)][1]
-        # msg.questions = self.weighted_questions[0:len(self.weighted_questions)][2]
         msg.questions = [q[2] for q in self.weighted_questions]
         print(msg)
         self.pub.publish(msg)
 
 if __name__ == "__main__":
-    prior = GM([[1, 1],
-                 [0, 0],
-                 [-4, -2]
+    prior = GM([[-9, 3],
+                 [-8, 3],
+                 [-7, 3.5]
                  ],
                  [[[1.5, 1.0],
                    [1.0, 1.5]],

@@ -154,19 +154,19 @@ class PolicyTranslatorServer(object):
         return msg
 
 
-        def human_push_callback(self, data):
-            """
-            Mapping of human push observations to a likelihood index and pos_neg value
-            this one doesn't have the pos_neg value immediately available / the hard one
-            """
-            pass
+    def human_push_callback(self, data):
+        """
+        Mapping of human push observations to a likelihood index and pos_neg value
+        this one doesn't have the pos_neg value immediately available / the hard one
+        """
+        pass
 
 
-        def _callback(self, data):
-            """"
-            Mapping of human response observations to likelihood index and pos_neg value
-            """
-            self.Obs_Queue.add(data.qids, data.ans)
+    def _callback(self, data):
+        """"
+        Mapping of human response observations to likelihood index and pos_neg value
+        """
+        self.Obs_Queue.add(data.qids, data.ans)
 
 
 if __name__ == "__main__":
