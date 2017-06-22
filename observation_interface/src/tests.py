@@ -12,7 +12,7 @@ from observation_interface.msg import *
 
 def robot_pull_test():
     rospy.init_node('interface_tester')
-    pub = rospy.Publisher("pull_questions",Question,queue_size=10)
+    pub = rospy.Publisher("robot_questions",Question,queue_size=10)
 
     # qids = [1,2,5,4,3]
     # weights = [5,10,2,7,4]

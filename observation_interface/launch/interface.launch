@@ -13,12 +13,12 @@
   <!-- <node name="nodelet_manager" pkg="nodelet" type="nodelet" args="manager" />
   <node name="cop_video_proc" pkg="nodelet" type="nodelet"
     args="load image_proc/debayer" >
-    <remap from="camera/rgb/"
+    <remap from="camera/rgb/" to="camera/rgb/processed" />
 
   </node> -->
 
   <!-- Interface -->
   <node name="obs_interface" pkg="observation_interface"
-    type="interface.py" />
+    type="interface.py" output="screen" />
 
 </launch>

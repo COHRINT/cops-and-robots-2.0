@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 """
 This file contains the class definitions of various elements used in the human
 interface for the Cops and Robots 2.0 experiment.
@@ -18,11 +20,14 @@ import sys
 import yaml
 import rospy
 import struct
+import array
+import time
 
 import PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
+from PyQt5.QtMultimedia import *
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, CompressedImage
@@ -36,36 +41,81 @@ questions = ["What is your favorite color?",
 
 PullQuestion_style = "\
                         .QWidget {   \
-                            border-style: solid;   \
-                            border-width: 1px;  \
+                            min-width: 300px;   \
+                            max-width: 300px;   \
                         }"
+
+groupbox_style = "\
+                    QGroupBox {  \
+                        font-size: 12pt;    \
+                        font-weight: 10;    \
+                        text-align: center; \
+                    }"
 
 yes_btn_style = "\
                 QPushButton {   \
                     color: white;   \
                     background-color: green;    \
+                    font-size: 8pt; \
+                    margin: 5px;    \
+                    padding: 5px;   \
+                    min-width: 50px; \
                 }"
 
 no_btn_style = "\
                 QPushButton {   \
                     color: white;   \
                     background-color: darkred;  \
+                    font-size: 8pt; \
+                    margin: 5px;    \
+                    padding: 5px;   \
+                    min-width: 50px; \
                 }"
 
 null_btn_style = "\
                     QPushButton {   \
                         color: black;   \
                         background-color: skyblue;  \
+                        font-size: 8pt; \
+                        margin: 5px;    \
+                        padding: 5px;   \
+                        min-width: 50px; \
                     }"
 
 question_text_style = "\
                         QLabel {    \
                             font: bold; \
+                            font-size: 9pt;   \
                         }"
 
-# send_btn_style = "\
-#                     QPushButton:enabled {   \
-#                         }"
+send_btn_style = "\
+                    QPushButton {   \
+                        color: white;   \
+                        background-color: green;    \
+                        font-size: 12pt;    \
+                        min-height: 35px;   \
+                    }"
+
+clear_btn_style = "\
+                    QPushButton {   \
+                        color: black;   \
+                        background-color: lightgray;    \
+                        font-size: 11pt;    \
+                        min-height: 25px;   \
+                    }"
+
+widget_title_style = "\
+                QLabel {    \
+                    font-size: 12pt;    \
+                    font-weight: 10;    \
+                    text-align: center; \
+                }"
+
+answer_indicator_style = "\
+                            .QLabel {   \
+                                max-width: 10px;    \
+                                max-height: 20px;   \
+                            }"
 
 
 class RobotPull(QWidget):
@@ -78,19 +128,39 @@ class RobotPull(QWidget):
         super(QWidget,self).__init__()
 
         # parameters for display
-        self.num_questions = 5
+        self.num_questions = 3
         self.name = "Robot Questions"
         # self.yes_btn_style
 
         self.initUI()
 
-        rospy.Subscriber("pull_questions", Question, self.update)
+        rospy.Subscriber("robot_questions", Question, self.question_update)
         self.pub = rospy.Publisher("answers",Answer,queue_size=10)
 
     def initUI(self):
         self.container = QGroupBox('Robot Questions')
+        size_policy = self.container.sizePolicy()
+        size_policy.setVerticalPolicy(QSizePolicy.Expanding)
+        size_policy.setHorizontalPolicy(QSizePolicy.Expanding)
+        self.container.setSizePolicy(size_policy)
+        self.container.setStyleSheet(groupbox_style)
+        # self.container.setStyleSheet(PullQuestion_style)
         self.container_layout = QVBoxLayout()
         self.container_layout.addWidget(self.container)
+
+
+        self.previous_q_container = QGroupBox()
+        self.prev_q_layout = QVBoxLayout()
+        self.container_layout.addWidget(self.previous_q_container)
+        self.previous_q_container.setLayout(self.prev_q_layout)
+
+        self.last_question = QLabel("Last question was: ")
+        self.last_question.setStyleSheet(question_text_style)
+        self.prev_q_layout.addWidget(self.last_question)
+
+        self.last_answer = QLabel("Last answer was: ")
+        self.last_answer.setStyleSheet(question_text_style)
+        self.prev_q_layout.addWidget(self.last_answer)
 
         # main widget layout
         self.main_layout = QVBoxLayout()
@@ -138,18 +208,36 @@ class RobotPull(QWidget):
         weights = [weight*scale_factor for weight in weights]
         return weights
 
-    def update(self,msg):
+    def get_new_question(self):
+        """
+        Get new next most valuable question to display if a question is answered
+        'I don't know'.
+        """
+        if self.count < len(self.questions):
+            new_question = self.questions[self.count]
+            new_question_weight = self.question_weights[self.count]
+            new_qid = self.qids[self.count]
+            self.count += 1
+            return (new_qid,new_question,new_question_weight)
+        else:
+            return None
+
+    def question_update(self,msg):
         """
         Update the displayed questions by getting the new questions, created the
         associated question objects, and updating the display.
         """
         print('msg received')
-        qids = msg.qids
-        weights = msg.weights
-        weights = self.scale_VOI_magnitude(weights)
+        self.count = 0
+        self.qids = msg.qids
+        self.question_weights = msg.weights
+        self.questions = msg.questions
+        # weights = self.scale_VOI_magnitude(weights)
 
-        for i in range(0,len(qids)):
-            self.question_fields[i].set_question(qids[i],questions[qids[i]-1],weights[i])
+        for i in range(0,self.num_questions):
+            self.question_fields[i].set_question(self.qids[i],self.questions[i],
+                            self.question_weights[i])
+            self.count += 1
             # self.question_fields[i].show()
 
 class PullQuestion(QWidget):
@@ -177,29 +265,45 @@ class PullQuestion(QWidget):
         self.yes_btn.setSizePolicy(QSizePolicy())
         self.yes_btn.setStyleSheet(yes_btn_style)
         self.yes_btn.clicked.connect(self.answered)
+        # self.yes_btn.clicked.connect(self.answer_color)
 
         self.no_btn = QPushButton('NO')
         self.no_btn.setSizePolicy(QSizePolicy())
         self.no_btn.setStyleSheet(no_btn_style)
         self.no_btn.clicked.connect(self.answered)
+        # self.no_btn.clicked.connect(self.answer_color)
 
-        self.null_btn = QPushButton('I DON\'T KNOW')
+        self.null_btn = QPushButton('?')
         self.null_btn.setSizePolicy(QSizePolicy())
         self.null_btn.setStyleSheet(null_btn_style)
         self.null_btn.clicked.connect(self.answered)
+        # self.null_btn.clicked.connect(self.answer_color)
 
         self.buttons = [self.yes_btn,self.no_btn,self.null_btn]
 
-        self.voi_weight = QProgressBar()
-        self.voi_weight.setSizePolicy(QSizePolicy())
-        self.voi_weight.setTextVisible(False)
+        # Make answer indicator
+        # self.answer_rect_container = QLabel()
+        # self.answer_rect_container.setStyleSheet(answer_indicator_style)
+        # self.answer_rect = QPixmap(QSize(10,20))
+        # self.answer_rect.fill(QColor('gray'))
+        # self.answer_rect_container.setPixmap(self.answer_rect)
+
+        # Make bar to indicate VOI of question
+        # self.voi_weight = QProgressBar()
+        # self.voi_weight.setSizePolicy(QSizePolicy())
+        # self.voi_weight.setTextVisible(False)
 
         self.layout.addWidget(self.text)
         self.layout.addWidget(self.yes_btn)
         self.layout.addWidget(self.no_btn)
         self.layout.addWidget(self.null_btn)
-        self.layout.addWidget(self.voi_weight)
+        # self.layout.addWidget(self.answer_rect_container)
+        # self.layout.addWidget(self.voi_weight)
 
+        # self.setStyleSheet(PullQuestion_style)
+
+        # self.layout.setContentsMargin(0,0,0,0)
+        self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
         self.hide()
@@ -207,9 +311,37 @@ class PullQuestion(QWidget):
     def set_question(self,qid,question_text,weight):
         self.qid = qid
         self.weight = weight
-        self.voi_weight.setValue(int(weight))
+        # self.voi_weight.setValue(int(weight))
         self.text.setText(question_text)
         self.show()
+
+    def answer_color(self):
+        """
+        Flash color when question is answered
+        """
+        color = ''
+        if self.sender() is self.yes_btn:
+            # self.setStyleSheet("background-color: green;")
+            color = 'green'
+            self.answer_rect.fill(QColor(color))
+            self.answer_rect_container.setPixmap(self.answer_rect)
+
+        elif self.sender() is self.no_btn:
+            # self.setStyleSheet("background-color: darkred;")
+            color = 'darkred'
+            self.answer_rect.fill(QColor(color))
+            self.answer_rect_container.setPixmap(self.answer_rect)
+
+        elif self.sender() is self.null_btn:
+            # self.setStyleSheet("background-color: skyblue;")
+            color = 'skyblue'
+            self.answer_rect.fill(QColor(color))
+            self.answer_rect_container.setPixmap(self.answer_rect)
+
+        # w = QWidget()
+        # self.show()
+        # time.sleep(1)
+        # self.setStyleSheet("background-color: lightgray")
 
     def answered(self):
         """
@@ -220,18 +352,28 @@ class PullQuestion(QWidget):
         self.hide()
         # determine answer based on which button was clicked
         ans = None
+        ans_text = None
         if self.sender() is self.yes_btn:
             ans = 1
+            ans_text = 'Yes'
         elif self.sender() is self.no_btn:
             ans = 0
-        else:
-            ans = 2
+            ans_text = 'No'
+        elif self.sender() is self.null_btn:
+            ans_text = 'I don\'t know'
+        self.parentWidget().parentWidget().last_question.setText('Last question was: ' + self.sender().parentWidget().text.text())
+        self.parentWidget().parentWidget().last_answer.setText('Last answer was: ' + ans_text)
+        question = self.parentWidget().parentWidget().get_new_question()
+        if question is not None:
+            self.set_question(question[0],question[1],question[2])
+
         # create answer ROS message
-        msg = Answer()
-        msg.qid = self.qid
-        msg.ans = ans
-        # publish answer
-        self.pub.publish(msg)
+        if ans is not None:
+            msg = Answer()
+            msg.qid = self.qid
+            msg.ans = ans
+            # publish answer
+            self.pub.publish(msg)
 
 
 
@@ -240,7 +382,7 @@ robots = ["Deckard","Roy","Pris","Zhora"]
 
 targets = ["nothing","a robber","Roy","Pris","Zhora"]
 
-certainties = ["I know","I think"]
+certainties = ["I know"]
 
 positivities = ["is", "is not"]
 
@@ -268,7 +410,7 @@ class HumanPush(QWidget):
     def __init__(self):
         super(QWidget,self).__init__()
 
-        self.name = "Human Questions"
+        self.name = "Human Observations"
 
         self.pub = rospy.Publisher("human_push",String,queue_size=10)
 
@@ -280,6 +422,7 @@ class HumanPush(QWidget):
 
         # add name as a label
         self.name_label = QLabel(self.name)
+        self.name_label.setStyleSheet(widget_title_style)
         self.main_and_title.addWidget(self.name_label)
 
         self.main_and_title.addLayout(self.main_layout)
@@ -340,8 +483,10 @@ class HumanPush(QWidget):
         # make the 'send' and 'clear' buttons
         self.send_btn = QPushButton('Send')
         self.send_btn.clicked.connect(self.publish_msg)
+        self.send_btn.setStyleSheet(send_btn_style)
         self.clear_btn = QPushButton('Clear')
         self.clear_btn.clicked.connect(self.clear_selection)
+        self.clear_btn.setStyleSheet(clear_btn_style)
 
         # make layout for 'send' and 'clear' buttons
         self.btn_column = QVBoxLayout()
@@ -444,23 +589,26 @@ class MapDisplay(QWidget):
         self.main_layout = QVBoxLayout()
 
         self.name_label = QLabel(self.name)
+        self.name_label.setStyleSheet(widget_title_style)
         self.main_layout.addWidget(self.name_label)
 
-        self.image_view = QPixmap('placeholder.png')
+        self.image_view = QPixmap()
+        self.image_view.load('/home/ian/catkin_ws/src/cops-and-robots-2.0/observation_interface/src/Clue_map.png')
+        self.image_view = self.image_view.scaled(600,450,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.pic_label = QLabel(self)
-        self.pic_label.setScaledContents(True)
+        # self.pic_label.setScaledContents(True)
         self.pic_label.setPixmap(self.image_view)
         self.main_layout.addWidget(self.pic_label)
 
-        self.pic_label.setFixedSize(500,350)
+        # self.pic_label.setFixedSize(500,350)
         # self.setStyleSheet(MapDisplay_style)
         self.setLayout(self.main_layout)
-        # self.show()
+        self.show()
 
     def update(self):
         pass
 
-class VideoDisplay(QWidget):
+class VideoContainer(QWidget):
     """
     A general class for widgets to display video feeds.
     """
@@ -473,26 +621,34 @@ class VideoDisplay(QWidget):
         self.main_layout = QVBoxLayout()
 
         self.name_label = QLabel(self.name)
+        self.name_label.setStyleSheet(widget_title_style)
         self.main_layout.addWidget(self.name_label)
 
-        # self.image = QImage()
-
         self.counter = 0
+
+        self.canvas = VideoCanvas(self.size)
+        self.canvas.setMinimumSize(QSize(*self.size))
 
         # self.scene = QGraphicsScene()
         # self.image_view = QGraphicsView(self.scene)
 
-        self.image_view = QPixmap(*self.size)
-        self.pic_label = QLabel(self)
-        self.pic_label.setScaledContents(True)
-        self.image_view.fill(QColor('black'))
-        self.pic_label.setPixmap(self.image_view)
+        # self.video = VideoDisplayWidget()
+        # self.surface = self.video.surface
+
+        self.image = QImage()
+
+        # self.image_view = QPixmap(*self.size)
+        # self.pic_label = QLabel(self)
+        # self.pic_label.setScaledContents(True)
+        # self.image_view.fill(QColor('black'))
+        # self.pic_label.setPixmap(self.image_view)
         # self.canvas_widget = QWidget()
         # self.canvas = QRect()
         # self.image = QImage()
         # self.painter = QPainter(self)
 
-        self.main_layout.addWidget(self.pic_label)
+        # self.main_layout.addWidget(self.video)
+        self.main_layout.addWidget(self.canvas)
 
         # self.image.setFixedSize(QSize(self.size[0],self.size[1]))
         # self.setStyleSheet(MapDisplay_style)
@@ -504,17 +660,29 @@ class VideoDisplay(QWidget):
         """
         self.counter += 1
 
+        fmt = '>' + str((self.size[0]*self.size[1]))
+
         image_data = msg.data
+        l = array.array('H')
+        l.fromstring(image_data)
+        data_ordered = [struct.pack('<I',x) for x in l]
+        data_ordered = struct.pack('')
+        # data_unpacked = struct.unpack(fmt,image_data)
+        # print(data_unpacked)
         image_height = msg.height
         image_width = msg.width
         bytes_per_line = msg.step
-        if self.counter % 2 == 0:
-            self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-            if not self.image.isNull():
-                # self.repaint()
-                self.pic_label.setPixmap(QPixmap.fromImage(self.image))
-            else:
-                print("{} sent bad frames!".format(self.name))
+        # if self.counter % 2 == 0:
+        self.image = QImage(data_ordered,image_width,image_height,bytes_per_line,self.format)
+        self.canvas.image = self.image
+        self.canvas.repaint()
+        # self.present_image(image)
+        # if not self.image.isNull():
+        #         # self.repaint()
+        #         # self.pic_label.setPixmap(QPixmap.fromImage(self.image))
+        #     self.canvas.image = self.image
+        # else:
+        #     print("{} sent bad frames!".format(self.name))
         # if not self.image.isNull():
             # self.scene.addItem(self.image)
         # else:
@@ -535,31 +703,77 @@ class VideoDisplay(QWidget):
     #         # print('{} sent bad frames!'.format(self.name))
     #         # return
     #     painter = QPainter(self)
-    #     painter.drawImage(self.rect(),self.image,self.image.rect())
+    #     if not self.image.isNull():
+    #         painter.drawImage(self.rect(),self.image)
+    #     else:
+    #         print('Null image')
+    #         return
+
+    def present_image(self,image):
+        frame = QVideoFrame(image)
+
+        if not frame.isValid():
+            return False
+
+        current_format = self.surface.surfaceFormat()
+
+        if (frame.pixelFormat() != current_format.pixelFormat()) \
+            or (frame.size() != current_format.frameSize()):
+
+            format_ = QVideoSurfaceFormat(frame.size(),frame.pixelFormat())
+
+            if not self.surface.start(format_):
+                print("surface not started")
+                return False
+
+        if not self.surface.present(frame):
+            print("no present")
+            self.surface.stop()
+            return False
+        else:
+            self.surface.present(frame)
+            self.show()
+            return True
+
+class VideoCanvas(QWidget):
+    """
+    Widget to paint video feed image frames to
+    """
+    def __init__(self,size):
+        super(VideoCanvas,self).__init__()
+        self.size = size
+        self.image = None
+
+    def paintEvent(self,event):
+        painter = QPainter(self)
+        if (self.image is not None) and (not self.image.isNull()):
+            painter.drawImage(self.rect(),self.image)
 
 
-class CopVideo(VideoDisplay):
+
+class CopVideo(VideoContainer):
     """
     Subclasses VideoDisplay to display the cop's camera feed.
     """
 
     def __init__(self,cop_name='deckard'):
-        super(VideoDisplay,self).__init__()
+        super(VideoContainer,self).__init__()
         self.name = "Cop Video"
-        self.topic_name = '/' + cop_name + '/camera/rgb/image_mono'
+        self.topic_name = '/' + cop_name + '/camera/rgb/image_color'
         self.size = (500,350)
         self.img = 'placeholder.png'
-        self.format = QImage.Format_Mono
+        self.format = QImage.Format_RGB888
         self.initUI()
         rospy.Subscriber(self.topic_name, Image,self.ros_update)
 
-class SecurityCamera(VideoDisplay):
+class SecurityCamera(VideoContainer):
     """
     Subclasses VideoDisplay to display the feed of a security camera.
+
     """
 
     def __init__(self,num,location):
-        super(VideoDisplay,self).__init__()
+        super(VideoContainer,self).__init__()
         self.name = "Camera {}: {}".format(num,location)
         self.topic_name = 'cam{}'.format(num)
         self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
