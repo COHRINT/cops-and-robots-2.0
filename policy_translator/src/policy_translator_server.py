@@ -28,8 +28,10 @@ import tf
 import numpy as np
 import math
 
+import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
+from MAPTranslator import MAPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg
 
 # Observation Queue #TODO delete in CnR 2.0
@@ -53,7 +55,7 @@ class PolicyTranslatorServer(object):
 
         # Observations -> likelihood queue
         rospy.Subscriber("/human_push", String, self.human_push_callback)
-        rospy.Subscriber("/answered", Question, self.human_pulled_callback)
+        rospy.Subscriber("/answered", Question, self.robot_pull_callback)
         self.Obs_Queue = Obs_Queue()
 
         print('Policy translator service ready.')
@@ -154,20 +156,60 @@ class PolicyTranslatorServer(object):
         return msg
 
 
-    def human_push_callback(self, data):
+    def human_push_callback(self, human_push):
         """
         Mapping of human push observations to a likelihood index and pos_neg value
         this one doesn't have the pos_neg value immediately available / the hard one
         """
-        pass
+        (lkhd_question, ans) = voi.obs_mapping[human_push.data]
+        try:
+            lhs = np.load('likelihoods.npy')
+            item = np.where(lhs['question']==lkhd_question)
+            index = item[0][0]
+            self.Obs_Queue.add(index, ans)
+        except IOError as ioerr:
+            print(ioerr)
 
 
-    def _callback(self, data):
+    def robot_pull_callback(self, data):
         """"
         Mapping of human response observations to likelihood index and pos_neg value
         """
-        self.Obs_Queue.add(data.qids, data.ans)
+        self.Obs_Queue.add(data.qid, data.ans)
 
+# Comment out rospy.spin() in init function of policy_translator_server
+def Test_Callbacks():
+    # Test human_push_callback
+    a = String()
+    a.data = "I know Roy is right of the dining table" # q_id 5
+    b = String()
+    b.data = "I know Roy is not near the bookcase"  # q_id 27
+
+    server = PolicyTranslatorServer()
+
+    # send test data
+    server.human_push_callback(a)
+    server.human_push_callback(b)
+
+    print("Printing Current Queue")
+    server.Obs_Queue.print_queue()
+
+    # Test robot_pull_callback
+    c = Answer()
+    c.qid = 17
+    c.ans = False
+
+    d = Answer()
+    d.qid = 65
+    d.ans = True
+
+    # send test data
+    server.robot_pull_callback(c)
+    server.robot_pull_callback(d)
+
+    print("Printing Current Queue")
+    server.Obs_Queue.print_queue()
 
 if __name__ == "__main__":
+    #Test_Callbacks()
     PolicyTranslatorServer()
