@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt # testing getNextPose
 import sys
 import numpy as np
 import os;
-import copy; 
+import copy;
+from map_maker import MAP
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"

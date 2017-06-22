@@ -159,7 +159,6 @@ class PolicyTranslatorServer(object):
     def human_push_callback(self, human_push):
         """
         Mapping of human push observations to a likelihood index and pos_neg value
-        this one doesn't have the pos_neg value immediately available / the hard one
         """
         (lkhd_question, ans) = voi.obs_mapping[human_push.data]
         try:
