@@ -1,2 +1,3 @@
-uint32[] qids
+int32[] qids
 float32[] weights
+string[] questions

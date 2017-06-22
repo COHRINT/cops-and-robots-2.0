@@ -1,0 +1,13 @@
+<!-- Image Processing Node -->
+
+<launch>
+
+<!-- Create Nodelet manager and process video from cop into rgb stream -->
+<node name="nodelet_manager" pkg="nodelet" type="nodelet" args="manager" />
+<node name="cop_video_proc" pkg="nodelet" type="nodelet"
+  args="load image_proc/debayer" >
+  <remap from="camera/rgb/" to="camera/rgb/processed" />
+
+</node>
+
+</launch>
