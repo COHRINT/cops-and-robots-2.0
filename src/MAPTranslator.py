@@ -13,7 +13,8 @@ import os;
 import copy;
 from map_maker import Map
 from matplotlib import patches
-
+import matplotlib.tri as tri; 
+import math 
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -123,7 +124,7 @@ class MAPTranslator(object):
        	return post;
 
 
-    def makeBeliefMap(self, belief):
+    def makeBeliefMap(self, belief,copPose = [0,0,0]):
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta]; 
         plt.contourf(x_space,y_space,belief); 
         m = Map('map2.yaml'); 
@@ -138,10 +139,21 @@ class MAPTranslator(object):
             # print(theta); 
             # print(""); 
             if(m.objects[obj].shape == 'oval'):
-                tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col); 
+                tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black'); 
             else:
-                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col); 
+                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black'); 
             plt.gca().add_patch(tmp); 
+
+        bearing = 0; 
+        l = 1; 
+        triang=tri.Triangulation([copPose[0],copPose[0]+l*math.cos(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[0]+l*math.cos(2*0.261799+math.radians(copPose[2]+(bearing)+90))],[copPose[1],copPose[1]+l*math.sin(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[1]+l*math.sin(2*0.261799+math.radians(copPose[2]+(bearing)+90))])
+
+        levels = [i/250 + 1 for i in range(0,250)]
+
+        tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
+
+        cop = patches.Circle((copPose[0],copPose[1]),radius=0.15,fc = 'white',ec='black'); 
+        plt.gca().add_patch(cop); 
 
         plt.axis('scaled'); 
         plt.savefig('../tmp/tmpBelief.png'); 
@@ -244,7 +256,8 @@ def testMakeMap():
     belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
     db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta); 
 
-    MAP.makeBeliefMap(db); 
+    copPose = [-2,-1,45]
+    MAP.makeBeliefMap(db,copPose); 
 
 
 def rdm():
@@ -252,5 +265,5 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-    testBeliefUpdate(); 
-    #testMakeMap();
+    #testBeliefUpdate(); 
+    testMakeMap();
