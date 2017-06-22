@@ -20,11 +20,11 @@ bookcase:
   name: bookcase
   color: sandybrown
   centroid_x: 0
-  centroid_y: -1.2
-  x_len: 0.18
-  y_len: 0.38
+  centroid_y: -1.1662
+  x_len: 0.38
+  y_len: 0.18
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 0.0
   shape: rectangle
 
 desk:
@@ -52,8 +52,8 @@ chair:
 filing_cabinet:
   name: filing_cabinet
   color: black
-  centroid_x: -4.0
-  centroid_y: -1.32
+  centroid_x: -3.7988
+  centroid_y: -0.8912
   x_len: 0.5
   y_len: 0.37
   # degrees obj's x_len to map's pos-x axis
@@ -63,34 +63,34 @@ filing_cabinet:
 dining_table:
   name: dining_table
   color: brown
-  centroid_x: -8.24
-  centroid_y: -2.15
+  centroid_x: -7.57
+  centroid_y: -2.54
   x_len: 1.17
   y_len: 0.69
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 90.0
   shape: rectangle
 
 mars_poster:
   name: mars_poster
   color: bisque
   centroid_x: -4.38
-  centroid_y: 3.67
-  x_len: 0.05
-  y_len: 0.84
+  centroid_y: 3.575
+  x_len: 0.84
+  y_len: 0.05
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 0.0
   shape: rectangle
 
 cassini_poster:
   name: cassini_poster
   color: black
   centroid_x: 1.38
-  centroid_y: 3.67
-  x_len: 0.05
-  y_len: 0.56
+  centroid_y: 3.575
+  x_len: 0.56
+  y_len: 0.05
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 0.0
   shape: rectangle
 
 fridge:
