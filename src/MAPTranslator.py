@@ -232,12 +232,6 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-<<<<<<< HEAD
     #testBeliefUpdate(); 
-    testMakeMap(); 
     #m = Map('map1.yaml'); 
-=======
-    testBeliefUpdate();
     #testMakeMap();
-    #m = Map('map1.yaml');
->>>>>>> 933a25970ff027780745c9b5c8b859542f01a073
