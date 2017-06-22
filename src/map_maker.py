@@ -5,7 +5,7 @@ import os 			# path capabilities
 """ Summary:
 	Creates a map object from an inputed 'map.yaml' file (in models dir)
 	Map includes:
-		1) General info: name, size, origin
+		1) General info: name, bounds.max_x_y, bounds.min_x_y, origin
 		2) Object hash: 'self.objects', each member is a Map_Object
 	Map_Object includes:
 		name, color, centroid[x, y], major axis, minor axis,
@@ -48,7 +48,8 @@ class Map(object):
 
 			# Get map's general info
 			self.name = cfg['info']['name']
-			self.size = [cfg['info']['size']['max_x'], cfg['info']['size']['max_y']]
+			self.bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
+			self.bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
 			self.origin = [cfg['info']['origin']['x_coord'], cfg['info']['origin']['y_coord']]
 
 			# Store map's objects in self.objects hash
@@ -101,10 +102,10 @@ class Map_Object(object):
 		Color of obj
 	centroid_pos : list
 		Centroid location [x, y] [m]
-	maj_ax_len: float
-		Major axis length of obj [m]
+	x_ax_len: float
+		x axis length of obj [m] (before orientation adjustment)
 	min_ax_len: float
-		Minor axis length of obj [m]
+		y axis length of obj [m] (before orientation adjustment)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis
 	shape : str
@@ -114,16 +115,16 @@ class Map_Object(object):
 				name='wall',
 				color='darkblue',
 				centroid_pos=[0.0,0.0],
-				maj_ax_len = 0.0,
-				min_ax_len = 0.0,
+				x_len = 0.0,
+				y_len = 0.0,
 				orient=0.0,
 				shape = 'rectangle'
 				):
 		self.name = name
 		self.color = color
 		self.centroid = centroid_pos
-		self.maj_ax = maj_ax_len
-		self.min_ax = min_ax_len
+		self.x_len = maj_ax_len
+		self.y_len = min_ax_len
 		self.orient = orient
 
 		self._pick_shape(shape)
@@ -138,7 +139,7 @@ class Map_Object(object):
 			self.shape = 'rectangle'
 
 def test_map_obj():
-	map = Map('map1.yaml')
+	map = Map('map2.yaml')
 
 	if hasattr(map, 'name'): # check if init was successful
 		print map.name
