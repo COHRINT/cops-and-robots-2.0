@@ -15,7 +15,7 @@ class Obs_Queue:
     # return all of the observations
     def flush(self):
         f = list(self.Obs) # copy the list
-        self.delete()
+        self._delete()
         return f
 
     # adds a single item to the queue
@@ -23,8 +23,12 @@ class Obs_Queue:
         obs = [obs_id, obs_pos_neg]
         self.Obs.append(obs)
 
-    def delete(self):
+    def _delete(self):
         del self.Obs[:]
+
+    def print_queue(self):
+        for i in self.Obs:
+            print(i)
 
 
 if __name__ == "__main__":
