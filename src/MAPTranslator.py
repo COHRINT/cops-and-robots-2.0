@@ -11,7 +11,9 @@ import sys
 import numpy as np
 import os;
 import copy;
-from map_maker import MAP
+from map_maker import Map
+from matplotlib import patches
+
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -124,9 +126,23 @@ class MAPTranslator(object):
     def makeBeliefMap(self, belief):
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta]; 
         plt.contourf(x_space,y_space,belief); 
+        m = Map('map2.yaml'); 
+        for obj in m.objects:
+            cent = m.objects[obj].centroid;
+            x = m.objects[obj].maj_ax; 
+            y = m.objects[obj].min_ax;  
+            theta = m.objects[obj].orient;
+            col = m.objects[obj].color
+            print(obj); 
+            print(col); 
+            print(theta); 
+            print(""); 
+            if(m.objects[obj].shape == 'oval'):
+                tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
+            else:
+                tmp = patches.Rectangle((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
+            plt.gca().add_patch(tmp); 
 
-        circle = plt.Circle((-2,1),radius=0.75,fc='y')
-        plt.gca().add_patch(circle); 
         plt.axis('scaled'); 
         plt.show(); 
 
@@ -233,5 +249,4 @@ def rdm():
 if __name__ == '__main__':
     #testGetNextPose();
     #testBeliefUpdate(); 
-    #m = Map('map1.yaml'); 
-    #testMakeMap();
+    testMakeMap();
