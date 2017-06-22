@@ -122,7 +122,14 @@ class MAPTranslator(object):
 
 
     def makeBeliefMap(self, belief):
-        pass
+        x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta]; 
+        plt.contourf(x_space,y_space,belief); 
+
+        circle = plt.Circle((-2,1),radius=0.75,fc='y')
+        plt.gca().add_patch(circle); 
+        plt.axis('scaled'); 
+        plt.show(); 
+
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -209,12 +216,22 @@ def testBeliefUpdate():
     #plt.suptitle('Belief Update for question:' + str(MAP.likelihoods[questionNum][0])); 
     plt.show();  
 
+def testMakeMap():
+    print "Testing Map creation!"
+    MAP = MAPTranslator(); 
+    belief = GM(); 
+    belief.addG(Gaussian([0,0],[[8,0],[0,8]],0.5)); 
+    belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
+    db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta); 
+
+    MAP.makeBeliefMap(db); 
+
 
 def rdm():
     return random.randint(0, 5)
 
 if __name__ == '__main__':
     #testGetNextPose();
-    testBeliefUpdate(); 
-    #testMakeMap(); 
+    #testBeliefUpdate(); 
+    testMakeMap(); 
     #m = Map('map1.yaml'); 
