@@ -18,7 +18,7 @@ info:
 
 bookcase:
   name: bookcase
-  color: brown
+  color: sandybrown
   centroid_x: 0
   centroid_y: -1.2
   x_len: 0.18
@@ -29,7 +29,7 @@ bookcase:
 
 desk:
   name: desk
-  color: brown
+  color: sandybrown
   centroid_x: -5.5
   centroid_y: -2.0
   x_len: 0.61
@@ -51,7 +51,7 @@ chair:
 
 filing_cabinet:
   name: filing_cabinet
-  color: brown
+  color: black
   centroid_x: -4.0
   centroid_y: -1.32
   x_len: 0.5
@@ -73,7 +73,7 @@ dining_table:
 
 mars_poster:
   name: mars_poster
-  color: brown
+  color: bisque
   centroid_x: -4.38
   centroid_y: 3.67
   x_len: 0.05
@@ -84,7 +84,7 @@ mars_poster:
 
 cassini_poster:
   name: cassini_poster
-  color: brown
+  color: black
   centroid_x: 1.38
   centroid_y: 3.67
   x_len: 0.05
@@ -95,7 +95,7 @@ cassini_poster:
 
 fridge:
   name: fridge
-  color: brown
+  color: black
   centroid_x: -9.1
   centroid_y: 3.3
   x_len: 0.46
@@ -106,7 +106,7 @@ fridge:
 
 checkers_table:
   name: checkers_table
-  color: brown
+  color: sandybrown
   centroid_x: 2.04
   centroid_y: 2.66
   x_len: 0.5
@@ -117,7 +117,7 @@ checkers_table:
 
 fern:
   name: fern
-  color: brown
+  color: green
   centroid_x: -2.475
   centroid_y: 1.06
   x_len: 0.5
@@ -128,7 +128,7 @@ fern:
 
 wall_1:
   name: wall_1
-  color: brown
+  color: sienna
   centroid_x: -7.0
   centroid_y: -1.55
   x_len: 1.15
@@ -139,7 +139,7 @@ wall_1:
 
 wall_2:
   name: wall_2
-  color: brown
+  color: sienna
   centroid_x: -7.0
   centroid_y: -2.7
   x_len: 1.15
@@ -150,7 +150,7 @@ wall_2:
 
 wall_3:
   name: wall_3
-  color: brown
+  color: sienna
   centroid_x: -6.3488
   centroid_y: -1.0
   x_len: 1.15
@@ -161,7 +161,7 @@ wall_3:
 
 wall_4:
   name: wall_4
-  color: brown
+  color: sienna
   centroid_x: -5.1988
   centroid_y: -1.0
   x_len: 1.15
@@ -172,7 +172,7 @@ wall_4:
 
 wall_5:
   name: wall_5
-  color: brown
+  color: sienna
   centroid_x: -4.0488
   centroid_y: -1.0
   x_len: 1.15
@@ -183,7 +183,7 @@ wall_5:
 
 wall_6:
   name: wall_6
-  color: brown
+  color: sienna
   centroid_x: -2.0
   centroid_y: -1.55
   x_len: 1.15
@@ -194,7 +194,7 @@ wall_6:
 
 wall_7:
   name: wall_7
-  color: brown
+  color: sienna
   centroid_x: -1.3488
   centroid_y: -1.0
   x_len: 1.15
@@ -205,7 +205,7 @@ wall_7:
 
 wall_8:
   name: wall_8
-  color: brown
+  color: sienna
   centroid_x: -0.1988
   centroid_y: -1.0
   x_len: 1.15
@@ -216,7 +216,7 @@ wall_8:
 
 wall_9:
   name: wall_4
-  color: brown
+  color: sienna
   centroid_x: 0.9512
   centroid_y: -1.0
   x_len: 1.15
@@ -227,7 +227,7 @@ wall_9:
 
 wall_10:
   name: wall_10
-  color: brown
+  color: sienna
   centroid_x: -6.7988
   centroid_y: 1.4
   x_len: 1.15
@@ -238,7 +238,7 @@ wall_10:
 
 wall_11:
   name: wall_11
-  color: brown
+  color: sienna
   centroid_x: -5.6488
   centroid_y: 1.4
   x_len: 1.15
@@ -249,7 +249,7 @@ wall_11:
 
 wall_12:
   name: wall_12
-  color: brown
+  color: sienna
   centroid_x: -4.4988
   centroid_y: 1.4
   x_len: 1.15
@@ -260,7 +260,7 @@ wall_12:
 
 wall_13:
   name: wall_13
-  color: brown
+  color: sienna
   centroid_x: -3.3488
   centroid_y: 1.4
   x_len: 1.15
@@ -271,7 +271,7 @@ wall_13:
 
 wall_14:
   name: wall_14
-  color: brown
+  color: sienna
   centroid_x: -2.1988
   centroid_y: 1.4
   x_len: 1.15
@@ -282,7 +282,7 @@ wall_14:
 
 wall_15:
   name: wall_15
-  color: brown
+  color: sienna
   centroid_x: 0.6512
   centroid_y: 1.4
   x_len: 1.15
@@ -293,7 +293,7 @@ wall_15:
 
 wall_16:
   name: wall_16
-  color: brown
+  color: sienna
   centroid_x: 1.8012
   centroid_y: 1.4
   x_len: 1.15
@@ -304,7 +304,7 @@ wall_16:
 
 wall_17:
   name: wall_17
-  color: brown
+  color: sienna
   centroid_x: 0.0
   centroid_y: 1.975
   x_len: 1.15
@@ -315,7 +315,7 @@ wall_17:
 
 wall_18:
   name: wall_18
-  color: brown
+  color: sienna
   centroid_x: 0.0
   centroid_y: 3.125
   x_len: 1.15

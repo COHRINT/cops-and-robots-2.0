@@ -129,23 +129,23 @@ class MAPTranslator(object):
         m = Map('map2.yaml'); 
         for obj in m.objects:
             cent = m.objects[obj].centroid;
-            x = m.objects[obj].maj_ax; 
-            y = m.objects[obj].min_ax;  
+            x = m.objects[obj].x_len; 
+            y = m.objects[obj].y_len;  
             theta = m.objects[obj].orient;
             col = m.objects[obj].color
-            print(obj); 
-            print(col); 
-            print(theta); 
-            print(""); 
+            # print(obj); 
+            # print(col); 
+            # print(theta); 
+            # print(""); 
             if(m.objects[obj].shape == 'oval'):
-                tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
+                tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col); 
             else:
-                tmp = patches.Rectangle((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
+                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col); 
             plt.gca().add_patch(tmp); 
 
         plt.axis('scaled'); 
+        plt.savefig('../tmp/tmpBelief.png'); 
         plt.show(); 
-
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -210,7 +210,11 @@ def testBeliefUpdate():
 
     responses = [[50,False],[3,True],[15,False]];
 
+    MAP.makeBeliefMap(db); 
+
     post = MAP.beliefUpdate(db,responses);
+    MAP.makeBeliefMap(post); 
+
     # print(sum(sum(post)));
     # print(db.shape);
 
@@ -248,5 +252,5 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-    #testBeliefUpdate(); 
-    testMakeMap();
+    testBeliefUpdate(); 
+    #testMakeMap();

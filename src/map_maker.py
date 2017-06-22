@@ -42,14 +42,14 @@ class Map(object):
 
 		# load yaml file as a dictionary
 		#cfg = self._find_yaml(yaml_file)
-		cfg = yaml.load(open('../models/map1.yaml', 'r'));
+		cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
 		if cfg is not None:
 
 			# Get map's general info
 			self.name = cfg['info']['name']
-			self.bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
-			self.bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
+			#self.bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
+			#self.bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
 			self.origin = [cfg['info']['origin']['x_coord'], cfg['info']['origin']['y_coord']]
 
 			# Store map's objects in self.objects hash
@@ -59,8 +59,8 @@ class Map(object):
 					map_obj = Map_Object(cfg[item]['name'],
 										cfg[item]['color'],
 										[cfg[item]['centroid_x'], cfg[item]['centroid_y']],
-										cfg[item]['maj_ax'],
-										cfg[item]['min_ax'],
+										cfg[item]['x_len'],
+										cfg[item]['y_len'],
 										cfg[item]['orientation'],
 										cfg[item]['shape'])
 					self.objects[map_obj.name] = map_obj
@@ -123,8 +123,8 @@ class Map_Object(object):
 		self.name = name
 		self.color = color
 		self.centroid = centroid_pos
-		self.x_len = maj_ax_len
-		self.y_len = min_ax_len
+		self.x_len = x_len
+		self.y_len = y_len
 		self.orient = orient
 
 		self._pick_shape(shape)
@@ -143,7 +143,7 @@ def test_map_obj():
 
 	if hasattr(map, 'name'): # check if init was successful
 		print map.name
-		print map.objects['table'].color
+		print map.objects['dining_table'].color
 	else:
 		print 'fail'
 
