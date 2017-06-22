@@ -123,29 +123,29 @@ fern:
   x_len: 0.5
   y_len: 0.5
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 90.0
   shape: oval
 
 wall_1:
   name: wall_1
   color: sienna
-  centroid_x: -7.0
-  centroid_y: -1.55
+  centroid_x: -6.5012
+  centroid_y: -0.8476
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
-  orientation: 90.0
+  orientation: 270.0
   shape: rectangle
 
 wall_2:
   name: wall_2
   color: sienna
-  centroid_x: -7.0
-  centroid_y: -2.7
+  centroid_x: -6.5012
+  centroid_y: -1.9976
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
-  orientation: 90.0
+  orientation: 270.0
   shape: rectangle
 
 wall_3:
@@ -184,12 +184,12 @@ wall_5:
 wall_6:
   name: wall_6
   color: sienna
-  centroid_x: -2.0
-  centroid_y: -1.55
+  centroid_x: -1.5012
+  centroid_y: -0.8476
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
-  orientation: 00.0
+  orientation: 270.0
   shape: rectangle
 
 wall_7:
@@ -215,14 +215,14 @@ wall_8:
   shape: rectangle
 
 wall_9:
-  name: wall_4
+  name: wall_9
   color: sienna
   centroid_x: 0.9512
   centroid_y: -1.0
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
-  orientation: 0.0
+  orientation: 0.0 # changed
   shape: rectangle
 
 wall_10:
@@ -305,8 +305,8 @@ wall_16:
 wall_17:
   name: wall_17
   color: sienna
-  centroid_x: 0.0
-  centroid_y: 1.975
+  centroid_x: 0.6512
+  centroid_y: 1.4
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
@@ -316,8 +316,8 @@ wall_17:
 wall_18:
   name: wall_18
   color: sienna
-  centroid_x: 0.0
-  centroid_y: 3.125
+  centroid_x: 0.6512
+  centroid_y: 2.3976
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
