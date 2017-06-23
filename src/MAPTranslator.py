@@ -4,7 +4,6 @@ from __future__ import division
 # DISCRETIZED MAP TRANSLATOR
 
 from gaussianMixtures import Gaussian, GM
-from voi import Questioner
 
 import random                   # testing getNextPose
 import matplotlib.pyplot as plt # testing getNextPose
@@ -36,8 +35,6 @@ class MAPTranslator(object):
         f = os.path.dirname(__file__) + "/likelihoods.npy"
         self.likelihoods = np.load(f);
         self.bounds = [-9.6, -3.6, 4, 3.6]
-        self.questioner = Questioner(human_sensor=None, target_order=['Roy'],
-                       target_weights=[11.],bounds=self.bounds,delta=self.delta)
 
     def findFile(self,name,path):
     	for root,dirs,files in os.walk(path):
@@ -65,18 +62,15 @@ class MAPTranslator(object):
     """
 
     # belief is a 2D grid because of the discretization
-    def getNextPose(self, belief, obs, position):
-
-        belief = self.beliefUpdate(belief,obs)
+    def getNextPose(self, belief):
 
         #grid from plot 2D function
         max_coord = self._find_array2D_max(belief)
-        goal_pose = self._grid_coord_to_world_coord(max_coord,[self.bounds[0],self.bounds[1]])
-        self.questioner.get_questions(belief)
+        goal_pose = self._grid_coord_to_world_coord(max_coord)
 
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
-        return [belief, goal_pose]
+        return [belief, belief.findMAPN()]
 
     """ Locates the max coord of the 2D array
         and returns its index"""
@@ -99,7 +93,6 @@ class MAPTranslator(object):
         world_coord = [0,0]
         world_coord[0] = world_min_x_y[0] + d * coord[0] # world x coord
         world_coord[1] = world_min_x_y[1] + d * coord[1] # world y coord
-        print("SENT WORLD COORDS: {}".format(world_coord))
         return world_coord
 
     def unFlatten(self,arr,shapes):
@@ -116,29 +109,28 @@ class MAPTranslator(object):
    		return arr;
 
 
-    def beliefUpdate(self, belief, responses,copPoses = None):
+    def beliefUpdate(self, belief, responses = None,copPoses = None):
 
     	flatBelief = belief.flatten();
     	post = flatBelief;
-    	for res in responses:
-    	    if(res[1] == True):
-    	        like = self.likelihoods[res[0]][1];
-            else:
-                like = 1-self.likelihoods[res[0]][1];
-            #print(self.likelihoods[res[0]][0],res[1])
-            posterior = np.multiply(post,like);
-            post = self.normalize(posterior);
+        if(responses is not None):
+        	for res in responses:
+        	    if(res[1] == True):
+        	        like = self.likelihoods[res[0]][1];
+                else:
+                    like = 1-self.likelihoods[res[0]][1];
+                #print(self.likelihoods[res[0]][0],res[1])
+                posterior = np.multiply(post,like);
+                post = self.normalize(posterior);
 
 
         if(copPoses is not None):
             for pose in copPoses:
                 bearing = 0;
                 l = 1;
-                #triPath = matplotlib.path.Path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
                 triPath = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
                 l = .6;
-                #triPath2 = matplotlib.path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
                 triPath2 = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
 
@@ -197,12 +189,12 @@ class MAPTranslator(object):
 
         tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
 
-        cop = patches.Circle((copPose[0],copPose[1]),radius=0.15,fc = 'white',ec='black');
+        cop = patches.Circle((copPose[0],copPose[1]),radius=0.2,fc = 'white',ec='black');
         plt.gca().add_patch(cop);
 
         plt.axis('scaled');
         plt.savefig('../tmp/tmpBelief.png');
-        plt.show();
+        plt.show(); 
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -267,7 +259,7 @@ def testBeliefUpdate():
 
     responses = [[50,True],[3,True],[15,False]];
     copPoses = [];
-    for i in range(0,30):
+    for i in range(0,20):
         copPoses.append([-i/10,.45,90]);
     MAP.makeBeliefMap(db,copPose = copPoses[0]);
 
