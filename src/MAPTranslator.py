@@ -4,6 +4,7 @@ from __future__ import division
 # DISCRETIZED MAP TRANSLATOR
 
 from gaussianMixtures import Gaussian, GM
+from voi import Questioner
 
 import random                   # testing getNextPose
 import matplotlib.pyplot as plt # testing getNextPose
@@ -32,6 +33,8 @@ class MAPTranslator(object):
         f = self.findFile('likelihoods.npy','../');
         self.likelihoods = np.load(f);
         self.bounds = [-9.6, -3.6, 4, 3.6]
+        self.questioner = Questioner(human_sensor=None, target_order=['Roy'],
+                       target_weights=[11.],bounds=self.bounds,delta=self.delta)
 
     def findFile(self,name,path):
     	for root,dirs,files in os.walk(path):
@@ -59,15 +62,18 @@ class MAPTranslator(object):
     """
 
     # belief is a 2D grid because of the discretization
-    def getNextPose(self, belief):
+    def getNextPose(self, belief, obs, position):
+
+        belief = self.beliefUpdate(belief,obs)
 
         #grid from plot 2D function
         max_coord = self._find_array2D_max(belief)
-        goal_pose = self._grid_coord_to_world_coord(max_coord)
+        goal_pose = self._grid_coord_to_world_coord(max_coord,[self.bounds[0],self.bounds[1]])
+        self.questioner.get_questions(belief)
 
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
-        return [belief, belief.findMAPN()]
+        return [belief, goal_pose]
 
     """ Locates the max coord of the 2D array
         and returns its index"""
@@ -90,6 +96,7 @@ class MAPTranslator(object):
         world_coord = [0,0]
         world_coord[0] = world_min_x_y[0] + d * coord[0] # world x coord
         world_coord[1] = world_min_x_y[1] + d * coord[1] # world y coord
+        print("SENT WORLD COORDS: {}".format(world_coord))
         return world_coord
 
     def unFlatten(self,arr,shapes):
@@ -124,27 +131,27 @@ class MAPTranslator(object):
 
 
     def makeBeliefMap(self, belief):
-        x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta]; 
-        plt.contourf(x_space,y_space,belief); 
-        m = Map('map2.yaml'); 
+        x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
+        plt.contourf(x_space,y_space,belief);
+        m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
-            x = m.objects[obj].maj_ax; 
-            y = m.objects[obj].min_ax;  
+            x = m.objects[obj].maj_ax;
+            y = m.objects[obj].min_ax;
             theta = m.objects[obj].orient;
             col = m.objects[obj].color
-            print(obj); 
-            print(col); 
-            print(theta); 
-            print(""); 
+            print(obj);
+            print(col);
+            print(theta);
+            print("");
             if(m.objects[obj].shape == 'oval'):
-                tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
+                tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col);
             else:
-                tmp = patches.Rectangle((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col); 
-            plt.gca().add_patch(tmp); 
+                tmp = patches.Rectangle((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col);
+            plt.gca().add_patch(tmp);
 
-        plt.axis('scaled'); 
-        plt.show(); 
+        plt.axis('scaled');
+        plt.show();
 
 
 """ Creates a belief, call getNextPose to find the MAP
@@ -234,13 +241,13 @@ def testBeliefUpdate():
 
 def testMakeMap():
     print "Testing Map creation!"
-    MAP = MAPTranslator(); 
-    belief = GM(); 
-    belief.addG(Gaussian([0,0],[[8,0],[0,8]],0.5)); 
+    MAP = MAPTranslator();
+    belief = GM();
+    belief.addG(Gaussian([0,0],[[8,0],[0,8]],0.5));
     belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
-    db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta); 
+    db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta);
 
-    MAP.makeBeliefMap(db); 
+    MAP.makeBeliefMap(db);
 
 
 def rdm():
@@ -248,5 +255,5 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-    #testBeliefUpdate(); 
+    #testBeliefUpdate();
     testMakeMap();

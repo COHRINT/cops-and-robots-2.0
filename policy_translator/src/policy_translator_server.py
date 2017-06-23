@@ -32,7 +32,7 @@ import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
 from MAPTranslator import MAPTranslator
-from belief_handling import rehydrate_msg, dehydrate_msg
+from belief_handling import rehydrate_msg, dehydrate_msg, discrete_rehydrate, discrete_dehydrate
 
 # Observation Queue #TODO delete in CnR 2.0
 from obs_queue import Obs_Queue
@@ -51,12 +51,16 @@ class PolicyTranslatorServer(object):
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
-        s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
+        s = rospy.Service('translator',discrete_policy_translator_service,self.handle_policy_translator)
 
         # Observations -> likelihood queue
         rospy.Subscriber("/human_push", String, self.human_push_callback)
-        rospy.Subscriber("/answered", Question, self.robot_pull_callback)
+        rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
         self.Obs_Queue = Obs_Queue()
+
+        bounds = [-9.6, -3.6, 4, 3.6]
+        self.delta = 0.1
+        self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
         print('Policy translator service ready.')
 
@@ -70,8 +74,8 @@ class PolicyTranslatorServer(object):
         name = req.request.name
 
         if self.trans == "MAP":
-            belief = self.translator_wrapper(req.request.name,req.request.weights,
-                                        req.request.means,req.request.variances,None)
+            belief = self.translator_wrapper(req.request.name,self.Obs_Queue.flush(),
+                                                flat_belief=req.request.belief)
         else:      # run the observation observance
             if not req.request.weights:
                 obs = None
@@ -82,16 +86,24 @@ class PolicyTranslatorServer(object):
 
                 belief = self.translator_wrapper(req.request.name,req.request.weights,
                                     req.request.means,req.request.variances,obs)
-        weights_updated = belief[0]
-        means_updated = belief[1]
-        variances_updated = belief[2]
-        goal_pose = belief[3]
 
-        res = self.create_message(req.request.name,
-                            weights_updated,
-                            means_updated,
-                            variances_updated,
-                            goal_pose)
+        if self.trans != "MAP":
+            weights_updated = belief[0]
+            means_updated = belief[1]
+            variances_updated = belief[2]
+            goal_pose = belief[3]
+
+            res = self.create_message(req.request.name,
+                                goal_pose,
+                                weights_updated=weights_updated,
+                                means_updated=means_updated,
+                                variances_updated=variances_updated)
+
+        else:
+            goal_pose = belief[1]
+            res = self.create_message(req.request.name,
+                                        goal_pose,
+                                        flat_belief=belief[0])
 
         return res
 
@@ -122,37 +134,53 @@ class PolicyTranslatorServer(object):
         pose = [x, y, np.rad2deg(theta)]
         return pose
 
-    def translator_wrapper(self,name,weights,means,variances,obs):
+    def translator_wrapper(self,name,obs,weights=None,means=None,variances=None,flat_belief=None):
         '''
         Rehydrate the belief then get the position of the calling robot, update the
         belief and get a new goal pose. Then dehydrate the updated belief.
         '''
-        belief = rehydrate_msg(weights,means,variances)
+        if self.trans == "MAP":
+            belief = discrete_rehydrate(flat_belief,self.shapes)
+        else:
+            belief = rehydrate_msg(weights,means,variances)
 
         position = self.tf_update(name)
 
         (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,[position[0],position[1]])
 
         if b_updated is not None:
-            (weights,means,variances) = dehydrate_msg(b_updated)
+            if self.trans == "MAP":
+                belief = discrete_dehydrate(belief)
+            else:
+                (weights,means,variances) = dehydrate_msg(b_updated)
 
         orientation = math.atan2(goal_pose[1]-position[1],goal_pose[0]-position[0])
         goal_pose.append(orientation)
 
-        belief = [weights,means,variances,goal_pose]
+        if self.trans == "MAP":
+            belief = [belief,goal_pose]
+        else:
+            belief = [weights,means,variances,goal_pose]
         return belief
 
-    def create_message(self,name,weights,means,variances,goal_pose):
+    def create_message(self,name,goal_pose,weights=None,means=None,variances=None,flat_belief=None):
         '''
         Create a response message containing the new dehydrated belief and the
         new goal pose.
         '''
-        msg = PolicyTranslatorResponse()
-        msg.name = name
-        msg.weights_updated = weights
-        msg.means_updated = means
-        msg.variances_updated = variances
-        msg.goal_pose = goal_pose
+        msg = None
+        if self.trans == "MAP":
+            msg = DiscretePolicyTranslatorResponse()
+            msg.name = name
+            msg.belief_updated = flat_belief
+            msg.goal_pose = goal_pose
+        else:
+            msg = PolicyTranslatorResponse()
+            msg.name = name
+            msg.weights_updated = weights
+            msg.means_updated = means
+            msg.variances_updated = variances
+            msg.goal_pose = goal_pose
         return msg
 
 

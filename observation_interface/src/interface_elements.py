@@ -663,17 +663,17 @@ class VideoContainer(QWidget):
         fmt = '>' + str((self.size[0]*self.size[1]))
 
         image_data = msg.data
-        l = array.array('H')
-        l.fromstring(image_data)
-        data_ordered = [struct.pack('<I',x) for x in l]
-        data_ordered = struct.pack('')
+        # l = array.array('H')
+        # l.fromstring(image_data)
+        # data_ordered = [struct.pack('<I',x) for x in l]
+        # data_ordered = struct.pack('')
         # data_unpacked = struct.unpack(fmt,image_data)
         # print(data_unpacked)
         image_height = msg.height
         image_width = msg.width
         bytes_per_line = msg.step
         # if self.counter % 2 == 0:
-        self.image = QImage(data_ordered,image_width,image_height,bytes_per_line,self.format)
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
         self.canvas.image = self.image
         self.canvas.repaint()
         # self.present_image(image)
@@ -756,7 +756,7 @@ class CopVideo(VideoContainer):
     Subclasses VideoDisplay to display the cop's camera feed.
     """
 
-    def __init__(self,cop_name='deckard'):
+    def __init__(self,cop_name='pris'):
         super(VideoContainer,self).__init__()
         self.name = "Cop Video"
         self.topic_name = '/' + cop_name + '/camera/rgb/image_color'
