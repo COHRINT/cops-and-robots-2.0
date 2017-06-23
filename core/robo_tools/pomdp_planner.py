@@ -18,11 +18,11 @@ import math
 from shapely.geometry import Point, LineString
 import rospy
 import sys
+import numpy as np
 
 from core.robo_tools.planner import GoalPlanner
-from core.robo_tools.belief_handling import dehydrate_msg, rehydrate_msg
+from core.robo_tools.belief_handling import dehydrate_msg, rehydrate_msg, discrete_rehydrate, discrete_dehydrate
 
-print(sys.path)
 from policy_translator.srv import *
 from policy_translator.msg import *
 
@@ -30,6 +30,10 @@ class PomdpGoalPlanner(GoalPlanner):
 
 	def __init__(self, robot, type_='stationary', view_distance=0.3,
 					use_target_as_goal=True, goal_pose_topic=None, **kwargs):
+
+		bounds = [-9.6, -3.6, 4, 3.6]
+		self.delta = 0.1
+		self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
 		super(PomdpGoalPlanner, self).__init__(robot=robot,
 												type_=type_,
@@ -47,34 +51,45 @@ class PomdpGoalPlanner(GoalPlanner):
 		goal_pose [array]
 			Goal pose in the form [x,y,theta] as [m,m,degrees]
 		"""
+		discrete_flag = True
+		if type(self.robot.belief) is np.ndarray:
+			discrete_flag = True
 
-
-		msg = PolicyTranslatorRequest()
+		msg = None
+		if discrete_flag:
+			msg = DiscretePolicyTranslatorRequest()
+		else:
+			msg = PolicyTranslatorRequest()
 		msg.name = self.robot.name
 		res = None
 
-		if self.robot.belief is not None:
-			(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.robot.belief)
+		if discrete_flag:
+			msg.belief = discrete_dehydrate(self.robot.belief)
 		else:
-			msg.weights = []
-			msg.means = []
-			msg.variances = []
+			if self.robot.belief is not None:
+				(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.robot.belief)
+			else:
+				msg.weights = []
+				msg.means = []
+				msg.variances = []
 
 		rospy.wait_for_service('translator')
 		try:
-			pt = rospy.ServiceProxy('translator',policy_translator_service)
+			pt = rospy.ServiceProxy('translator',discrete_policy_translator_service)
 			res = pt(msg)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
 
-
-		self.robot.belief = rehydrate_msg(res.response.weights_updated,
-										res.response.means_updated,
-										res.response.variances_updated)
+		if discrete_flag:
+			self.robot.belief = discrete_rehydrate(res.response.belief_updated,self.shapes)
+		else:
+			self.robot.belief = rehydrate_msg(res.response.weights_updated,
+											res.response.means_updated,
+											res.response.variances_updated)
 
 		goal_pose = res.response.goal_pose
 
-		print(goal_pose)
+		print("NEW GOAL POSE: {}".format(goal_pose))
 
 		return goal_pose
 

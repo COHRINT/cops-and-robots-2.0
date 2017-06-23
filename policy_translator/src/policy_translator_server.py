@@ -27,6 +27,7 @@ import rospy
 import tf
 import numpy as np
 import math
+import os
 
 import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
@@ -58,13 +59,15 @@ class PolicyTranslatorServer(object):
         rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
         self.Obs_Queue = Obs_Queue()
 
+        self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
+
         bounds = [-9.6, -3.6, 4, 3.6]
         self.delta = 0.1
         self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
         print('Policy translator service ready.')
 
-        #rospy.spin()
+        rospy.spin()
 
     def handle_policy_translator(self,req):
         '''
@@ -139,6 +142,8 @@ class PolicyTranslatorServer(object):
         Rehydrate the belief then get the position of the calling robot, update the
         belief and get a new goal pose. Then dehydrate the updated belief.
         '''
+        copPoses = []
+
         if self.trans == "MAP":
             belief = discrete_rehydrate(flat_belief,self.shapes)
         else:
@@ -146,7 +151,11 @@ class PolicyTranslatorServer(object):
 
         position = self.tf_update(name)
 
-        (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,[position[0],position[1]])
+        copPoses.append(position)
+
+        obs = self.Obs_Queue.flush()
+
+        (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,copPoses)
 
         if b_updated is not None:
             if self.trans == "MAP":
@@ -195,8 +204,8 @@ class PolicyTranslatorServer(object):
         (lkhd_question, ans) = voi.obs_mapping[question]
 
         try:
-            lhs = np.load('likelihoods.npy')
-            item = np.where(lhs['question']==lkhd_question)
+            # lhs = np.load('likelihoods.npy')
+            item = np.where(self.likelihoods['question']==lkhd_question)
             index = item[0][0]
             self.Obs_Queue.add(index, ans)
         except IOError as ioerr:
@@ -243,5 +252,5 @@ def Test_Callbacks():
     server.Obs_Queue.print_queue()
 
 if __name__ == "__main__":
-    Test_Callbacks()
-    #PolicyTranslatorServer()
+    # Test_Callbacks()
+    PolicyTranslatorServer()

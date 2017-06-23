@@ -31,7 +31,7 @@ class SimpleGoalPlanner(GoalPlanner):
 												use_target_as_goal=use_target_as_goal,
 												goal_pose_topic=goal_pose_topic)
 
-	def find_goal_pose(self):
+	def find_goal_pose(self,positions=None):
 		"""Find a random goal pose on the map.
 
 		Find a random goal pose within map boundaries, residing in the
@@ -64,6 +64,6 @@ class SimpleGoalPlanner(GoalPlanner):
 
 		return goal_pose
 
-	def update(self):
+	def update(self,positions=None):
 
 		super(SimpleGoalPlanner,self).update()

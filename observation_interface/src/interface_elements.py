@@ -581,7 +581,8 @@ class MapDisplay(QWidget):
 
         self.name = "Belief Map"
 
-        # rospy.Subscriber("belief_map", , self.update)
+        rospy.Subscriber("/interface_map", Image, self.ros_update)
+        self.format = QImage.Format_RGB888
 
         self.initUI()
 
@@ -593,11 +594,11 @@ class MapDisplay(QWidget):
         self.main_layout.addWidget(self.name_label)
 
         self.image_view = QPixmap()
-        self.image_view.load('/home/ian/catkin_ws/src/cops-and-robots-2.0/observation_interface/src/Clue_map.png')
-        self.image_view = self.image_view.scaled(600,450,Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        # self.image_view.load('/home/ian/catkin_ws/src/cops-and-robots-2.0/observation_interface/src/Clue_map.png')
+        # self.image_view = self.image_view.scaled(600,450,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.pic_label = QLabel(self)
         # self.pic_label.setScaledContents(True)
-        self.pic_label.setPixmap(self.image_view)
+        # self.pic_label.setPixmap(self.image_view)
         self.main_layout.addWidget(self.pic_label)
 
         # self.pic_label.setFixedSize(500,350)
@@ -605,8 +606,17 @@ class MapDisplay(QWidget):
         self.setLayout(self.main_layout)
         self.show()
 
-    def update(self):
-        pass
+    def ros_update(self, msg):
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+
+        if not self.image.isNull():
+            self.pic_label.setPixmap(QPixmap.fromImage(self.image))
+        else:
+            print("{} sent bad frames!".format(self.name))
 
 class VideoContainer(QWidget):
     """
@@ -674,7 +684,8 @@ class VideoContainer(QWidget):
         bytes_per_line = msg.step
         # if self.counter % 2 == 0:
         self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-        self.canvas.image = self.image
+        if not self.image.isNull():
+            self.canvas.image = self.image
         self.canvas.repaint()
         # self.present_image(image)
         # if not self.image.isNull():

@@ -51,7 +51,7 @@ class ObservationInterface(QMainWindow):
 
     def __init__(self):
 
-        self.app_name = 'Cops and Robots 2.0'
+        self.app_name = 'Cops and Robots 1.5'
 
         super(QMainWindow,self).__init__()
         self.main_widget = QWidget()
@@ -91,10 +91,10 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        self.cop_video = CopVideo('roy')
-        self.cam_1 = SecurityCamera(1,'Hallway')
-        self.cam_2 = SecurityCamera(2,'Hallway')
-        self.cam_3 = SecurityCamera(3,'Billiards Room')
+        self.cop_video = CopVideo('pris')
+        self.cam_1 = SecurityCamera(1,'Study')
+        self.cam_2 = SecurityCamera(2,'Kitchen')
+        self.cam_3 = SecurityCamera(3,'Hallway')
 
         self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter) #prev: 4 0 2 2

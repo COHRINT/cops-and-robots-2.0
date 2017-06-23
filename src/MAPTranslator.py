@@ -16,6 +16,7 @@ from matplotlib import patches
 import matplotlib.tri as tri;
 import math
 import matplotlib
+from voi import Questioner
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -35,11 +36,13 @@ class MAPTranslator(object):
         f = os.path.dirname(__file__) + "/likelihoods.npy"
         self.likelihoods = np.load(f);
         self.bounds = [-9.6, -3.6, 4, 3.6]
+        self.questioner = Questioner(human_sensor=None,target_order=None,target_weights=None,bounds=self.bounds,delta=0.1,
+                        repeat_annoyance=0.5, repeat_time_penalty=60)
 
     def findFile(self,name,path):
-    	for root,dirs,files in os.walk(path):
-    		if name in files:
-    			return os.path.join(root,name);
+        for root,dirs,files in os.walk(path):
+            if name in files:
+                return os.path.join(root,name);
 
 
     """
@@ -62,15 +65,17 @@ class MAPTranslator(object):
     """
 
     # belief is a 2D grid because of the discretization
-    def getNextPose(self, belief):
+    def getNextPose(self,belief,obs,copPoses):
 
         #grid from plot 2D function
+        # obs = self.Obs_Queue.flush()
+        belief = self.beliefUpdate(belief,obs,copPoses)
         max_coord = self._find_array2D_max(belief)
         goal_pose = self._grid_coord_to_world_coord(max_coord)
 
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
-        return [belief, belief.findMAPN()]
+        return [belief, goal_pose]
 
     """ Locates the max coord of the 2D array
         and returns its index"""
@@ -96,27 +101,27 @@ class MAPTranslator(object):
         return world_coord
 
     def unFlatten(self,arr,shapes):
-    	newArr = np.zeros((shapes[0],shapes[1]));
-    	for i in range(0,shapes[0]):
-    		for j in range(0,shapes[1]):
-    			newArr[i][j] = arr[i*shapes[1]+j];
-    	return newArr;
+        newArr = np.zeros((shapes[0],shapes[1]));
+        for i in range(0,shapes[0]):
+            for j in range(0,shapes[1]):
+                newArr[i][j] = arr[i*shapes[1]+j];
+        return newArr;
 
     def normalize(self,arr):
-   		suma = sum(arr);
-   		for i in range(0,len(arr)):
-   			arr[i] = arr[i]/suma;
-   		return arr;
+           suma = sum(arr);
+           for i in range(0,len(arr)):
+               arr[i] = arr[i]/suma;
+           return arr;
 
 
     def beliefUpdate(self, belief, responses = None,copPoses = None):
 
-    	flatBelief = belief.flatten();
-    	post = flatBelief;
+        flatBelief = belief.flatten();
+        post = flatBelief;
         if(responses is not None):
-        	for res in responses:
-        	    if(res[1] == True):
-        	        like = self.likelihoods[res[0]][1];
+            for res in responses:
+                if(res[1] == True):
+                    like = self.likelihoods[res[0]][1];
                 else:
                     like = 1-self.likelihoods[res[0]][1];
                 #print(self.likelihoods[res[0]][0],res[1])
@@ -158,7 +163,7 @@ class MAPTranslator(object):
 
 
 
-       	return post;
+        return post;
 
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
@@ -194,7 +199,7 @@ class MAPTranslator(object):
 
         plt.axis('scaled');
         plt.savefig('../tmp/tmpBelief.png');
-        plt.show(); 
+        plt.show();
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
