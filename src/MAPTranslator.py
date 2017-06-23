@@ -108,29 +108,28 @@ class MAPTranslator(object):
    		return arr;
 
 
-    def beliefUpdate(self, belief, responses,copPoses = None):
+    def beliefUpdate(self, belief, responses = None,copPoses = None):
 
     	flatBelief = belief.flatten();
     	post = flatBelief;
-    	for res in responses:
-    	    if(res[1] == True):
-    	        like = self.likelihoods[res[0]][1];
-            else:
-                like = 1-self.likelihoods[res[0]][1];
-            #print(self.likelihoods[res[0]][0],res[1])
-            posterior = np.multiply(post,like);
-            post = self.normalize(posterior);
+        if(responses is not None):
+        	for res in responses:
+        	    if(res[1] == True):
+        	        like = self.likelihoods[res[0]][1];
+                else:
+                    like = 1-self.likelihoods[res[0]][1];
+                #print(self.likelihoods[res[0]][0],res[1])
+                posterior = np.multiply(post,like);
+                post = self.normalize(posterior);
         
 
         if(copPoses is not None):
             for pose in copPoses:
                 bearing = 0; 
                 l = 1; 
-                #triPath = matplotlib.path.Path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
                 triPath = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
                 l = .6; 
-                #triPath2 = matplotlib.path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
                 triPath2 = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
 
@@ -189,7 +188,7 @@ class MAPTranslator(object):
 
         tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
 
-        cop = patches.Circle((copPose[0],copPose[1]),radius=0.15,fc = 'white',ec='black'); 
+        cop = patches.Circle((copPose[0],copPose[1]),radius=0.2,fc = 'white',ec='black'); 
         plt.gca().add_patch(cop); 
 
         plt.axis('scaled'); 
@@ -259,7 +258,7 @@ def testBeliefUpdate():
 
     responses = [[50,True],[3,True],[15,False]];
     copPoses = [];
-    for i in range(0,30):
+    for i in range(0,20):
         copPoses.append([-i/10,.45,90]); 
     MAP.makeBeliefMap(db,copPose = copPoses[0]); 
 
