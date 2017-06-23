@@ -32,7 +32,8 @@ class MAPTranslator(object):
 
     def __init__(self):
         self.delta = 0.1
-        f = self.findFile('likelihoods.npy','../');
+        # f = self.findFile('likelihoods.npy','./');
+        f = os.path.dirname(__file__) + "/likelihoods.npy"
         self.likelihoods = np.load(f);
         self.bounds = [-9.6, -3.6, 4, 3.6]
         self.questioner = Questioner(human_sensor=None, target_order=['Roy'],
@@ -201,7 +202,7 @@ class MAPTranslator(object):
 
         plt.axis('scaled');
         plt.savefig('../tmp/tmpBelief.png');
-        plt.show(); 
+        plt.show();
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
