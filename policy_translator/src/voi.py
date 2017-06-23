@@ -10,6 +10,7 @@ current belief.
 
 import numpy as np
 import rospy
+import os
 
 from gaussianMixtures import GM
 
@@ -156,9 +157,9 @@ class Questioner(object):
 
     def __init__(self,human_sensor,target_order,target_weights,bounds,delta,
                     repeat_annoyance=0.5, repeat_time_penalty=60):
-        rospy.init_node('questioner')
+        # rospy.init_node('questioner')
 
-        self.all_likelihoods = np.load('likelihoods.npy')
+        self.all_likelihoods = np.load(os.path.dirname(__file__) + '/likelihoods.npy')
         self.all_questions = self.all_likelihoods[0:len(self.all_likelihoods)]['question']
         self.target_order = target_order
         self.target_weights = target_weights
@@ -173,7 +174,10 @@ class Questioner(object):
     def weigh_questions(self, priors):
         q_weights = np.empty_like(self.all_questions, dtype=np.float64)
         for prior_name, prior in priors.iteritems():
-            discretized_prior = prior.discretize2D(low=bounds[0:2],high=bounds[2:4], delta=0.1)
+            if type(prior) is not np.ndarray:
+                discretized_prior = prior.discretize2D(low=bounds[0:2],high=bounds[2:4], delta=0.1)
+            else:
+                discretized_prior = prior
             prior_entropy = self.entropy_calc(discretized_prior)
             # print(prior_entropy.sum())
             # prior_entropy = np.divide(prior_entropy,prior_entropy.sum())
@@ -265,12 +269,12 @@ class Questioner(object):
     def flatten(self,discretized_prior):
         return np.ndarray.tolist(discretized_prior)
 
-    def get_questions(self,priors):
+    def get_questions(self,prior):
         """
         Weighs questions given priors, calculates VOI for each question and
         sends questions in ROS message.
         """
-        self.weigh_questions(priors)
+        self.weigh_questions({"Roy":prior})
         self.transmit_questions()
 
     def transmit_questions(self):
