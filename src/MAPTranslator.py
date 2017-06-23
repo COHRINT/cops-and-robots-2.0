@@ -14,7 +14,9 @@ import os;
 import copy;
 from map_maker import Map
 from matplotlib import patches
-
+import matplotlib.tri as tri;
+import math
+import matplotlib
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
@@ -113,7 +115,7 @@ class MAPTranslator(object):
    		return arr;
 
 
-    def beliefUpdate(self, belief, responses):
+    def beliefUpdate(self, belief, responses,copPoses = None):
 
     	flatBelief = belief.flatten();
     	post = flatBelief;
@@ -122,37 +124,84 @@ class MAPTranslator(object):
     	        like = self.likelihoods[res[0]][1];
             else:
                 like = 1-self.likelihoods[res[0]][1];
-            print(self.likelihoods[res[0]][0],res[1])
+            #print(self.likelihoods[res[0]][0],res[1])
             posterior = np.multiply(post,like);
             post = self.normalize(posterior);
+
+
+        if(copPoses is not None):
+            for pose in copPoses:
+                bearing = 0;
+                l = 1;
+                #triPath = matplotlib.path.Path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
+                triPath = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
+
+                l = .6;
+                #triPath2 = matplotlib.path([pose[0],pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90))],[pose[1],pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))])
+                triPath2 = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
+
+
+
+                viewLike = np.ones(belief.shape);
+                for i in range(0,belief.shape[0]):
+                    for j in range(0,belief.shape[1]):
+                        x = i*self.delta + self.bounds[0];
+                        y = j*self.delta + self.bounds[1];
+
+                        if(triPath.contains_point([x,y])):
+                            viewLike[i][j] = .4;
+
+                        if(triPath2.contains_point([x,y])):
+                            viewLike[i][j] = .1;
+
+                viewLike = viewLike.flatten();
+                posterior = np.multiply(post,viewLike);
+                post = self.normalize(posterior);
+                #levels = [i/250 + 1 for i in range(0,250)]
+
+                #tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
+
         post = self.unFlatten(post,belief.shape);
+
+
 
        	return post;
 
 
-    def makeBeliefMap(self, belief):
+    def makeBeliefMap(self, belief,copPose = [0,0,0]):
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
         plt.contourf(x_space,y_space,belief);
         m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
-            x = m.objects[obj].maj_ax;
-            y = m.objects[obj].min_ax;
+            x = m.objects[obj].x_len;
+            y = m.objects[obj].y_len;
             theta = m.objects[obj].orient;
             col = m.objects[obj].color
-            print(obj);
-            print(col);
-            print(theta);
-            print("");
+            # print(obj);
+            # print(col);
+            # print(theta);
+            # print("");
             if(m.objects[obj].shape == 'oval'):
-                tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col);
+                tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             else:
-                tmp = patches.Rectangle((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col);
+                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             plt.gca().add_patch(tmp);
 
-        plt.axis('scaled');
-        plt.show();
+        bearing = 0;
+        l = 1;
+        triang=tri.Triangulation([copPose[0],copPose[0]+l*math.cos(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[0]+l*math.cos(2*0.261799+math.radians(copPose[2]+(bearing)+90))],[copPose[1],copPose[1]+l*math.sin(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[1]+l*math.sin(2*0.261799+math.radians(copPose[2]+(bearing)+90))])
 
+        levels = [i/250 + 1 for i in range(0,250)]
+
+        tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
+
+        cop = patches.Circle((copPose[0],copPose[1]),radius=0.15,fc = 'white',ec='black');
+        plt.gca().add_patch(cop);
+
+        plt.axis('scaled');
+        plt.savefig('../tmp/tmpBelief.png');
+        plt.show(); 
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP
@@ -215,9 +264,15 @@ def testBeliefUpdate():
     belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
     db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta);
 
-    responses = [[50,False],[3,True],[15,False]];
+    responses = [[50,True],[3,True],[15,False]];
+    copPoses = [];
+    for i in range(0,30):
+        copPoses.append([-i/10,.45,90]);
+    MAP.makeBeliefMap(db,copPose = copPoses[0]);
 
-    post = MAP.beliefUpdate(db,responses);
+    post = MAP.beliefUpdate(db,responses,copPoses);
+    MAP.makeBeliefMap(post,copPose = copPoses[-1]);
+
     # print(sum(sum(post)));
     # print(db.shape);
 
@@ -247,7 +302,8 @@ def testMakeMap():
     belief.addG(Gaussian([-8,-1],[[4,0],[0,4]],0.5));
     db = belief.discretize2D(low=[MAP.bounds[0],MAP.bounds[1]],high=[MAP.bounds[2],MAP.bounds[3]],delta=MAP.delta);
 
-    MAP.makeBeliefMap(db);
+    copPose = [-2,-1,45]
+    MAP.makeBeliefMap(db,copPose);
 
 
 def rdm():
@@ -255,5 +311,5 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-    #testBeliefUpdate();
-    testMakeMap();
+    testBeliefUpdate();
+    #testMakeMap();

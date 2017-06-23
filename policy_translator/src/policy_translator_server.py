@@ -64,7 +64,7 @@ class PolicyTranslatorServer(object):
 
         print('Policy translator service ready.')
 
-        rospy.spin()
+        #rospy.spin()
 
     def handle_policy_translator(self,req):
         '''
@@ -188,7 +188,12 @@ class PolicyTranslatorServer(object):
         """
         Mapping of human push observations to a likelihood index and pos_neg value
         """
-        (lkhd_question, ans) = voi.obs_mapping[human_push.data]
+        # strip the space from message
+        #print("Origingal String:" + human_push.data)
+        question = human_push.data.lstrip()
+        #print("Now String:"+question)
+        (lkhd_question, ans) = voi.obs_mapping[question]
+
         try:
             lhs = np.load('likelihoods.npy')
             item = np.where(lhs['question']==lkhd_question)
@@ -208,9 +213,9 @@ class PolicyTranslatorServer(object):
 def Test_Callbacks():
     # Test human_push_callback
     a = String()
-    a.data = "I know Roy is right of the dining table" # q_id 5
+    a.data = "    I know Roy is right of the dining table" # q_id 5
     b = String()
-    b.data = "I know Roy is not near the bookcase"  # q_id 27
+    b.data = " I know Roy is not near the bookcase"  # q_id 27
 
     server = PolicyTranslatorServer()
 
@@ -238,5 +243,5 @@ def Test_Callbacks():
     server.Obs_Queue.print_queue()
 
 if __name__ == "__main__":
-    #Test_Callbacks()
-    PolicyTranslatorServer()
+    Test_Callbacks()
+    #PolicyTranslatorServer()
