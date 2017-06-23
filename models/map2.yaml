@@ -75,7 +75,7 @@ mars_poster:
   name: mars_poster
   color: bisque
   centroid_x: -4.38
-  centroid_y: 3.575
+  centroid_y: 3.475
   x_len: 0.84
   y_len: 0.05
   # degrees obj's x_len to map's pos-x axis
@@ -86,7 +86,7 @@ cassini_poster:
   name: cassini_poster
   color: black
   centroid_x: 1.38
-  centroid_y: 3.575
+  centroid_y: 3.475
   x_len: 0.56
   y_len: 0.05
   # degrees obj's x_len to map's pos-x axis
