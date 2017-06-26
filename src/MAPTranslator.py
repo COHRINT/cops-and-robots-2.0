@@ -120,12 +120,13 @@ class MAPTranslator(object):
 
         flatBelief = belief.flatten();
         post = flatBelief;
+        alpha = 0.8
         if(responses is not None):
             for res in responses:
                 if(res[1] == True):
-                    like = self.likelihoods[res[0]][1];
+                    like = self.likelihoods[res[0]][1] * alpha;
                 else:
-                    like = 1-self.likelihoods[res[0]][1];
+                    like = 1-self.likelihoods[res[0]][1] * alpha;
                 #print(self.likelihoods[res[0]][0],res[1])
                 posterior = np.multiply(post,like);
                 post = self.normalize(posterior);
@@ -205,6 +206,7 @@ class MAPTranslator(object):
         plt.gca().add_patch(cop);
 
         plt.axis('scaled');
+        plt.axis('off')
         plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'));
         # plt.show();
 
