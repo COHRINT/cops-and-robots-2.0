@@ -47,6 +47,7 @@ class SimpleGoalPlanner(GoalPlanner):
 		feasible_point_generated = False
 		bounds = self.feasible_layer.bounds
 		#bounds = [0,5,0,4.25]
+		self.bounds = [-9.6,4, -3.6, 3.6]
 
 		while not feasible_point_generated:
 			x = random.uniform(bounds[0], bounds[2])
