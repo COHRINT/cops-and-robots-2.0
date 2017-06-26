@@ -45,8 +45,14 @@ class SimpleGoalPlanner(GoalPlanner):
 		theta = random.uniform(0, 360)
 
 		feasible_point_generated = False
+<<<<<<< HEAD
+		bounds = self.feasible_layer.bounds
+		#bounds = [0,5,0,4.25]
+		self.bounds = [-9.6,4, -3.6, 3.6]
+=======
 		# bounds = self.feasible_layer.bounds
 		bounds = [-9.6, -3.6, 4, 3.6]
+>>>>>>> 7a84a244eb837f5bb8829a83e51923be7ec856ba
 
 		while not feasible_point_generated:
 			x = random.uniform(bounds[0], bounds[2])
