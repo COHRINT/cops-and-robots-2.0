@@ -34,7 +34,8 @@ class MAPTranslator(object):
         self.delta = 0.1
         # f = self.findFile('likelihoods.npy','./');
         f = os.path.dirname(__file__) + "/likelihoods.npy"
-        self.likelihoods = np.load(f);
+        self.likelihoods = np.load(f)
+        # self.likelihoods = np.load("likelihoods.npy")
         self.bounds = [-9.6, -3.6, 4, 3.6]
         self.questioner = Questioner(human_sensor=None,target_order=["roy","pris"],target_weights=[11., 10.],bounds=self.bounds,delta=0.1,
                         repeat_annoyance=0.5, repeat_time_penalty=60)
@@ -174,6 +175,7 @@ class MAPTranslator(object):
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
         print("MAKING NEW BELIEF MAP!")
+        figure = plt.figure()
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
         plt.contourf(x_space,y_space,belief,cmap="viridis");
         m = Map('map2.yaml');
@@ -205,6 +207,7 @@ class MAPTranslator(object):
         plt.gca().add_patch(cop);
 
         plt.axis('scaled');
+        plt.axis('off')
         plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'));
         # plt.show();
 
@@ -316,5 +319,5 @@ def rdm():
 
 if __name__ == '__main__':
     #testGetNextPose();
-    testBeliefUpdate();
-    #testMakeMap();
+    #testBeliefUpdate();
+    testMakeMap();
