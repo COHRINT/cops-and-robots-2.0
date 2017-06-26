@@ -36,7 +36,7 @@ class MAPTranslator(object):
         f = os.path.dirname(__file__) + "/likelihoods.npy"
         self.likelihoods = np.load(f);
         self.bounds = [-9.6, -3.6, 4, 3.6]
-        self.questioner = Questioner(human_sensor=None,target_order=None,target_weights=None,bounds=self.bounds,delta=0.1,
+        self.questioner = Questioner(human_sensor=None,target_order=["roy","pris"],target_weights=[11., 10.],bounds=self.bounds,delta=0.1,
                         repeat_annoyance=0.5, repeat_time_penalty=60)
 
     def findFile(self,name,path):
@@ -65,13 +65,15 @@ class MAPTranslator(object):
     """
 
     # belief is a 2D grid because of the discretization
-    def getNextPose(self,belief,obs,copPoses):
+    def getNextPose(self,belief,obs,copPoses=None):
 
         #grid from plot 2D function
         # obs = self.Obs_Queue.flush()
         belief = self.beliefUpdate(belief,obs,copPoses)
         max_coord = self._find_array2D_max(belief)
-        goal_pose = self._grid_coord_to_world_coord(max_coord)
+        print("MAX COORD: {}".format(max_coord))
+        goal_pose = self._grid_coord_to_world_coord(max_coord,world_min_x_y=[self.bounds[0],self.bounds[1]])
+        self.questioner.get_questions(belief)
 
         # TODO call belief update method here
         # belief is a GM instance, find MAP coords [x,y]
@@ -160,6 +162,10 @@ class MAPTranslator(object):
                 #tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
 
         post = self.unFlatten(post,belief.shape);
+        if copPoses is not None:
+            pose = copPoses[len(copPoses)-1]
+            print("MAP COP POSE TO PLOT: {}".format(pose))
+            self.makeBeliefMap(post,pose)
 
 
 
@@ -167,8 +173,9 @@ class MAPTranslator(object):
 
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
+        print("MAKING NEW BELIEF MAP!")
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-        plt.contourf(x_space,y_space,belief);
+        plt.contourf(x_space,y_space,belief,cmap="viridis");
         m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
@@ -198,8 +205,8 @@ class MAPTranslator(object):
         plt.gca().add_patch(cop);
 
         plt.axis('scaled');
-        plt.savefig('../tmp/tmpBelief.png');
-        plt.show();
+        plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'));
+        # plt.show();
 
 """ Creates a belief, call getNextPose to find the MAP
     verifies the coord returned is the actual MAP

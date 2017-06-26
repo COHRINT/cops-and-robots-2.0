@@ -57,7 +57,7 @@ class PolicyTranslatorServer(object):
         # Observations -> likelihood queue
         rospy.Subscriber("/human_push", String, self.human_push_callback)
         rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
-        self.Obs_Queue = Obs_Queue()
+        self.queue = Obs_Queue()
 
         self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
 
@@ -77,7 +77,7 @@ class PolicyTranslatorServer(object):
         name = req.request.name
 
         if self.trans == "MAP":
-            belief = self.translator_wrapper(req.request.name,self.Obs_Queue.flush(),
+            belief = self.translator_wrapper(req.request.name,self.queue.flush(),
                                                 flat_belief=req.request.belief)
         else:      # run the observation observance
             if not req.request.weights:
@@ -153,7 +153,8 @@ class PolicyTranslatorServer(object):
 
         copPoses.append(position)
 
-        obs = self.Obs_Queue.flush()
+        # obs = self.queue.flush()
+        print("OBSERVATIONS: {}".format(obs))
 
         (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,copPoses)
 
@@ -202,12 +203,13 @@ class PolicyTranslatorServer(object):
         question = human_push.data.lstrip()
         #print("Now String:"+question)
         (lkhd_question, ans) = voi.obs_mapping[question]
+        print("HUMAN PUSH OBS ADDED")
 
         try:
             # lhs = np.load('likelihoods.npy')
             item = np.where(self.likelihoods['question']==lkhd_question)
             index = item[0][0]
-            self.Obs_Queue.add(index, ans)
+            self.queue.add(index, ans)
         except IOError as ioerr:
             print(ioerr)
 
@@ -216,7 +218,8 @@ class PolicyTranslatorServer(object):
         """"
         Mapping of human response observations to likelihood index and pos_neg value
         """
-        self.Obs_Queue.add(data.qid, data.ans)
+        self.queue.add(data.qid, data.ans)
+        print("ROBOT PULL OBS ADDED")
 
 # Comment out rospy.spin() in init function of policy_translator_server
 def Test_Callbacks():
