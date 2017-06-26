@@ -286,7 +286,7 @@ class Questioner(object):
         msg.weights = [q[0] for q in self.weighted_questions]
         msg.qids = [q[1] for q in self.weighted_questions]
         msg.questions = [q[2] for q in self.weighted_questions]
-        print(msg)
+        # print(msg)
         self.pub.publish(msg)
 
 if __name__ == "__main__":

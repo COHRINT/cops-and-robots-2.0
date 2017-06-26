@@ -41,8 +41,8 @@ class Map(object):
 	def __init__(self, yaml_file):
 
 		# load yaml file as a dictionary
-		#cfg = self._find_yaml(yaml_file)
-		cfg = yaml.load(open('../models/' + yaml_file, 'r'));
+		cfg = self._find_yaml(yaml_file)
+		# cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
 		if cfg is not None:
 
@@ -75,7 +75,7 @@ class Map(object):
 		try:
 			# navigate to yaml_dir
 			cfg_file = os.path.dirname(__file__) \
-				+ '../' + yaml_dir + '/' + yaml_file
+				+ '/../' + yaml_dir + '/' + yaml_file
 			# return dictionary of yaml file
 			with open(cfg_file, 'r') as file:
 				 return yaml.load(file)
