@@ -160,7 +160,7 @@ class PolicyTranslatorServer(object):
 
         if b_updated is not None:
             if self.trans == "MAP":
-                belief = discrete_dehydrate(belief)
+                belief = discrete_dehydrate(b_updated)
             else:
                 (weights,means,variances) = dehydrate_msg(b_updated)
 
@@ -210,6 +210,7 @@ class PolicyTranslatorServer(object):
             item = np.where(self.likelihoods['question']==lkhd_question)
             index = item[0][0]
             self.queue.add(index, ans)
+            print("Question added: {}".format(self.likelihoods[index][0]))
         except IOError as ioerr:
             print(ioerr)
 

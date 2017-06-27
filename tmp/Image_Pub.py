@@ -1,5 +1,6 @@
 import rospy
 from sensor_msgs.msg import Image
+import os
 
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
@@ -11,7 +12,7 @@ bridge = CvBridge()
 
 r = rospy.Rate(1) # 1Hz
 while not rospy.is_shutdown():
-	bgr = cv2.imread('tmpBelief.png')
+	bgr = cv2.imread(os.path.abspath(os.path.dirname(__file__) + '/tmpBelief.png'))
 	rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 	msg = bridge.cv2_to_imgmsg(rgb, encoding="passthrough")
 	pub.publish(msg)

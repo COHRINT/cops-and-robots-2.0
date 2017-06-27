@@ -93,8 +93,8 @@ class ObservationInterface(QMainWindow):
         # left side <- includes all video feeds
         self.cop_video = CopVideo('pris')
         self.cam_1 = SecurityCamera(1,'Study')
-        self.cam_2 = SecurityCamera(2,'Kitchen')
-        self.cam_3 = SecurityCamera(3,'Hallway')
+        self.cam_2 = SecurityCamera(2,'Hallway')
+        self.cam_3 = SecurityCamera(3,'Kitchen')
 
         self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter) #prev: 4 0 2 2

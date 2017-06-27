@@ -124,10 +124,11 @@ class MAPTranslator(object):
         alpha = 0.8
         if(responses is not None):
             for res in responses:
+                print("Question: {}".format(self.likelihoods[res[0]][0]))
                 if(res[1] == True):
                     like = self.likelihoods[res[0]][1] * alpha;
                 else:
-                    like = 1-self.likelihoods[res[0]][1] * alpha;
+                    like = 1-(self.likelihoods[res[0]][1] * alpha);
                 #print(self.likelihoods[res[0]][0],res[1])
                 posterior = np.multiply(post,like);
                 post = self.normalize(posterior);
@@ -155,9 +156,13 @@ class MAPTranslator(object):
 
                         if(triPath2.contains_point([x,y])):
                             viewLike[i][j] = .1;
+                        if([round(pose[0]),round(pose[1])] == [x,y]):
+                            viewLike[i][j] = 0.001;
+
 
                 viewLike = viewLike.flatten();
                 posterior = np.multiply(post,viewLike);
+                posterior += 0.000000001
                 post = self.normalize(posterior);
                 #levels = [i/250 + 1 for i in range(0,250)]
 
@@ -169,14 +174,16 @@ class MAPTranslator(object):
             print("MAP COP POSE TO PLOT: {}".format(pose))
             self.makeBeliefMap(post,pose)
 
-
+        print("BELIEF MIN: {}".format(np.amin(belief)))
 
         return post;
 
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
         print("MAKING NEW BELIEF MAP!")
+        plt.clf()
         figure = plt.figure()
+        plt.clf()
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
         plt.contourf(x_space,y_space,belief,cmap="viridis");
         m = Map('map2.yaml');
@@ -208,8 +215,10 @@ class MAPTranslator(object):
         plt.gca().add_patch(cop);
 
         plt.axis('scaled');
-        plt.axis('off')
-        plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'));
+        # plt.axis('off')
+        # plt.axis('tight')
+        plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0);
+        plt.close()
         # plt.show();
 
 """ Creates a belief, call getNextPose to find the MAP

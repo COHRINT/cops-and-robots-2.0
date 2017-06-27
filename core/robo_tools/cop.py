@@ -59,7 +59,8 @@ class Cop(Robot):
                                      **kwargs)
 
         self.found_cop = {}
-        self.belief = GM([[-2,0],[-2,0]],[[[20,0],[0,20]],[[20,0],[0,20]]],[0.5,0.5])
+        self.belief = GM([[-6,2.5],[1,0],[-4,-2]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
+        self.belief.normalizeWeights()
         bounds = [-9.6, -3.6, 4, 3.6]
         delta = 0.1
         self.belief = self.belief.discretize2D(low=[bounds[0],bounds[1]],high=[bounds[2],bounds[3]],delta=delta)
