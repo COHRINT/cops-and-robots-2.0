@@ -136,7 +136,7 @@ class MAPTranslator(object):
 
         if(copPoses is not None):
             for pose in copPoses:
-                bearing = 0;
+                bearing = -90;
                 l = 1;
                 triPath = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
@@ -203,7 +203,7 @@ class MAPTranslator(object):
                 tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             plt.gca().add_patch(tmp);
 
-        bearing = 0;
+        bearing = -90;
         l = 1;
         triang=tri.Triangulation([copPose[0],copPose[0]+l*math.cos(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[0]+l*math.cos(2*0.261799+math.radians(copPose[2]+(bearing)+90))],[copPose[1],copPose[1]+l*math.sin(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[1]+l*math.sin(2*0.261799+math.radians(copPose[2]+(bearing)+90))])
 
