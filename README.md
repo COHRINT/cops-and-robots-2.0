@@ -5,7 +5,7 @@ Cops and Robots 1.5 was a revival of the original Cops and Robots experiment out
 The current version under development is CnR 1.6, please visit that branch for an updated status on its development.
 
 ## Setup
-#### For difficulties in any part see **Current Issues**, first bullet point ####
+### For difficulties in any part see **Current Issues**, first bullet point ###
 1) Install cops_and_robots/1.5 onto your local machine and catkin_make the package
 2) Calibrate vicon cameras and set the origin
 $ python gui.py
