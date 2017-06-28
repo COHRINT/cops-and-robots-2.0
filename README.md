@@ -20,7 +20,7 @@ Select configurations
 				pose_source as tf
 				Select **save** and navigate to cops-and-robots-2.0/config
 				save as config.yaml
-3) Click **run**
+3) Click **RUN**
 4) In the window that appears: type 'n' to not create a new map?
 5) Enter the passwords of the robots to ssh into them
 	__NOTE:__ if the ssh fails, such as the windows closing before vicon_nav is run:
