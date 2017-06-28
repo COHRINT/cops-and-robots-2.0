@@ -5,7 +5,7 @@ Cops and Robots 1.5 was a revival of the original Cops and Robots experiment out
 The current version under development is CnR 1.6, please visit that branch for an updated status on its development.
 
 ## Setup
-1) Install cops_and_robots/1.5 onto your local machine
+1) Install cops_and_robots/1.5 onto your local machine and catkin_make the package
 2) Calibrate vicon cameras and set the origin
 $ python gui.py
 Select configurations
@@ -27,12 +27,24 @@ Select configurations
 		$ ssh odroid@<robot_name> and enter the password for cops and robbers
 6) run $ roslaunch cops_and_robots/launch/vicon_nav.launch on each robot
 7) In the terminal window prompting "When vicon_nav.launch has ....", press ENTER
-8) Type '1' and hit ENTER to run the experiment
+8) Open a terminal window and run $ roslaunch policy_translator policy_translator.launch
+9) Type '1' and hit ENTER to run the experiment
 
  
-## or more Information
+## For more Information
 * Observation Interface: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface
 * Policy Translator: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator
 * Value of Information: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information
 	
 ## Current Issues
+
+* run.sh called by gui.py sometimes fails to run a process
+	This problem has been solved by dividing the setup into multiple parts:
+	Whichever part failed to open can be rerun **in a separate terminal window** while '1' has not been entered in the main terminal window
+	- $ roslaunch cops-and-robots-2.0/launch/vicon_sys.launch
+	- ssh into and run $ roslaunch cops_and_robots/launch/vicon_nav.launch on each robot
+	- $ roslaunch policy_translator policy_translator.launch
+* A caught script and topic has not been written yet
+* No "robber infront of cop" observation
+* cop view cone is 90 degrees offset
+* The observation "robber is right of Mars Poster" is the wrong likelihood
