@@ -1,7 +1,9 @@
 from __future__ import division
 
-
-# DISCRETIZED MAP TRANSLATOR
+""" DISCRETIZED MAP TRANSLATOR
+-Handles a belief consisting of a 2D numpy array
+-interfaces with the policy_translator_server
+""""
 
 from gaussianMixtures import Gaussian, GM
 
@@ -18,17 +20,25 @@ import math
 import matplotlib
 from voi import Questioner
 
-__author__ = "LT"
+__author__ = ["LT", "Luke Burks"]
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
 
 class MAPTranslator(object):
-
+    """
+    Methods
+    --------
+    getNextPose
+    unFlatten
+    normalize
+    beliefUpdate
+    makeBeliefMap
+    """
 
     def __init__(self):
         self.delta = 0.1
@@ -46,27 +56,31 @@ class MAPTranslator(object):
                 return os.path.join(root,name);
 
 
-    """
-    Takes a belief and returns the goal
-    pose (MAP coordinate list [x.y] in [m, m])
-    (orientation is calculated in
-    the Policy Translator Service)
 
-    -Calls the findMAP function to find the [x,y] MAP
-    coordinate.
 
-    Parameters
-    ----------
-    belief : belief object
-
-    Returns
-    -----------
-    goal_pose : [x, y] in [m,m]
-
-    """
-
-    # belief is a 2D grid because of the discretization
     def getNextPose(self,belief,obs,copPoses=None):
+        """
+        -Takes a belief and returns the goal
+        pose (MAP coordinate list [x.y] in [m, m])
+        (orientation is calculated in
+        the Policy Translator Service)
+
+        -Calls the findMAP function to find the [x,y] MAP
+        coordinate.
+
+        Parameters
+        ----------
+        belief : belief object
+        obs : list of 2 element lists
+            [[int index, bool true/untrue], [int index, bool true/untrue]]
+        copPoses : list of 3 element list [[float x, float y, float angle],[x,y,angle]]
+            -can pass just one list [[x,y,angle]]
+
+        Returns
+        -----------
+        belief : Updated belief, 2D numpy array
+        goal_pose : [float x, float y] in [m,m]
+        """
 
         #grid from plot 2D function
         # obs = self.Obs_Queue.flush()
@@ -80,9 +94,10 @@ class MAPTranslator(object):
         # belief is a GM instance, find MAP coords [x,y]
         return [belief, goal_pose]
 
-    """ Locates the max coord of the 2D array
-        and returns its index"""
+
     def _find_array2D_max(self, array2D):
+        """ Locates the max coord of the 2D array
+            and returns its index"""
         max_num = 0
         max_index = [0,0]
         size = array2D.shape # tuple of numpy array size
@@ -94,9 +109,9 @@ class MAPTranslator(object):
                     max_num = array2D[i,j]  # set new max num
         return max_index
 
-    """ Inputs the max grid coord and returns the
-        world map coord equivalent"""
     def _grid_coord_to_world_coord(self, coord, world_min_x_y=[0,0]):
+        """ Inputs the max grid coord and returns the
+            world map coord equivalent"""
         d = self.delta
         world_coord = [0,0]
         world_coord[0] = world_min_x_y[0] + d * coord[0] # world x coord
@@ -118,6 +133,18 @@ class MAPTranslator(object):
 
 
     def beliefUpdate(self, belief, responses = None,copPoses = None):
+        """ Updates the cops belief of its environment
+        Parameters
+        ----------
+        belief : instance of 2D numpy array
+        responses : list of 2 element lists
+            [[int index, bool true/untrue], [int index, bool true/untrue]]
+        copPoses : [float x, float y, float angle]
+
+        Returns
+        ----------
+        post : updated belief (2D numpy array)
+        """
 
         flatBelief = belief.flatten();
         post = flatBelief;
@@ -136,7 +163,7 @@ class MAPTranslator(object):
 
         if(copPoses is not None):
             for pose in copPoses:
-                bearing = 0;
+                bearing = -90;
                 l = 1;
                 triPath = matplotlib.path.Path([[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]+(bearing)+90))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2]+(bearing)+90)),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]+(bearing)+90))]]);
 
@@ -180,6 +207,19 @@ class MAPTranslator(object):
 
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
+        """ Creates the beleif map displayed in the gui interface
+        Parameters
+        ----------
+        -belief : 2D numpy array
+        -copPose : 3 element list [float x, float y, float degrees]
+
+        Returns
+        ----------
+        -Creates a compressed image (tmpBelief.png) in another folder (tmp) one directory up
+            that shows the belief
+        -Has no return value
+
+        """
         print("MAKING NEW BELIEF MAP!")
         plt.clf()
         figure = plt.figure()
@@ -203,7 +243,7 @@ class MAPTranslator(object):
                 tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             plt.gca().add_patch(tmp);
 
-        bearing = 0;
+        bearing = -90;
         l = 1;
         triang=tri.Triangulation([copPose[0],copPose[0]+l*math.cos(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[0]+l*math.cos(2*0.261799+math.radians(copPose[2]+(bearing)+90))],[copPose[1],copPose[1]+l*math.sin(2*-0.261799+math.radians(copPose[2]+(bearing)+90)),copPose[1]+l*math.sin(2*0.261799+math.radians(copPose[2]+(bearing)+90))])
 
@@ -221,10 +261,17 @@ class MAPTranslator(object):
         plt.close()
         # plt.show();
 
-""" Creates a belief, call getNextPose to find the MAP
-    verifies the coord returned is the actual MAP
-        -Features: will plot the given MAP using plt.contourf """
-def testGetNextPose(rndm=None):
+
+def testGetNextPose(rndm=False):
+    """ Creates a belief, call getNextPose to find the MAP
+        verifies the coord returned is the actual MAP
+            -Features: will plot the given MAP using plt.contourf
+    Parameters
+    ----------
+    rndm : bool true for testing with a random belief
+            false for a determined belief
+    """
+
     print "Testing MAP Translator!"
     MAP = MAPTranslator()
 
@@ -325,6 +372,7 @@ def testMakeMap():
 
 
 def rdm():
+    """ Returns a random int """
     return random.randint(0, 5)
 
 if __name__ == '__main__':

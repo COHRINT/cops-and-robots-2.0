@@ -41,7 +41,7 @@ from obs_queue import Obs_Queue
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
-        if check == 'MAP':
+        if check == 'MAP': # Allow for use of different translators
             print("Running MAP Translator!")
             self.pt = MAPTranslator()
             self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
@@ -196,12 +196,17 @@ class PolicyTranslatorServer(object):
 
     def human_push_callback(self, human_push):
         """
-        Mapping of human push observations to a likelihood index and pos_neg value
+        -Maps "human push" observations to a likelihood index and pos_neg value
+        -Adds the mapped observation to the observation queue (self.queue)
+            using the likelihood's index and a value of the likelihood being true or untrue (True or False)
+
+        ----------
+        Parameters
+        ----------
+        data : std_msgs.msg.String
         """
         # strip the space from message
-        #print("Origingal String:" + human_push.data)
         question = human_push.data.lstrip()
-        #print("Now String:"+question)
         (lkhd_question, ans) = voi.obs_mapping[question]
         print("HUMAN PUSH OBS ADDED")
 
@@ -217,13 +222,21 @@ class PolicyTranslatorServer(object):
 
     def robot_pull_callback(self, data):
         """"
-        Mapping of human response observations to likelihood index and pos_neg value
+        -Maps "human response / robot pull" observations to likelihood index and pos_neg value
+        -Adds the mapped observation to the observation queue (self.queue)
+            using the likelihood's index and a value of the likelihood being true or untrue (True or False)
+
+        Parameters
+        ----------
+        data : Answer.msg , Custom Message
         """
         self.queue.add(data.qid, data.ans)
         print("ROBOT PULL OBS ADDED")
 
-# Comment out rospy.spin() in init function of policy_translator_server
 def Test_Callbacks():
+    """ Test human_push_callback and robot_pull_callback
+        Comment out rospy.spin() in the init function of policy_translator_server
+    """
     # Test human_push_callback
     a = String()
     a.data = "    I know Roy is right of the dining table" # q_id 5
