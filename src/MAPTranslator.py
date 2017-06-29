@@ -140,6 +140,10 @@ class MAPTranslator(object):
         responses : list of 2 element lists
             [[int index, bool true/untrue], [int index, bool true/untrue]]
         copPoses : [float x, float y, float angle]
+
+        Returns
+        ----------
+        post : updated belief (2D numpy array)
         """
 
         flatBelief = belief.flatten();
@@ -203,6 +207,19 @@ class MAPTranslator(object):
 
 
     def makeBeliefMap(self, belief,copPose = [0,0,0]):
+        """ Creates the beleif map displayed in the gui interface
+        Parameters
+        ----------
+        -belief : 2D numpy array
+        -copPose : 3 element list [float x, float y, float degrees]
+
+        Returns
+        ----------
+        -Creates a compressed image (tmpBelief.png) in another folder (tmp) one directory up
+            that shows the belief
+        -Has no return value
+
+        """
         print("MAKING NEW BELIEF MAP!")
         plt.clf()
         figure = plt.figure()

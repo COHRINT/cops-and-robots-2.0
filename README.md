@@ -39,7 +39,7 @@ Select configurations
 	
 ## Current Issues
 
-* run.sh called by gui.py sometimes fails to run a process
+* run.sh called by gui.py sometimes fails to run a process.
 	This problem has been solved by dividing the setup into multiple parts:
 	Whichever part failed to open can be rerun **in a separate terminal window** while '1' has not been entered in the main terminal window
 	- $ roslaunch cops-and-robots-2.0/launch/vicon_sys.launch
