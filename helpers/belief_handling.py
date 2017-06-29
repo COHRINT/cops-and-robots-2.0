@@ -86,11 +86,19 @@ def rehydrate_msg(weights_flat,means_flat,variances_flat):
         return belief
 
 def discrete_dehydrate(belief):
+    """
+    Takes discretized belief as numpy.ndarray and flattens it and converts it to
+    a python list
+    """
     flat_belief = belief.flatten()
     flat_belief = flat_belief.tolist()
     return flat_belief
 
 def discrete_rehydrate(flat_belief,shapes):
+    """
+    Takes a flattened discretized belief and inflates it into a numpy.ndarray
+    using the passes shapes parameter to specify the shape.
+    """
     newArr = np.zeros((shapes[0],shapes[1]));
     for i in range(0,shapes[0]):
         for j in range(0,shapes[1]):

@@ -154,6 +154,16 @@ obs_mapping = {'I know Roy is right of the dining table': ['Is Roy right of the 
 'I know Roy is near the dining table': ['Is Roy near the dining table?', True]}
 
 class Questioner(object):
+    """
+    The Questioner class enables the calculation of Value of Information of
+    a list of questions using a precomputed list of likelihoods for each
+    question of for given beliefs. Currently the questions are only related to
+    robber robot Roy.
+
+    Additionally, voi.py contains a dictionary mapping human push observations
+    to questions (which have associated likelihoods) and answers to those
+    questions.
+    """
 
     def __init__(self,human_sensor,target_order,target_weights,bounds,delta,
                     repeat_annoyance=0.5, repeat_time_penalty=60):
@@ -172,6 +182,13 @@ class Questioner(object):
         self.pub = rospy.Publisher(self.topic,Question)
 
     def weigh_questions(self, priors):
+        """
+        Input: list of prior beliefs (can be list of one element)
+        Output: update attribute: sorted by weight list of questions
+
+        Take a list of prior beliefs and compute the VOI for each question in
+        in the list of questions given the likelihoods and the beliefs.
+        """
         q_weights = np.empty_like(self.all_questions, dtype=np.float64)
         for prior_name, prior in priors.iteritems():
             if type(prior) is not np.ndarray:

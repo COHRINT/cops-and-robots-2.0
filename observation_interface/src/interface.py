@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 
-'''Interface for entering observations for Cops and Robots POMDP experiments.
+'''
+Interface for entering observations for Cops and Robots experiments.
+
+Contains the following widgets in a grid layout (the widget code can be found in
+interface_elements.py):
+    - 3x security camera video feeds receving data from ROS topics
+    - 1x cop robot camera feed receiving data from a ROS topic
+    - yes/no question panel
+    - codebook to assemble human observation statements
+    - belief map image display, loaded from directory
 '''
 
 __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "2.0"
 __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
@@ -16,6 +25,7 @@ import sys
 import rospy
 import matplotlib
 import time
+import os
 
 matplotlib.use('Qt5Agg')
 import PyQt5
@@ -47,6 +57,7 @@ main_widget_style = "\
                             background-color: lightgray;    \
                         }"
 
+
 class ObservationInterface(QMainWindow):
 
     def __init__(self):
@@ -55,7 +66,6 @@ class ObservationInterface(QMainWindow):
 
         super(QMainWindow,self).__init__()
         self.main_widget = QWidget()
-        # self.main_widget.setStyleSheet(main_widget_style)
         self.setCentralWidget(self.main_widget)
         self.initUI()
 
@@ -64,9 +74,9 @@ class ObservationInterface(QMainWindow):
 
     def initUI(self):
 
+        # create the main layout
         self.main_layout = QGridLayout()
         self.main_widget.setLayout(self.main_layout)
-        # self.main_layout.setAlignment(Qt.AlignTop)
 
         # create title
         self.title = QLabel(self.app_name)
@@ -77,10 +87,9 @@ class ObservationInterface(QMainWindow):
         # COHRINT logo
         self.logo = QLabel()
         self.logo_image = QPixmap()
-        check = self.logo_image.load('/home/ian/catkin_ws/src/cops-and-robots-2.0/observation_interface/src/black_cohrint_symbshort.png')
+        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + ('/black_cohrint_symbshort.png')))
         self.logo_image = self.logo_image.scaled(93,100,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logo.setPixmap(self.logo_image)
-        # self.logo.setScaledContents(True)
         self.main_layout.addWidget(self.logo,0,12,1,1,Qt.AlignRight)
 
         # create quit button and add at top left corner
@@ -91,17 +100,15 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        self.cop_video = CopVideo('pris')
+        self.cop_video = CopVideo('roy')
         self.cam_1 = SecurityCamera(1,'Study')
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Kitchen')
 
         self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
-        self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter) #prev: 4 0 2 2
-        self.main_layout.addWidget(self.cam_2,3,0,2,2,Qt.AlignCenter) #prev: 4 2 2 2
-        self.main_layout.addWidget(self.cam_3,5,0,2,2,Qt.AlignCenter) #prev: 4 4 2 2
-        # self.left_column = QVBoxLayout()
-        # self.main_layout.addLayout(self.left_column,0,1)
+        self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter)
+        self.main_layout.addWidget(self.cam_2,3,0,2,2,Qt.AlignCenter)
+        self.main_layout.addWidget(self.cam_3,5,0,2,2,Qt.AlignCenter)
 
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
@@ -111,14 +118,15 @@ class ObservationInterface(QMainWindow):
         self.main_layout.addWidget(self.robot_pull,5,3,2,3,Qt.AlignTop)
         self.main_layout.addWidget(self.belief_map,1,6,4,6,Qt.AlignCenter)
         self.main_layout.addWidget(self.human_push,5,7,2,5,Qt.AlignTop)
-        # self.right_column = QVBoxLayout()
-        # self.right_column.addWidget(self.robot_pull)
-        # self.main_layout.addLayout(self.right_column,0,2)
 
         self.setWindowTitle(self.app_name)
         self.showMaximized()
 
     def closeEvent(self,event):
+        """
+        Overidden closeEvent which always displays a confirmation box when the
+        user atttempts to close are quit the interface
+        """
         dialog_reply = QMessageBox.warning(self,'Quit', \
                     'Are you sure you want to quit?', \
                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)

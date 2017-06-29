@@ -34,11 +34,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image, CompressedImage
 from observation_interface.msg import *
 
-questions = ["What is your favorite color?",
-            "What is your quest?",
-            "What is the airspeed of an unladen swallow?",
-            "Is this a filler question?",
-            "What about this?"]
+# various style sheets for widgets
 
 PullQuestion_style = "\
                         .QWidget {   \
@@ -121,8 +117,13 @@ answer_indicator_style = "\
 
 class RobotPull(QWidget):
     """
-    The robot pull questions widget. Displays questions chosen by robot and their
-    associated value of information, and presents user with 'yes' and 'no' options.
+    The robot pull questions widget. Displays top <num_questions> questions, and
+    presents user with 'yes','no' and 'I don't know' options. Yes and no options
+    publish to the specified ROS topic. The RobotPull widget contains
+    <num_questions> number of PullQuestion widgets.
+
+    The questions are received via subscription to specified ROS topic, and
+    the text of the questions are set as the text of the PullQuestion widgets.
     """
 
     def __init__(self):
@@ -139,6 +140,7 @@ class RobotPull(QWidget):
         self.pub = rospy.Publisher("answers",Answer,queue_size=10)
 
     def initUI(self):
+        # create visual container for PullQuestion widgets
         self.container = QGroupBox('Robot Questions')
         size_policy = self.container.sizePolicy()
         size_policy.setVerticalPolicy(QSizePolicy.Expanding)
@@ -155,6 +157,7 @@ class RobotPull(QWidget):
         self.container_layout.addWidget(self.previous_q_container)
         self.previous_q_container.setLayout(self.prev_q_layout)
 
+        # create last question and last answer labels
         self.last_question = QLabel("Last question was: ")
         self.last_question.setStyleSheet(question_text_style)
         self.prev_q_layout.addWidget(self.last_question)
@@ -166,9 +169,7 @@ class RobotPull(QWidget):
         # main widget layout
         self.main_layout = QVBoxLayout()
 
-        # self.name_label = QLabel(self.name)
-        # self.main_layout.addWidget(self.name_label)
-
+        # create PullQuestion widgets and add them to layout
         self.make_question_fields()
 
         self.container.setLayout(self.main_layout)
@@ -177,8 +178,9 @@ class RobotPull(QWidget):
     def make_question_fields(self):
         """
         Creates the question widgets to be added to the question list.
-        The question widget contains the text of the question, a yes button, and
-        a no button. These buttons are connected to yes no question slots.
+        The question widget contains the text of the question, a yes button,
+        a no button, and a I don't know button. These buttons are connected to
+        an answered question function described in PullQuestion
         """
         self.question_fields = []
 
@@ -191,7 +193,7 @@ class RobotPull(QWidget):
     def get_questions(self,qids):
         """
         For transmitted integer question IDs, get the corresponding questions
-        from the question list, and return a dictionary.
+        from the question list, and return a dictionary. (NOT IN USE)
         """
 
         question_list = []
@@ -202,7 +204,7 @@ class RobotPull(QWidget):
 
     def scale_VOI_magnitude(self,weights):
         """
-        Scale the magintudes of the VOI wrt the maximum weight
+        Scale the magintudes of the VOI wrt the maximum weight. (NOT IN USE)
         """
         max_value = 100
         scale_factor = max_value / max(weights)
@@ -225,8 +227,8 @@ class RobotPull(QWidget):
 
     def question_update(self,msg):
         """
-        Update the displayed questions by getting the new questions, created the
-        associated question objects, and updating the display.
+        Update the displayed questions by getting the new questions from ROS
+        topic, creating the associated question objects, and updating the display.
         """
         print('msg received')
         self.count = 0
@@ -242,6 +244,11 @@ class RobotPull(QWidget):
             # self.question_fields[i].show()
 
 class PullQuestion(QWidget):
+    """
+    Widget to display a robot pull question. Each instance contains a text field
+    a yes button, a no button, and an I don't know button. NOT IN USE: also a
+    VOI bar
+    """
 
     def __init__(self,qid=0,question_text='hello'):
 
@@ -266,28 +273,18 @@ class PullQuestion(QWidget):
         self.yes_btn.setSizePolicy(QSizePolicy())
         self.yes_btn.setStyleSheet(yes_btn_style)
         self.yes_btn.clicked.connect(self.answered)
-        # self.yes_btn.clicked.connect(self.answer_color)
 
         self.no_btn = QPushButton('NO')
         self.no_btn.setSizePolicy(QSizePolicy())
         self.no_btn.setStyleSheet(no_btn_style)
         self.no_btn.clicked.connect(self.answered)
-        # self.no_btn.clicked.connect(self.answer_color)
 
         self.null_btn = QPushButton('?')
         self.null_btn.setSizePolicy(QSizePolicy())
         self.null_btn.setStyleSheet(null_btn_style)
         self.null_btn.clicked.connect(self.answered)
-        # self.null_btn.clicked.connect(self.answer_color)
 
         self.buttons = [self.yes_btn,self.no_btn,self.null_btn]
-
-        # Make answer indicator
-        # self.answer_rect_container = QLabel()
-        # self.answer_rect_container.setStyleSheet(answer_indicator_style)
-        # self.answer_rect = QPixmap(QSize(10,20))
-        # self.answer_rect.fill(QColor('gray'))
-        # self.answer_rect_container.setPixmap(self.answer_rect)
 
         # Make bar to indicate VOI of question
         # self.voi_weight = QProgressBar()
@@ -298,12 +295,8 @@ class PullQuestion(QWidget):
         self.layout.addWidget(self.yes_btn)
         self.layout.addWidget(self.no_btn)
         self.layout.addWidget(self.null_btn)
-        # self.layout.addWidget(self.answer_rect_container)
         # self.layout.addWidget(self.voi_weight)
 
-        # self.setStyleSheet(PullQuestion_style)
-
-        # self.layout.setContentsMargin(0,0,0,0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
@@ -318,7 +311,7 @@ class PullQuestion(QWidget):
 
     def answer_color(self):
         """
-        Flash color when question is answered
+        Flash color when question is answered. NOT IN USE
         """
         color = ''
         if self.sender() is self.yes_btn:
@@ -405,7 +398,8 @@ movement_qualities = ["slowly","moderately","quickly"]
 class HumanPush(QWidget):
     """
     The human push questions widget. At any time the user can construct a
-    sentence from a codebook of words and push that observation to the robot.
+    sentence from a codebook of words and push that observation to the robot via
+    ROS topic.
     """
 
     def __init__(self):
@@ -442,17 +436,6 @@ class HumanPush(QWidget):
 
         # add tabs to main layout
         self.main_layout.addWidget(self.tabs)
-
-        # self.codebook1 = QListWidget()
-        # self.codebook2 = QListWidget()
-        # self.codebook3 = QListWidget()
-        # self.codebook4 = QListWidget()
-        # self.codebook5 = QListWidget()
-        # self.main_layout.addWidget(self.codebook1)
-        # self.main_layout.addWidget(self.codebook2)
-        # self.main_layout.addWidget(self.codebook3)
-        # self.main_layout.addWidget(self.codebook4)
-        # self.main_layout.addWidget(self.codebook5)
 
         self.widget_list = []
         # make Position Objects codebook
@@ -521,8 +504,6 @@ class HumanPush(QWidget):
         Get the answer the user has created with the selections in the three
         codebook boxes.
         """
-        # print(self.codebook1.selectedItems().isEmpty())
-
         # get index of selected tab
         idx = self.tabs.currentIndex()
         answer = ''
@@ -564,7 +545,6 @@ class HumanPush(QWidget):
         self.clear_selection()
 
 
-
 MapDisplay_style = "\
                         MapDisplay {   \
                             border-style: solid;   \
@@ -574,7 +554,10 @@ MapDisplay_style = "\
 
 class MapDisplay(QWidget):
     """
-    The widget to display the cop's belief overlayed onto a map of the environment.
+    The widget to display the cop's belief and position overlayed onto a map
+    of the environment. Loaded from directory policy_translator/tmp/ when
+    callback is triggered. Callback is triggered by ROS topic, but recevies
+    empty message.
     """
 
     def __init__(self):
@@ -590,42 +573,31 @@ class MapDisplay(QWidget):
     def initUI(self):
         self.main_layout = QVBoxLayout()
 
+        # set style and add title
         self.name_label = QLabel(self.name)
         self.name_label.setStyleSheet(widget_title_style)
         self.main_layout.addWidget(self.name_label)
 
+        # create label to hold image
         self.image_view = QPixmap()
-        # self.image_view.load('/home/ian/catkin_ws/src/cops-and-robots-2.0/observation_interface/src/Clue_map.png')
-        # self.image_view = self.image_view.scaled(500,350,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.pic_label = QLabel(self)
-        # self.pic_label.setScaledContents(True)
-        # self.pic_label.setPixmap(self.image_view)
         self.main_layout.addWidget(self.pic_label)
 
-        # self.pic_label.setFixedSize(500,350)
-        # self.setStyleSheet(MapDisplay_style)
         self.setLayout(self.main_layout)
         self.show()
 
     def ros_update(self, msg):
-        # image_data = msg.data
-        # image_height = msg.height
-        # image_width = msg.width
-        # bytes_per_line = msg.step
-        # self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-
-        self.image_view.load(os.path.abspath('../../policy_translator/tmp/tmpBelief.png'))
+        # load image
+        self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
+        # set image as pixmap in label
         if not self.image_view.isNull():
+            print(self.image_view.isNull())
             self.pic_label.setPixmap(self.image_view)
-
-        # if not self.image.isNull():
-        #     self.pic_label.setPixmap(QPixmap.fromImage(self.image))
-        # else:
-        #     print("{} sent bad frames!".format(self.name))
 
 class VideoContainer(QWidget):
     """
-    A general class for widgets to display video feeds.
+    A general class for widgets to display video feeds by receiving video data
+    from ROS topic
     """
 
     def __init__(self):
@@ -641,119 +613,35 @@ class VideoContainer(QWidget):
 
         self.counter = 0
 
+        # create canvas to display image
         self.canvas = VideoCanvas(self.size)
         self.canvas.setMinimumSize(QSize(*self.size))
 
-        # self.scene = QGraphicsScene()
-        # self.image_view = QGraphicsView(self.scene)
-
-        # self.video = VideoDisplayWidget()
-        # self.surface = self.video.surface
-
         self.image = QImage()
 
-        # self.image_view = QPixmap(*self.size)
-        # self.pic_label = QLabel(self)
-        # self.pic_label.setScaledContents(True)
-        # self.image_view.fill(QColor('black'))
-        # self.pic_label.setPixmap(self.image_view)
-        # self.canvas_widget = QWidget()
-        # self.canvas = QRect()
-        # self.image = QImage()
-        # self.painter = QPainter(self)
-
-        # self.main_layout.addWidget(self.video)
         self.main_layout.addWidget(self.canvas)
 
-        # self.image.setFixedSize(QSize(self.size[0],self.size[1]))
-        # self.setStyleSheet(MapDisplay_style)
         self.setLayout(self.main_layout)
 
     def ros_update(self,msg):
         """
         Callback function to display a ROS image topic with streaming video data.
         """
-        self.counter += 1
-
-        fmt = '>' + str((self.size[0]*self.size[1]))
-
+        # process received message
         image_data = msg.data
-        # l = array.array('H')
-        # l.fromstring(image_data)
-        # data_ordered = [struct.pack('<I',x) for x in l]
-        # data_ordered = struct.pack('')
-        # data_unpacked = struct.unpack(fmt,image_data)
-        # print(data_unpacked)
         image_height = msg.height
         image_width = msg.width
         bytes_per_line = msg.step
-        # if self.counter % 2 == 0:
+
+        # create QImage with received image data and metadata
         self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
         if not self.image.isNull():
             self.canvas.image = self.image
         self.canvas.update()
-        # self.present_image(image)
-        # if not self.image.isNull():
-        #         # self.repaint()
-        #         # self.pic_label.setPixmap(QPixmap.fromImage(self.image))
-        #     self.canvas.image = self.image
-        # else:
-        #     print("{} sent bad frames!".format(self.name))
-        # if not self.image.isNull():
-            # self.scene.addItem(self.image)
-        # else:
-            # print("{} sent bad frames!".format(self.name))
-        # self.image_view.show()
-        # if not self.image.isNull():
-        #     self.pic_label.setPixmap(QPixmap.fromImage(self.image))
-        # else:
-        #     print("{} sent bad frames!".format(self.name))
-        # self.painter.begin(self.image_view)
-        # self.painter.drawImage(self.rect(),self.image,self.rect())
-        # self.painter.end()
-
-        # self.image.show()
-
-    # def paintEvent(self,event):
-    #     # if self.image.isNull():
-    #         # print('{} sent bad frames!'.format(self.name))
-    #         # return
-    #     painter = QPainter(self)
-    #     if not self.image.isNull():
-    #         painter.drawImage(self.rect(),self.image)
-    #     else:
-    #         print('Null image')
-    #         return
-
-    def present_image(self,image):
-        frame = QVideoFrame(image)
-
-        if not frame.isValid():
-            return False
-
-        current_format = self.surface.surfaceFormat()
-
-        if (frame.pixelFormat() != current_format.pixelFormat()) \
-            or (frame.size() != current_format.frameSize()):
-
-            format_ = QVideoSurfaceFormat(frame.size(),frame.pixelFormat())
-
-            if not self.surface.start(format_):
-                print("surface not started")
-                return False
-
-        if not self.surface.present(frame):
-            print("no present")
-            self.surface.stop()
-            return False
-        else:
-            self.surface.present(frame)
-            self.show()
-            return True
 
 class VideoCanvas(QWidget):
     """
-    Widget to paint video feed image frames to
+    Widget on which video frames can be painted by overiding paintEvent
     """
     def __init__(self,size):
         super(VideoCanvas,self).__init__()
@@ -765,13 +653,11 @@ class VideoCanvas(QWidget):
         if (self.image is not None) and (not self.image.isNull()):
             painter.drawImage(self.rect(),self.image)
 
-
-
 class CopVideo(VideoContainer):
     """
-    Subclasses VideoDisplay to display the cop's camera feed.
+    Subclasses VideoDisplay to display the cop's camera feed. Currently displays
+    video in reversed blue-red color, as QImage does not have a BGR888 format.
     """
-
     def __init__(self,cop_name='pris'):
         super(VideoContainer,self).__init__()
         self.name = "Cop Video"
@@ -785,9 +671,7 @@ class CopVideo(VideoContainer):
 class SecurityCamera(VideoContainer):
     """
     Subclasses VideoDisplay to display the feed of a security camera.
-
     """
-
     def __init__(self,num,location):
         super(VideoContainer,self).__init__()
         self.name = "Camera {}: {}".format(num,location)
