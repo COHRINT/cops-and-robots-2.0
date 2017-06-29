@@ -52,12 +52,17 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    PolicyTranslatorRequest.msg
    PolicyTranslatorResponse.msg
+   DiscretePolicyTranslatorRequest.msg
+   DiscretePolicyTranslatorResponse.msg
+   Question.msg
+   Answer.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    policy_translator_service.srv
+   discrete_policy_translator_service.srv
  )
 
 ## Generate actions in the 'action' folder

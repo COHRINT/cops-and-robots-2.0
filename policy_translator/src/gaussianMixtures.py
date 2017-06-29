@@ -1,1 +1,1 @@
-src/gaussianMixtures.py
+../../src/gaussianMixtures.py

@@ -289,8 +289,8 @@ class GoalPlanner(object):
         else:
             y_range_max = map_height-1
 
-        print(x_range_min,x_range_max)
-        print(y_range_min,y_range_max)
+        # print(x_range_min,x_range_max)
+        # print(y_range_min,y_range_max)
 
         for x_cell in range(x_range_min,x_range_max):
             for y_cell in range(y_range_min,y_range_max):
@@ -350,7 +350,8 @@ class GoalPlanner(object):
                                             self.robot.map_height,
                                             self.robot.occupancy_grid,
                                             self.robot.map_resolution):
-                    self.goal_pose = None
+                    # self.goal_pose = None
+                    pass
                 if self.goal_pose is None:
                     new_status = 'without a goal'
                 else:
@@ -369,7 +370,7 @@ class GoalPlanner(object):
                 new_status = 'at goal'
 
         elif current_status == 'stuck':
-            #prev_type = self.type
+            prev_type = self.type
             #self.type = 'simple'
             self.goal_pose = self.find_goal_pose(positions=positions)
             if not self.feasible_pose(self.goal_pose,
@@ -380,8 +381,8 @@ class GoalPlanner(object):
                                         self.robot.occupancy_grid,
                                         self.robot.map_resolution):
                 self.goal_pose = None
-            #self.type = prev_type
-            elif self.robot.publish_to_ROS is True:
+            self.type = prev_type
+            if self.robot.publish_to_ROS is True:
                 self.create_ROS_goal_message()
             else:
                 self.robot.path_planner.path_planner_status = 'planning'

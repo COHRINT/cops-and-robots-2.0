@@ -31,7 +31,7 @@ class SimpleGoalPlanner(GoalPlanner):
 												use_target_as_goal=use_target_as_goal,
 												goal_pose_topic=goal_pose_topic)
 
-	def find_goal_pose(self):
+	def find_goal_pose(self,positions=None):
 		"""Find a random goal pose on the map.
 
 		Find a random goal pose within map boundaries, residing in the
@@ -45,16 +45,16 @@ class SimpleGoalPlanner(GoalPlanner):
 		theta = random.uniform(0, 360)
 
 		feasible_point_generated = False
-		bounds = self.feasible_layer.bounds
-		#bounds = [0,5,0,4.25]
+		# bounds = self.feasible_layer.bounds
+		bounds = [-9.6, -3.6, 3.8, 3.4]
 
-		while not feasible_point_generated:
-			x = random.uniform(bounds[0], bounds[2])
-			y = random.uniform(bounds[1], bounds[3])
-			goal_pt = Point(x, y)
-			print 'checking point: %d, %d' %(x,y)
-			if self.feasible_layer.pose_region.contains(goal_pt):
-				feasible_point_generated = True
+		# while not feasible_point_generated:
+		x = random.uniform(bounds[0], bounds[2])
+		y = random.uniform(bounds[1], bounds[3])
+		goal_pt = Point(x, y)
+		print 'checking point: %d, %d' %(x,y)
+			# if self.feasible_layer.pose_region.contains(goal_pt):
+			# 	feasible_point_generated = True
 
 		goal_pose = [x, y, theta]
 
@@ -64,6 +64,6 @@ class SimpleGoalPlanner(GoalPlanner):
 
 		return goal_pose
 
-	def update(self):
+	def update(self,positions=None):
 
 		super(SimpleGoalPlanner,self).update()

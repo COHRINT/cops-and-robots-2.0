@@ -1,0 +1,107 @@
+# Map1's yaml file (located in models dir)
+# -general map info is included in the info array
+# -all other associative arrays are objects on the map
+# -orientation [radians] is between obj's major axis and map's pos-x axis
+# -all other measurements are [m]
+# NOTE: the color 'sage' does not interface with QT...
+# -author = 'LT'
+
+info:
+  name: Map1
+  size:
+    max_x: 5.0
+    max_y: 5.0
+  origin:
+    x_coord: 0.0
+    y_coord: 0.0
+
+bookcase:
+  name: bookcase
+  color: brown
+  centroid_x: -4.0
+  centroid_y: 0.0
+  maj_ax: 0.38
+  min_ax: 0.15
+  # degrees obj's maj axis to map's pos-x axis
+  orientation: 0.0
+  shape: rectangle
+
+game_table:
+  name: game_table
+  color: brown
+  centroid_x: -3.0
+  centroid_y: -0.5
+  maj_ax: 0.381
+  min_ax: 0.381
+  orientation: 3.138
+  shape: rectangle
+
+beer:
+  name: beer
+  color: green
+  centroid_x: 0.0
+  centroid_y: -1.0
+  maj_ax: 0.055
+  min_ax: 0.055
+  orientation: 0.0
+  shape: oval
+
+filing_cabinet:
+  name: filing_cabinet
+  color: brown
+  centroid_x: -0.401
+  centroid_y: -0.966
+  maj_ax: 0.495
+  min_ax: 0.366
+  orientation: 0.0
+  shape: rectangle
+
+table:
+  name: table
+  color: brown
+  centroid_x: -3.534
+  centroid_y: -2.0
+  maj_ax: 0.99
+  min_ax: 0.62
+  orientation: 0.0
+  shape: rectangle
+
+wall_1:
+  name: wall_1
+  color: brown
+  centroid_x: -4.23
+  centroid_y: -1.53
+  maj_ax: 4.25
+  min_ax: 0.15
+  orientation: 1.570795
+  shape: rectangle
+
+wall_2:
+  name: wall_3
+  color: brown
+  centroid_x: -1.724
+  centroid_y: 0.54
+  maj_ax: 5.0
+  min_ax: 0.15
+  orientation: 0.0
+  shape: rectangle
+
+wall_3:
+  name: wall_2
+  color: brown
+  centroid_x: -1.724
+  centroid_y: -3.568
+  maj_ax: 5.0
+  min_ax: 0.15
+  orientation: 0.0
+  shape: rectangle
+
+wall_4:
+  name: wall_4
+  color: brown
+  centroid_x: 0.799
+  centroid_y: -1.56
+  maj_ax: 4.25
+  min_ax: 0.15
+  orientation: 1.570795
+  shape: rectangle
