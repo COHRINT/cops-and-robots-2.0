@@ -1,0 +1,27 @@
+# Max and Min RBG values for each robber
+# To have caught_robber.py search for another robber
+#   simply add it to this yaml file
+# author = "LT"
+
+zhora:
+  r:
+    MIN: 30
+    MAX: 100
+  g:
+    MIN: 120
+    MAX: 210
+  b:
+    MIN: 80
+    MAX: 180
+
+# for testing purposes
+# yellow_battery:
+#   r:
+#     min: 160
+#     max: 255
+#   g:
+#     min: 160
+#     max: 255
+#   b:
+#     min: 20
+#     max: 150
