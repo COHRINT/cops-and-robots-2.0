@@ -633,10 +633,20 @@ class VideoContainer(QWidget):
         image_width = msg.width
         bytes_per_line = msg.step
 
+        # convert image from little endian BGR to big endian RGB
+        length = int(len(image_data)/2)
+        # unpack data into array
+        unpacked_data = array.array('H',image_data)
+        # swap bytes (to swap B and R)
+        unpacked_data.byteswap() # causes strange vertical line artifacts 
+        unpacked_data.reverse() #<>NOTE: reversing the entire list of bytes causes the image to be displayed upside down, but also removes artifacts for some reason
+        # repack with opposite endian format
+        image_data = struct.pack('<'+str(length)+'H',*unpacked_data)
+
         # create QImage with received image data and metadata
         self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
         if not self.image.isNull():
-            self.canvas.image = self.image
+            self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
         self.canvas.update()
 
 class VideoCanvas(QWidget):
