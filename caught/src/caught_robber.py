@@ -6,6 +6,14 @@ from __future__ import division
 
     To add or update colors of a robber visit the
         robber_colors.yaml file
+
+    To run:
+    $ ROS_NAMESPACE=<cop name>/camera/rgb rosrun image_proc image_proc
+    9
+    topic_name: /<cop_name>/camera/rgb/image_color
+
+    To view video feed from cop:
+    $ rosrun image_view image_view image:=/<cop_name>/camera/rgb/image_color
 """
 
 __author__ = "LT"
