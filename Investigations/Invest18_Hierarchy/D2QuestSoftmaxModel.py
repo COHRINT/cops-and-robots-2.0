@@ -34,8 +34,10 @@ A single room, with a table off to the side
 Softmax Observations are question dependent
 
 
-
 Bounds from [0,10] by [0,5] on both dimensions 
+
+Rewards are dispensed for being in the correct
+
 ****************************************************
 
 
@@ -77,12 +79,8 @@ class ModelSpec:
 		#left,right,up,down,near
 
 		if(gen):
-			weight = [[0,1],[-1,1],[1,1],[0,2],[0,0]]
-			bias = [1,0,0,0,0]; 
-			steep = 10;
-			weight = (np.array(weight)*steep).tolist(); 
-			bias = (np.array(bias)*steep).tolist(); 
-			self.pz = Softmax(weight,bias); 
+			self.pz = Softmax(); 
+			self.pz.buildRectangleModel([[2,2],[3,4]],10); 
 			print('Plotting Observation Model'); 
 			self.pz.plot2D(low=[0,0],high=[10,5],vis=True); 
 						
