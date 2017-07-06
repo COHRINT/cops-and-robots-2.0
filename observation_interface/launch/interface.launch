@@ -1,24 +1,20 @@
 <!-- Core Tools Interface -->
 <!--
   Author: Ian Loefgren
-  Last Modified: 5/24/2017
+  Last Modified: 7/3/2017
 
   The ROS launch file for the Core Tools observation interface, including a user
-  interface and associated ROS service.
+  interface, and image processing node.
 -->
 
 <launch>
 
-  <!-- Create Nodelet manager and process video from cop into rgb stream -->
-  <!-- <node name="nodelet_manager" pkg="nodelet" type="nodelet" args="manager" />
-  <node name="cop_video_proc" pkg="nodelet" type="nodelet"
-    args="load image_proc/debayer" >
-    <remap from="camera/rgb/" to="camera/rgb/processed" />
-
-  </node> -->
-
   <!-- Interface -->
   <node name="obs_interface" pkg="observation_interface"
     type="interface.py" output="screen" />
+
+  <!-- Cop Video Raw Image Processing -->
+  <node name="image_processing" pkg="image_proc" type="image_proc"
+    ns="/$(arg cop)/camera/rgb" />
 
 </launch>

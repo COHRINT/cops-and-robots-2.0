@@ -623,22 +623,6 @@ class VideoContainer(QWidget):
 
         self.setLayout(self.main_layout)
 
-    def ros_update(self,msg):
-        """
-        Callback function to display a ROS image topic with streaming video data.
-        """
-        # process received message
-        image_data = msg.data
-        image_height = msg.height
-        image_width = msg.width
-        bytes_per_line = msg.step
-
-        # create QImage with received image data and metadata
-        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-        if not self.image.isNull():
-            self.canvas.image = self.image
-        self.canvas.update()
-
 class VideoCanvas(QWidget):
     """
     Widget on which video frames can be painted by overiding paintEvent
@@ -655,8 +639,8 @@ class VideoCanvas(QWidget):
 
 class CopVideo(VideoContainer):
     """
-    Subclasses VideoDisplay to display the cop's camera feed. Currently displays
-    video in reversed blue-red color, as QImage does not have a BGR888 format.
+    Subclasses VideoDisplay to display the cop's camera feed. Performs some
+    intermediate processing to convert from BRG to RGB.
     """
     def __init__(self,cop_name='pris'):
         super(VideoContainer,self).__init__()
@@ -667,6 +651,32 @@ class CopVideo(VideoContainer):
         self.format = QImage.Format_RGB888
         self.initUI()
         rospy.Subscriber(self.topic_name, Image,self.ros_update)
+
+    def ros_update(self,msg):
+        """
+        Callback function to display a ROS image topic with streaming video data.
+        """
+        # process received message
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
+
+        # convert image from little endian BGR to big endian RGB
+        length = int(len(image_data)/2)
+        # unpack data into array
+        unpacked_data = array.array('H',image_data)
+        # swap bytes (to swap B and R)
+        unpacked_data.byteswap() # causes strange vertical line artifacts
+        unpacked_data.reverse() #<>NOTE: reversing the entire list of bytes causes the image to be displayed upside down, but also removes artifacts for some reason
+        # repack with opposite endian format
+        image_data = struct.pack('<'+str(length)+'H',*unpacked_data)
+
+        # create QImage with received image data and metadata
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+        if not self.image.isNull():
+            self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
+        self.canvas.update()
 
 class SecurityCamera(VideoContainer):
     """
@@ -682,3 +692,19 @@ class SecurityCamera(VideoContainer):
         self.initUI()
         self.format = QImage.Format_RGB888
         rospy.Subscriber(self.topic_name, Image, self.ros_update)
+
+    def ros_update(self,msg):
+        """
+        Callback function to display a ROS image topic with streaming video data.
+        """
+        # process received message
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
+
+        # create QImage with received image data and metadata
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+        if not self.image.isNull():
+            self.canvas.image = self.image
+        self.canvas.update()
