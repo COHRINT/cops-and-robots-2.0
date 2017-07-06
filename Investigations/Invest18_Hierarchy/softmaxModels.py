@@ -37,7 +37,7 @@ from gaussianMixtures import Gaussian
 from gaussianMixtures import GM
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import compress
-
+import scipy.linalg as linalg
 
 
 
@@ -58,6 +58,72 @@ class Softmax:
 		else:
 			self.bias = bias; 
 
+		self.size = len(self.weights); 
+
+		self.alpha = 3;
+		self.zeta_c = [0]*len(self.weights); 
+		for i in range(0,len(self.weights)):
+			self.zeta_c[i] = random()*10;  
+
+	def buildRectangleModel(self,recBounds,steepness = 1):
+
+		#Specify the lower left and upper right points
+		#recBounds = [[2,2],[3,4]]; 
+		#recBounds = [[1,1],[8,4]]; 
+
+		B = np.matrix([-1,0,recBounds[0][0],1,0,-recBounds[1][0],0,1,-recBounds[1][1],0,-1,recBounds[0][1]]).T; 
+		
+		M = np.zeros(shape=(12,15)); 
+
+		#Boundry: Left|Near
+		rowSB = 0; 
+		classNum1 = 1; 
+		classNum2 = 0; 
+		for i in range(0,3):
+			M[3*rowSB+i,3*classNum2+i] = -1; 
+			M[3*rowSB+i,3*classNum1+i] = 1; 
+
+
+		#Boundry: Right|Near
+		rowSB = 1; 
+		classNum1 = 2; 
+		classNum2 = 0; 
+		for i in range(0,3):
+			M[3*rowSB+i,3*classNum2+i] = -1; 
+			M[3*rowSB+i,3*classNum1+i] = 1; 
+
+
+		#Boundry: Up|Near
+		rowSB = 2; 
+		classNum1 = 3; 
+		classNum2 = 0; 
+		for i in range(0,3):
+			M[3*rowSB+i,3*classNum2+i] = -1; 
+			M[3*rowSB+i,3*classNum1+i] = 1; 
+
+		#Boundry: Down|Near
+		rowSB = 3; 
+		classNum1 = 4; 
+		classNum2 = 0; 
+		for i in range(0,3):
+			M[3*rowSB+i,3*classNum2+i] = -1; 
+			M[3*rowSB+i,3*classNum1+i] = 1; 
+
+		A = np.hstack((M,B)); 
+		# print(np.linalg.matrix_rank(A))
+		# print(np.linalg.matrix_rank(M))
+
+		Theta = linalg.lstsq(M,B)[0].tolist();  
+
+		weight = []; 
+		bias = []; 
+		for i in range(0,len(Theta)//3):
+			weight.append([Theta[3*i][0],Theta[3*i+1][0]]); 
+			bias.append(Theta[3*i+2][0]); 
+
+		steep = steepness;
+		self.weights = (np.array(weight)*steep).tolist(); 
+		self.bias = (np.array(bias)*steep).tolist();
 		self.size = len(self.weights); 
 
 		self.alpha = 3;
@@ -627,11 +693,43 @@ def test4DSoftmax():
 	
 	plt.show(); 
 
+def testRectangleModel():
+	pz = Softmax(); 
+	pz.buildRectangleModel([[2,2],[3,4]],1); 
+	#print('Plotting Observation Model'); 
+	#pz.plot2D(low=[0,0],high=[10,5],vis=True); 
+
+
+	prior = GM(); 
+	for i in range(0,10):
+		for j in range(0,5):
+			prior.addG(Gaussian([i,j],[[1,0],[0,1]],1)); 
+	# prior.addG(Gaussian([4,3],[[1,0],[0,1]],1)); 
+	# prior.addG(Gaussian([7,2],[[4,1],[1,4]],3))
+
+	prior.normalizeWeights(); 
+
+	dela = 0.1; 
+	x, y = np.mgrid[0:10:dela, 0:5:dela]
+	fig,axarr = plt.subplots(6);
+	axarr[0].contourf(x,y,prior.discretize2D(low=[0,0],high=[10,5],delta=dela)); 
+	axarr[0].set_title('Prior'); 
+	titles = ['Inside','Left','Right','Up','Down'];  
+	for i in range(0,5):
+		post = pz.runVBND(prior,i); 
+		c = post.discretize2D(low=[0,0],high=[10,5],delta=dela); 
+		axarr[i+1].contourf(x,y,c,cmap='viridis'); 
+		axarr[i+1].set_title('Post: ' + titles[i]); 
+
+	plt.show(); 
+
+
 if __name__ == "__main__":
 
 	#test1DSoftmax(); 
 	#test2DSoftmax(); 
-	test4DSoftmax(); 
+	#test4DSoftmax();
+	testRectangleModel();  
 	
 	
 
