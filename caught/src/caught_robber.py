@@ -19,7 +19,7 @@ from __future__ import division
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -28,24 +28,33 @@ import rospy
 import roslib
 import cv2
 import numpy as np
+import numpy.polynomial.polynomial as poly
 import pymsgbox
 import os
 import yaml
+import sys
 
 from sensor_msgs.msg import Image
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from cv_bridge import CvBridge, CvBridgeError
 
+# calculated from find_cam_calib.py
+# coefs = [ 33518.96832373, -48636.45623814,  18884.04641427] # for 0.125 - 1.5
+coefs = [ 34706.81758805, -58782.89189293,  27970.47650456]
 class Caught_Robber(object):
 
-    def __init__(self, copList):
 
+    def __init__(self, copList, dist):
 
-        self.caught_val = 12000 # Identify benchmark pixels => "a catch"
+        # Identify benchmark pixels => "a catch"
+        self.caught_val = self.calibrate_caught_distance(dist)
+        if(self.caught_val == 0):
+            raise Exception('Bad Calibration Value')
+        else:
+            print("Calibration set to: " + str(self.caught_val))
 
         rospy.init_node('caught_robber')
-
         # Identify Cops' image topics to subscribe to
         # All topics have same callback "self.caught_callback"
         for cop in copList:
@@ -63,6 +72,7 @@ class Caught_Robber(object):
                     # Add a publisher object to each robber's info
                     # Topic name "/caught_zhora" or "/caught_roy"
                     self.robber_info[rob]['pub'] = rospy.Publisher('/caught_' + rob, Bool, queue_size=10)
+                    rospy.Subscriber('/caught_confirm_' + rob, Bool, self.jail_zhora)
                     self.robber_info[rob]['caught'] = False
                     self.num_robbers += 1
 
@@ -71,9 +81,21 @@ class Caught_Robber(object):
 
         self.bridge = CvBridge()
         self.counter = 0 # Counter for blob detection consistency
-        self.caught_count = 5 # The number counter must reach for a catch (filter consistency in reading)
+        self.caught_count = 1 # The number counter must reach for a catch (filter consistency in reading)
         print("Caught_Robber callback ready")
         rospy.spin()
+
+
+    """ Returns the pixel area for a catch given a distance """
+    def calibrate_caught_distance(self, dist):
+        if (dist > 1.0):
+            print("\n****Invalid distance, Please enter a value" +
+                " below 1.0****\n")
+            return 0
+        if (dist < .15):
+            dist = .15
+        return poly.polyval(dist, coefs)
+
 
     def caught_callback(self, ros_image):
         print("Entering Caught Callback")
@@ -118,26 +140,18 @@ class Caught_Robber(object):
                 if area > self.caught_val:
                     self.counter += 1
                     if (self.counter >= self.caught_count):
-                        res = pymsgbox.confirm("Did I catch " + rob + "?", title="Robber Caught?", buttons=["Yes", "No"])
-                        if res == "Yes":
-                            print("Caught " + rob)
-                            msg = Bool()
-                            msg.data = True
-                            pub.publish(msg)
-                            self.robber_info[rob]['caught'] = True
-                            self.num_robbers -= 1
-                        else:
-                            print("Not Caught")
-                            print("Sleeping")
-                            rospy.sleep(8)
+                        msg = Bool()
+                        msg.data = True
+                        pub.publish(msg)
                         self.counter = 0 # restart
+                        rospy.sleep(8)
                 else:
                     self.counter = 0
 
-                #cv2.imshow("image", cv_image) For un affected image view
+                # cv2.imshow("image", cv_image) #For un affected image view
 
-                # cv2.imshow("mask", output)
-                # cv2.waitKey(10)
+                cv2.imshow("mask", output)
+                cv2.waitKey(5)
 
         except CvBridgeError as e:
             print(e)
@@ -148,6 +162,21 @@ class Caught_Robber(object):
             print("******************\n")
             rospy.signal_shutdown("All Robbers Caught!")
 
+    def jail_zhora(self, msg): # TODO make a custom msg that will have robber's name
+        if msg.data == True:
+            self.robber_info['zhora']['caught'] = True
+            self.num_robbers -= 1
+            print("\n**********\n")
+            print("Zhora Jailed!")
+            print("\n**********\n")
+        else:
+            print("It wasn't Zhora...")
+
 if __name__ == '__main__':
-    cop = ["pris"] # for multiple cops
-    a = Caught_Robber(cop)
+    dist = 0.5
+    if len(sys.argv) == 2:
+        dist = float(sys.argv[1])
+    else:
+        print("Using default caught distance: " + str(dist))
+    cop = ["roy"] # for multiple cops
+    a = Caught_Robber(cop, dist)

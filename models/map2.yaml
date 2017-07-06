@@ -16,31 +16,36 @@ info:
     x_coord: 0.0
     y_coord: 0.0
   rooms:
-    kitchen:
-      min_x: -4.0
-      min_y: -4.0
-      max_x: 2.25
-      max_y: 3.45
+    study:
+      min_x: -7.0
+      min_y: -3.33
+      max_x: -2.0
+      max_y: -1.0
     hallway:
-      min_x: 0.0
-      min_y: 0.0
-      max_x: 0.0
-      max_y: 0.0
+      min_x: -9.5
+      min_y: -1.0
+      max_x: 4.0
+      max_y: 1.4
     library:
-      min_x: 0.0
-      min_y: 0.0
-      max_x: 0.0
-      max_y: 0.0
+      min_x: -2.0
+      min_y: -3.33
+      max_x: 4.0
+      max_y: -1.0
     billiard room:
-      min_x: -1.3
-      min_y: -1.2
-      max_x: 2.23
-      max_y: 8.65
+      min_x: 0
+      min_y: 1.4
+      max_x: 4
+      max_y: 3.68
     dining room:
-      min_x: 0.0
-      min_y: 0.0
+      min_x: -9.5
+      min_y: -3.33
+      max_x: -7.0
+      max_y: -1.0
+    kitchen:
+      min_x: -9.5
+      min_y: 1.4
       max_x: 0.0
-      max_y: 0.0
+      max_y: 3.68
 
 bookcase:
   name: bookcase
