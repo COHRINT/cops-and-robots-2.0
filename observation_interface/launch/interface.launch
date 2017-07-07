@@ -14,7 +14,7 @@
     type="interface.py" output="screen" />
 
   <!-- Cop Video Raw Image Processing -->
-  <node name="image_processing" pkg="image_proc" type="image_proc"
-    ns="/$(arg cop)/camera/rgb" />
+  <!-- <node name="image_processing" pkg="image_proc" type="image_proc"
+    ns="/$(arg cop)/camera/rgb" /> -->
 
 </launch>

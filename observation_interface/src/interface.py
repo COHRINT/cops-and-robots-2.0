@@ -108,7 +108,7 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        self.cop_video = CopVideo('roy')
+        self.cop_video = CopVideo('pris')
         self.cam_1 = SecurityCamera(1,'Study')
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Kitchen')
