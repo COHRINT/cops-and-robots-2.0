@@ -60,6 +60,8 @@ main_widget_style = "\
 
 class ObservationInterface(QMainWindow):
 
+    caught_signal = pyqtSignal(str)
+
     def __init__(self):
 
         self.app_name = 'Cops and Robots 1.5'
@@ -70,6 +72,12 @@ class ObservationInterface(QMainWindow):
         self.initUI()
 
         rospy.init_node('obs_interface')
+
+        rospy.Subscriber('/caught',Caught,self.caught_callback)
+        self.caught_pub = rospy.Publisher('/caught_confirm',Caught,queue_size=10)
+
+        self.caught_signal.connect(self.caught_event)
+
         print('Observation Interface ready.')
 
     def initUI(self):
@@ -87,7 +95,7 @@ class ObservationInterface(QMainWindow):
         # COHRINT logo
         self.logo = QLabel()
         self.logo_image = QPixmap()
-        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + ('/black_cohrint_symbshort.png')))
+        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + '/black_cohrint_symbshort.png'))
         self.logo_image = self.logo_image.scaled(93,100,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logo.setPixmap(self.logo_image)
         self.main_layout.addWidget(self.logo,0,12,1,1,Qt.AlignRight)
@@ -135,6 +143,26 @@ class ObservationInterface(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def caught_callback(self,msg):
+        name = msg.robber
+        self.caught_signal.emit(name)
+
+    @pyqtSlot(str)
+    def caught_event(self,name):
+        name = name.title()
+        dialog_reply = QMessageBox.information(self,'Caught?', \
+                        'Was '+name+' caught?', \
+                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        caught = None
+        if dialog_reply == QMessageBox.Yes:
+            caught = True
+        else:
+            caught = False
+
+        caught_msg = Caught(name.lower(),caught)
+        self.caught_pub.publish(caught_msg)
 
 
 if __name__ == "__main__":

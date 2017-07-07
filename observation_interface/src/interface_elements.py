@@ -28,7 +28,6 @@ import PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
-from PyQt5.QtMultimedia import *
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, CompressedImage
