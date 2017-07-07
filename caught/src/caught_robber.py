@@ -19,7 +19,7 @@ from __future__ import division
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.1"
+__version__ = "1.2"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -35,8 +35,7 @@ import yaml
 import sys
 
 from sensor_msgs.msg import Image
-from std_msgs.msg import Bool
-from std_msgs.msg import String
+from caught.msg import Caught
 from cv_bridge import CvBridge, CvBridgeError
 
 # calculated from find_cam_calib.py
@@ -62,6 +61,8 @@ class Caught_Robber(object):
             rospy.Subscriber(video_feed, Image ,self.caught_callback)
 
         self.num_robbers = 0
+        self.pub = rospy.Publisher('/caught' , Caught, queue_size=10)
+        rospy.Subscriber('/caught_confirm', Caught, self.jail_robber)
         # Open color config file of robbers
         try:
             yaml_cfg_file = os.path.dirname(__file__) \
@@ -69,10 +70,6 @@ class Caught_Robber(object):
             with open(yaml_cfg_file, 'r') as color_cfg:
                 self.robber_info = yaml.load(color_cfg) # load color info as a dict
                 for rob in self.robber_info:
-                    # Add a publisher object to each robber's info
-                    # Topic name "/caught_zhora" or "/caught_roy"
-                    self.robber_info[rob]['pub'] = rospy.Publisher('/caught_' + rob, Bool, queue_size=10)
-                    rospy.Subscriber('/caught_confirm_' + rob, Bool, self.jail_zhora)
                     self.robber_info[rob]['caught'] = False
                     self.num_robbers += 1
 
@@ -107,9 +104,6 @@ class Caught_Robber(object):
                 if self.robber_info[rob]['caught'] == True: # check if the robbers already been caught
                     continue
 
-
-                pub = self.robber_info[rob]['pub'] # Each robber's corresponding caught publisher
-
                 r_min = self.robber_info[rob]['r']['MIN']
                 g_min = self.robber_info[rob]['g']['MIN']
                 b_min = self.robber_info[rob]['b']['MIN']
@@ -140,9 +134,10 @@ class Caught_Robber(object):
                 if area > self.caught_val:
                     self.counter += 1
                     if (self.counter >= self.caught_count):
-                        msg = Bool()
-                        msg.data = True
-                        pub.publish(msg)
+                        msg = Caught()
+                        msg.robber = rob
+                        msg.confirm = True
+                        self.pub.publish(msg)
                         self.counter = 0 # restart
                         rospy.sleep(8)
                 else:
@@ -162,12 +157,12 @@ class Caught_Robber(object):
             print("******************\n")
             rospy.signal_shutdown("All Robbers Caught!")
 
-    def jail_zhora(self, msg): # TODO make a custom msg that will have robber's name
-        if msg.data == True:
-            self.robber_info['zhora']['caught'] = True
+    def jail_robber(self, msg): # TODO make a custom msg that will have robber's name
+        if msg.confirm == True:
+            self.robber_info[msg.robber]['caught'] = True
             self.num_robbers -= 1
             print("\n**********\n")
-            print("Zhora Jailed!")
+            print(msg.robber + " Jailed!")
             print("\n**********\n")
         else:
             print("It wasn't Zhora...")
