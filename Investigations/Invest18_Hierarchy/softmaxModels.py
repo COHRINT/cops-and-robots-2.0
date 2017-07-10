@@ -131,6 +131,37 @@ class Softmax:
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
 
+	def buildGeneralModel(self,dims,numClasses,boundries,B,steepness=1):
+		dims = 2; 
+
+		M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
+
+
+		for j in range(0,len(boundries)):
+			for i in range(0,dims+1):
+				M[(dims+1)*j+i,(dims+1)*boundries[j][1]+i] = -1; 
+				M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
+
+		A = np.hstack((M,B)); 
+
+		Theta = linalg.lstsq(M,B)[0].tolist();
+
+		weight = []; 
+		bias = []; 
+		for i in range(0,len(Theta)//(dims+1)):
+			weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0]]); 
+			bias.append(Theta[(dims+1)*i+dims][0]); 
+
+		steep = steepness;
+		self.weights = (np.array(weight)*steep).tolist(); 
+		self.bias = (np.array(bias)*steep).tolist();
+		self.size = len(self.weights); 
+
+		self.alpha = 3;
+		self.zeta_c = [0]*len(self.weights); 
+		for i in range(0,len(self.weights)):
+			self.zeta_c[i] = random()*10;  
+
 
 	def Estep(self,weight,bias,prior_mean,prior_var,alpha = 0.5,zeta_c = 1,softClassNum=0):
 	
@@ -446,33 +477,39 @@ class Softmax:
 		else:
 			return [x,softmax]; 
 
-	def plot2D(self,low = [0,0],high = [5,5], res = 100,labels = None,vis = True):
-		x, y = np.mgrid[low[0]:high[0]:(float(high[0]-low[0])/res), low[1]:high[1]:(float(high[1]-low[1])/res)]
+	def plot2D(self,low = [0,0],high = [5,5],labels = None,vis = True,delta=0.1):
+		#x, y = np.mgrid[low[0]:high[0]:(float(high[0]-low[0])/res), low[1]:high[1]:(float(high[1]-low[1])/res)]
+		x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
 		pos = np.dstack((x, y))  
+		resx = int((high[0]-low[0])//delta)+1;
+		resy = int((high[1]-low[1])//delta)+1; 
+
+
+		#model = [[[0 for i in range(0,res)] for j in range(0,res)] for k in range(0,len(self.weights))];
+		model = [[[0 for i in range(0,resy)] for j in range(0,resx)] for k in range(0,len(self.weights))];
 		
-		model = [[[0 for i in range(0,res)] for j in range(0,res)] for k in range(0,len(self.weights))];
-		
+
 		for m in range(0,len(self.weights)):
-			for i in range(0,res):
-				xx = (i*(high[0]-low[0])/res + low[0]);
-				for j in range(0,res):
-					yy = (j*(high[1]-low[1])/res + low[1])
+			for i in range(0,resx):
+				xx = (i*(high[0]-low[0])/resx + low[0]);
+				for j in range(0,resy):
+					yy = (j*(high[1]-low[1])/resy + low[1])
 					dem = 0; 
 					for k in range(0,len(self.weights)):
 						dem+=np.exp(self.weights[k][0]*xx + self.weights[k][1]*yy + self.bias[k]);
 					model[m][i][j] = np.exp(self.weights[m][0]*xx + self.weights[m][1]*yy + self.bias[m])/dem;
 
-		dom = [[0 for i in range(0,res)] for j in range(0,res)]; 
+		dom = [[0 for i in range(0,resy)] for j in range(0,resx)]; 
 		for m in range(0,len(self.weights)):
-			for i in range(0,res):
-				for j in range(0,res):
+			for i in range(0,resx):
+				for j in range(0,resy):
 					dom[i][j] = np.argmax([model[h][i][j] for h in range(0,len(self.weights))]); 
 		if(vis):
 			plt.contourf(x,y,dom,cmap = 'viridis'); 
 			
 			fig = plt.figure()
 			ax = fig.gca(projection='3d');
-			colors = ['b','r','g','y','k','b','r','g','y','k']; 
+			colors = ['b','g','r','c','m','y','k','w','b','g']; 
 			for i in range(0,len(model)):
 				ax.plot_surface(x,y,model[i],color = colors[i]); 
 			
@@ -723,14 +760,44 @@ def testRectangleModel():
 
 	plt.show(); 
 
+def testGeneralModel():
+	pz = Softmax(); 
+	#self,dims,numClasses,boundries,B,steepness=1):
+	pz.buildGeneralModel(2,4,[[1,0],[2,0],[3,0]],np.matrix([-1,1,-1,1,1,-1,0,-1,-1]).T); 
+	#print('Plotting Observation Model'); 
+	#pz.plot2D(low=[0,0],high=[10,5],vis=True); 
+
+	prior = GM(); 
+	for i in range(0,10):
+		for j in range(0,5):
+			prior.addG(Gaussian([i,j],[[1,0],[0,1]],1)); 
+	# prior.addG(Gaussian([4,3],[[1,0],[0,1]],1)); 
+	# prior.addG(Gaussian([7,2],[[4,1],[1,4]],3))
+
+	prior.normalizeWeights(); 
+
+	dela = 0.1; 
+	x, y = np.mgrid[0:10:dela, 0:5:dela]
+	fig,axarr = plt.subplots(5);
+	axarr[0].contourf(x,y,prior.discretize2D(low=[0,0],high=[10,5],delta=dela)); 
+	axarr[0].set_title('Prior'); 
+	titles = ['Inside','Left','Right','Down'];  
+	for i in range(0,4):
+		post = pz.runVBND(prior,i); 
+		c = post.discretize2D(low=[0,0],high=[10,5],delta=dela); 
+		axarr[i+1].contourf(x,y,c,cmap='viridis'); 
+		axarr[i+1].set_title('Post: ' + titles[i]); 
+
+	plt.show();
+
 
 if __name__ == "__main__":
 
 	#test1DSoftmax(); 
 	#test2DSoftmax(); 
 	#test4DSoftmax();
-	testRectangleModel();  
-	
+	#testRectangleModel();  
+	testGeneralModel(); 
 	
 
 

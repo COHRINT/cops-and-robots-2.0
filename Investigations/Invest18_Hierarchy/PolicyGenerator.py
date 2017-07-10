@@ -102,13 +102,17 @@ class PolicyGenerator:
 		  		self.useSoft = False; 
 
 		if(problemName == ''):
-			print('Input Problem Name'); 
-			problemName = raw_input(); 
+			#print('Input Problem Name'); 
+			#problemName = raw_input(); 
+			problemName = 'D2QuestSoftmax'; 
 
 
-		belLoad = '../beliefs/' + problemName + 'Beliefs' + belNum + '.npy'; 
-		self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
-		modelPath = '../models/'+ problemName + 'Model'; 
+		#belLoad = '../beliefs/' + problemName + 'Beliefs' + belNum + '.npy'; 
+		belLoad = 'D2QuestBeliefs1.npy'; 
+		#self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
+		self.alSave = problemName + 'Alphas' + self.alphaNum + '.npy'; 
+		#modelPath = '../models/'+ problemName + 'Model'; 
+		modelPath = problemName + 'Model'; 
 		modelName = problemName+'Model'; 
 
 		self.problemName = problemName; 
@@ -132,7 +136,7 @@ class PolicyGenerator:
 			print("Building Observation Models"); 
 		allMod.buildObs(gen=generate);
 		self.pz = allMod.pz;
-		
+		self.pz2 = allMod.pz2; 
 
 		#Build Reward Model
 		if(generate == True):
@@ -199,7 +203,8 @@ class PolicyGenerator:
 			if(self.useSoft):
 				self.preComputeAlsSoftmax(); 
 			else:
-				self.preComputeAls(); 
+				#self.preComputeAls();
+				self.preComputeAlsSoftmaxFactored();  
 
 			while(len(BTilde) > 0):
 
@@ -210,7 +215,8 @@ class PolicyGenerator:
 
 				BTilde.remove(b); 
 
-				al = self.backup(b); 
+				#al = self.backup(b); 
+				al = self.backupFactored(b); 
 
 			
 				if(self.continuousDot(al,b) < Value[self.findB(b)]):
@@ -348,6 +354,78 @@ class PolicyGenerator:
 
 		self.preAls = als1; 
 
+	#NOTE: Experimental Factored actions and observations step
+	def preComputeAlsSoftmaxFactored(self):
+		G = self.Gamma; 
+		#for each alpha, each movement, each question, each question answer, each view cone
+		als1 = np.zeros(shape = (len(G),len(self.delA),4,2,2)).tolist(); 
+
+		#questions left, right, in front of, behind
+
+		for j in range(0,len(G)):
+			for am in range(0,len(self.delA)):
+				for aq in range(0,4):
+					for oq in range(0,2):
+						for ov in range(0,2):
+							als1[j][am][aq][oq][ov] = GM(); 
+							#get observation from question
+							#If 0, multimodal
+							alObs = GM(); 
+							if(oq == 0):
+								for h in range(0,4):
+									if(h!=aq):
+										alObs.addGM(self.pz.runVBND(G[j],h+1)); 
+							elif(oq == 1):
+								alObs.addGM(self.pz.runVBND(G[j],aq+1)); 
+
+							#Get view cone
+							alObs2 = GM(); 
+							if(ov == 0):
+								for h in range(0,4):
+									alObs2.addGM(self.pz2.runVBND(alObs,h+1)); 
+							elif(ov==1):
+								alObs2.addGM(self.pz2.runVBND(alObs,0)); 
+
+
+							for k in alObs.Gs:
+								mean = (np.matrix(k.mean) - np.matrix(self.delA[am])).tolist(); 
+								var = (np.matrix(k.var) + np.matrix(self.delAVar)).tolist(); 
+								weight = k.weight; 
+								als1[j][am][aq][oq][ov].addG(Gaussian(mean,var,weight)); 
+		self.preAls = als1; 
+
+	#NOTE: Experimental Factored actions and observations step
+	def backupFactored(self,b):
+		G = self.Gamma; 
+		R = self.r; 
+		pz = self.pz; 
+		pz2 = self.pz2; 
+
+		als1 = self.preAls; 
+
+		bestVal = -10000000000; 
+		bestAct= [0,0]; 
+		bestGM = []; 
+
+		for am in range(0,len(self.delA)):
+			for aq in range(0,4):
+				suma = GM(); 
+				for oq in range(0,2):
+					for ov in range(0,2):
+						suma.addGM(als1[np.argmax([self.continuousDot(als1[j][am][aq][oq][ov],b) for j in range(0,len(als1))])][am][aq][oq][ov]); 
+				suma.scalerMultiply(self.discount); 
+				suma.addGM(R[am]); 
+
+				tmp = self.continuousDot(suma,b);
+				#print(a,tmp); 
+				if(tmp > bestVal):
+					bestAct = [am,aq]; 
+					bestGM = copy.deepcopy(suma); 
+					bestVal = tmp; 
+
+		bestGM.action = bestAct; 
+
+		return bestGM;
 
 	def backup(self,b):
 		G = self.Gamma; 
@@ -434,9 +512,20 @@ class PolicyGenerator:
 
 if __name__ == "__main__":
 
-	a = PolicyGenerator(sys.argv); 
-	a.solve(); 
+	#a = PolicyGenerator(sys.argv); 
+	#a.solve(); 
 
-	
+	gamma = np.load('D2QuestSoftmaxAlphas1.npy'); 
+
+	fig,axarr = plt.subplots(len(gamma));
+	minim = -100
+	maxim = 100 
+
+	levels = np.linspace(minim,maxim);  
+	for i in range(0,len(gamma)):
+		x,y,c = gamma[i].plot2D(low=[0,0],high=[10,5],vis=False); 
+		axarr[i].contourf(x,y,c,levels = levels,vmin = minim,vmax = maxim); 
+		axarr[i].set_title(str(gamma[i].action)); 
+	plt.show(); 
 
 	

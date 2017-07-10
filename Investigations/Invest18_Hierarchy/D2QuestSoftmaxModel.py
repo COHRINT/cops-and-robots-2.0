@@ -36,7 +36,10 @@ Softmax Observations are question dependent
 
 Bounds from [0,10] by [0,5] on both dimensions 
 
-Rewards are dispensed for being in the correct
+Rewards are dispensed for catching a robber located 
+at 1,3. Behind the table.
+Negative rewards are dispensed for being inside the
+table
 
 ****************************************************
 
@@ -56,7 +59,7 @@ __status__ = "Development"
 class ModelSpec:
 
 	def __init__(self):
-		self.fileNamePrefix = 'D2QuestsSoftmax'; 
+		self.fileNamePrefix = 'D2QuestSoftmax'; 
 		self.walls = []; 
 
 
@@ -87,9 +90,15 @@ class ModelSpec:
 
 			f = open(self.fileNamePrefix + "OBS.npy","w"); 
 			np.save(f,self.pz);
+
+			self.pz2 = Softmax(); 
+			self.pz2.buildRectangleModel([[.75,2.75],[1.25,3.25]],10);
+			f = open(self.fileNamePrefix+"2OBS.npy","w"); 
+			np.save(f,self.pz2);  
+
 		else:
 			self.pz = np.load(self.fileNamePrefix + "OBS.npy").tolist(); 
-			
+			self.pz2 = np.load(self.fileNamePrefix+"2OBS.npy").tolist(); 
 			
 	#Problem Specific
 	def buildReward(self,gen = True):
@@ -101,12 +110,17 @@ class ModelSpec:
 			for i in range(0,len(self.r)):
 				self.r[i] = GM();  
 
-			var = (np.identity(2)*.5).tolist(); 
+			var = (np.identity(2)*.25).tolist(); 
 
+			#Positive Rewards
 			for i in range(0,len(self.r)):
-				self.r[i].addG(Gaussian([-self.delA[i][0],-self.delA[i][1]],var,10));
+				self.r[i].addG(Gaussian([1-self.delA[i][0],3-self.delA[i][1]],var,30));
 
-			
+			#Negative Rewards
+			for i in range(0,len(self.r)):
+				self.r[i].addG(Gaussian([2.5-self.delA[i][0],2.5-self.delA[i][1]],var,-50));
+				self.r[i].addG(Gaussian([2.5-self.delA[i][0],3-self.delA[i][1]],var,-50));
+				self.r[i].addG(Gaussian([2.5-self.delA[i][0],3.5-self.delA[i][1]],var,-50));
 
 			print('Plotting Reward Model'); 
 			for i in range(0,len(self.r)):
@@ -131,7 +145,7 @@ class ModelSpec:
 				plt.title('Reward for action: ' + str(i));
 				plt.xlabel('Robot X'); 
 				plt.ylabel('Robot Y'); 
-				plt.show(); 
+				plt.pause(0.5); 
 
 
 			f = open(self.fileNamePrefix + "REW.npy","w"); 
@@ -146,8 +160,11 @@ class ModelSpec:
 if __name__ == '__main__':
 	a = ModelSpec(); 
 	a.buildTransition(); 
-	a.buildReward(gen = False); 
+	#a.buildReward(gen = True); 
 	a.buildObs(gen = True); 
+
+
+
 
 	
 
