@@ -1,11 +1,7 @@
-#!/usr/bin/env python
 from __future__ import division
-from __future__ import print_function
+
 """
-
-
-    *** ODROID VERSION ***
-
+    *** COMPUTER VERSION ***
 
     Node that publishes if a cop has caught a robber
     using OpenCV's color recognition of the robber
@@ -25,7 +21,7 @@ from __future__ import print_function
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.4" # ODROID VERSION
+__version__ = "1.3.0"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -46,8 +42,7 @@ from cv_bridge import CvBridge, CvBridgeError
 # calculated from find_cam_calib.py
 # coefs = [ 33518.96832373, -48636.45623814,  18884.04641427] # for 0.125 - 1.5
 coefs = [ 34706.81758805, -58782.89189293,  27970.47650456]
-WAIT_TIME = 200 # cycles between a false alarm and begin search for next catch
-
+WAIT_TIME = 200
 class Caught_Robber(object):
 
 
@@ -65,22 +60,18 @@ class Caught_Robber(object):
         # All topics have same callback "self.caught_callback"
         for cop in copList:
             video_feed = "/" + cop + '/camera/rgb/image_color'
-            rospy.Subscriber(video_feed, Image, self.caught_callback)
+            rospy.Subscriber(video_feed, Image ,self.caught_callback)
 
         self.num_robbers = 0
         self.pub = rospy.Publisher('/caught' , Caught, queue_size=10)
         rospy.Subscriber('/caught_confirm', Caught, self.jail_robber)
         # Open color config file of robbers
         try:
-	    #print("\n\n\nTrying to open\n\n\n")
             yaml_cfg_file = os.path.dirname(__file__) \
-                + '/robber_colors.yaml' # add the '/' before 'robber' on odroids
+                + 'robber_colors.yaml'
             with open(yaml_cfg_file, 'r') as color_cfg:
                 self.robber_info = yaml.load(color_cfg) # load color info as a dict
                 for rob in self.robber_info:
-		    #print("\n\n\n**************")
-		    #print(rob)
-		    #print("***************\n\n\n")
                     self.robber_info[rob]['caught'] = False
                     self.num_robbers += 1
 
@@ -88,13 +79,9 @@ class Caught_Robber(object):
             print(ioerr)
 
         self.bridge = CvBridge()
-	self.publishing = False # ODROIDs don't have this weird spacing
-	self.wait_time = 0
-
         self.counter = 0 # Counter for blob detection consistency
         self.caught_count = 1 # The number counter must reach for a catch (filter consistency in reading)
-
-        print("Caught Robber callback ready")
+        print("Caught_Robber callback ready")
         rospy.spin()
 
 
@@ -110,20 +97,13 @@ class Caught_Robber(object):
 
 
     def caught_callback(self, ros_image):
-        print("Entering Caught Callback: ", end="")
-	if self.publishing == True:
-	    print("Already Published")
-	    return
-	elif self.wait_time > 0:
-	    print("Wait: " + str(self.wait_time))
-	    self.wait_time -= 1
-	    return
+        print("Entering Caught Callback")
 
         try:
             cv_image = self.bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
 
             for rob in self.robber_info:
-                if self.robber_info[rob]['caught'] == True: # check if robber has already been caught
+                if self.robber_info[rob]['caught'] == True: # check if the robbers already been caught
                     continue
 
                 r_min = self.robber_info[rob]['r']['MIN']
@@ -144,37 +124,40 @@ class Caught_Robber(object):
 
                 # Analyze and manipulate the image
                 mask = cv2.inRange(cv_image, lower_np, upper_np) # Color mask image according to min and max
-                cont, hier = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-                #output = cv2.bitwise_and(cv_image, cv_image, mask = mask)
+                image, cont, hier = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+                output = cv2.bitwise_and(cv_image, cv_image, mask = mask)
 
                 # Find the largest contour
                 c = max(cont, key=cv2.contourArea)
                 area = cv2.contourArea(c)
-                print(" Max Contour: " + str(area))
+                print(area)
 
                 # Check publish caught msg
                 if area > self.caught_val:
                     self.counter += 1
                     if (self.counter >= self.caught_count):
-			if self.publishing == False:
-			    self.publishing = True
-                            msg = Caught()
-                  	    msg.robber = rob
-                            msg.confirm = True
-                            self.pub.publish(msg)
-                            self.counter = 0 # restart
-			    print("PUBLISHING!!!")
+                        msg = Caught()
+                        msg.robber = rob
+                        msg.confirm = True
+                        self.pub.publish(msg)
+                        self.counter = 0 # restart
+                        rospy.sleep(8)
                 else:
                     self.counter = 0
 
                 # cv2.imshow("image", cv_image) #For un affected image view
 
-                #cv2.imshow("mask", output)
-                #cv2.waitKey(5)
+                cv2.imshow("mask", output)
+                cv2.waitKey(5)
 
         except CvBridgeError as e:
             print(e)
 
+        if self.num_robbers == 0:
+            print("\n******************")
+            print("All Robbers Caught!")
+            print("******************\n")
+            rospy.signal_shutdown("All Robbers Caught!")
 
     def jail_robber(self, msg):
         if msg.confirm == True:
@@ -194,7 +177,6 @@ class Caught_Robber(object):
             print("All Robbers Caught!")
             print("******************\n")
             rospy.signal_shutdown("All Robbers Caught!")
-
 
 if __name__ == '__main__':
     dist = 0.5
