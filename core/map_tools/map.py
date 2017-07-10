@@ -408,7 +408,7 @@ def set_up_fleming(map_):
               'Fridge', 'Checkers Table', 'Fern']
     colors = ['sandybrown', 'sandybrown', 'brown', 'black',
               'brown', 'bisque', 'black',
-              'black', 'sandybrown', 'sage']
+              'black', 'sandybrown', 'green']
     poses = np.array([[0, -1.2, 270],  # Bookcase
                       [-5.5, -2, 0],  # Desk
                       [3, -2, 270],  # Chair
@@ -449,7 +449,7 @@ def set_up_fleming(map_):
     # Create areas
     labels = ['Study', 'Library', 'Kitchen', 'Billiard Room', 'Hallway',
               'Dining Room']
-    colors = ['aquamarine', 'lightcoral', 'goldenrod', 'sage',
+    colors = ['aquamarine', 'lightcoral', 'goldenrod', 'green',
               'cornflowerblue', 'orchid']
     # points = np.array([[[-7.0, -3.33], [-7.0, -1], [-2, -1], [-2, -3.33]],
     #                    [[-2, -3.33], [-2, -1], [4.0, -1], [4.0, -3.33]],
