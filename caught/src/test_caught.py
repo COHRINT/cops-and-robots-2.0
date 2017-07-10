@@ -1,4 +1,6 @@
 """ Simple interface to test caught_robber.py """
+
+
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
@@ -22,16 +24,19 @@ class Test_Caught(object):
 		rospy.spin()
 
 	def robber_callback(self, msg):
+		msg_res = Caught()
+		msg_res.robber = msg.robber
 		res = pymsgbox.confirm("Did I catch "+ msg.robber +" ?" , title="Robber Caught?", buttons=["Yes", "No"])
 		if res == "Yes":
 			print("Marking " + msg.robber + " as caught!")
-			msg_res = Caught()
-			msg_res.robber = msg.robber
 			msg_res.confirm = True
-			self.pub.publish(msg)
 			self.num_robbers -= 1
-			if self.num_robbers == 0:
-				rospy.signal_shutdown("All Robbers Caught!")
+		else:
+			msg_res.confirm = False
+		self.pub.publish(msg_res)
+		if self.num_robbers == 0:
+			rospy.signal_shutdown("All Robbers Caught!")
+
 
 
 if __name__ == '__main__':
