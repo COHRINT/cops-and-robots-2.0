@@ -47,7 +47,7 @@ import matplotlib.animation as animation
 from numpy import arange
 import time
 import matplotlib.image as mgimg
-
+from matplotlib.patches import Rectangle,Circle
 
 
 class PolicyTranslator:
@@ -110,14 +110,17 @@ class PolicyTranslator:
 
 
 		if(self.problemName == ''):
-			print('Input Problem Name'); 
-			self.problemName = raw_input();
+			#print('Input Problem Name'); 
+			#self.problemName = raw_input();
+			problemName = 'D2QuestSoftmax';
 
 
-		self.belSave = os.path.dirname(__file__) + '/' + '../beliefs/' + self.problemName + 'Beliefs' + self.belNum + '.npy'; 
-		alLoad = os.path.dirname(__file__) + '/' + '../policies/' + self.problemName + 'Alphas' + self.alphaNum + '.npy'; 
-		modelPath = os.path.dirname(__file__) + '/' + '../models/'+ self.problemName + 'Model'; 
-		modelName = self.problemName+'Model'; 
+		#self.belSave = os.path.dirname(__file__) + '/' + '../beliefs/' + self.problemName + 'Beliefs' + self.belNum + '.npy'; 
+		self.belSave = 'D2QuestBeliefs2.npy'; 
+		#alLoad = os.path.dirname(__file__) + '/' + '../policies/' + self.problemName + 'Alphas' + self.alphaNum + '.npy'; 
+		alLoad = problemName + 'Alphas' + self.alphaNum + '.npy';
+		modelPath = problemName + 'Model'; 
+		modelName = problemName+'Model'; 
 
 
 
@@ -144,7 +147,9 @@ class PolicyTranslator:
 			print("Building Observation Models"); 
 		allMod.buildObs(gen=generate);
 		self.pz = allMod.pz; 
-		
+		self.pz2 = allMod.pz2; 
+
+
 		#Build Reward Model
 		if(generate == True):
 			print("Building Reward Model"); 
@@ -156,13 +161,16 @@ class PolicyTranslator:
 		#Initialize Gamma
 		self.loadPolicy(alLoad); 
 
-		
+		'''
 		if(simNum == 0 and not robots):
 			self.generateBeliefs();
 		elif(simNum == 1 and not robots):
 			self.runSingleSim(greedySim = self.greedy);
 		elif(not robots):
 			self.runMultiSim(simCount = simNum,greedySim = self.greccccccedy);  
+		'''
+
+		[allB,allX,allXInd,allAct,allReward] = self.runFactoredSim(); 
 
 
 
@@ -293,7 +301,7 @@ class PolicyTranslator:
 			var = (np.matrix(j.var) + np.matrix(self.delAVar)).tolist(); 
 			weight = j.weight; 
 			btmp1.addG(Gaussian(mean,var,weight)); 
-		btmp = self.pz.runVBND(btmp1,o); 
+		btmp = self.pz2.runVBND(btmp1,o); 
 		
 		#btmp.condense(maxMix);
 		btmp = btmp.kmeansCondensationN(self.maxMix);  
@@ -408,6 +416,138 @@ class PolicyTranslator:
 
 		ani.save(path,fps=2,writer='animation.writer')
 
+
+	def runFactoredSim(self):
+		numSteps = 50
+		initialPose = [8,2]; 
+		b = GM(); 
+		'''
+		mean = [0]*len(self.delA[0]); 
+		var = [[0 for k in range(0,len(self.delA[0]))] for j in range(0,len(self.delA[0]))]; 
+		for k in range(0,len(self.delA[0])):
+			mean[k] = random.random()*(self.bounds[k][1]-self.bounds[k][0]) + self.bounds[k][0]; 
+			var[k][k] = random.random()*10;  
+		b.addG(Gaussian(mean,var,0.5));
+		'''
+		b.addG(Gaussian([6,3],[[4,0],[0,4]],6)); 
+		b.addG(Gaussian([.8,3.2],[[1,0],[0,1]],1));
+		b.addG(Gaussian([3,4.5],[[1,0],[0,1]],1)); 
+		b.addG(Gaussian([3,1.5],[[1,0],[0,1]],1)); 
+		b.normalizeWeights(); 
+
+		#Setup data gathering
+		x = initialPose; 
+		allX = []; 
+		allX.append(x); 
+		allXInd = [0]*len(self.delA[0]); 
+		for i in range(0,len(self.delA[0])):
+			allXInd[i] = [x[i]]; 
+
+		reward = 0; 
+		allReward = [0]; 
+		allB = []; 
+		allB.append(b); 
+
+		allAct = []; 
+
+		fig,ax = plt.subplots(); 
+
+		#Simulate
+		for count in range(0,numSteps):
+			if(self.exitFlag):
+				break; 
+			if(self.distance(1,3,x[0],x[1]) < 1):
+				print('Robber Found'); 
+				break; 
+
+			plt.cla(); 
+			
+			[xxx,yyy,ccc] = b.plot2D(low=[0,0],high=[10,5],vis=False); 
+			 
+			plt.gca().add_patch(Rectangle([2,2],1,2,fc='sandybrown')); 
+			plt.gca().add_patch(Circle([1,3],0.15,fc='r')); 
+			ax.contourf(xxx,yyy,ccc);
+			'''
+			#Get action
+			if(greedy):
+				act = self.getGreedyAction(b); 
+			elif(belGen):
+				act = random.randint(0,len(self.delA)-1);
+			else:
+				act = self.getAction(b);
+			'''
+			act = self.getAction(b); 
+
+			#Take action
+			x = np.random.multivariate_normal(np.array(x)-np.array(self.delA[act[0]]),self.delAVar,size =1)[0].tolist();
+			
+			#bound the movement
+			for i in range(0,len(x)):
+				x[i] = max(self.bounds[i][0],x[i]); 
+				x[i] = min(self.bounds[i][1],x[i]);
+
+			'''
+			#Get observation and update belief
+			if(not self.useSoft):
+				ztrial = [0]*len(self.pz); 
+				for i in range(0,len(self.pz)):
+					ztrial[i] = self.pz[i].pointEval(x); 
+				z = ztrial.index(max(ztrial)); 
+				b = self.beliefUpdate(b,act,z);
+			else:
+				ztrial = [0]*self.pz.size; 
+				for i in range(0,self.pz.size):
+					ztrial[i] = self.pz.pointEval2D(i,x);  
+				z = ztrial.index(max(ztrial)); 
+				b = self.beliefUpdateSoftmax(b,act,z);
+			'''
+			
+			#fig,axarr = plt.subplots(2);
+			#[x,y,c] = b.plot2D(low=[0,0],high=[10,5],)
+
+			
+			'''
+			if(self.distance(1,3,x[0],x[1]) > 1):
+				for i in range(1,4):
+					b = self.pz2.runVBND(b,i); 
+				b = self.beliefUpdateSoftmax(b,act[0],4); 	
+			else:
+				'''
+			b = self.beliefUpdateSoftmax(b,act[0],2); 
+			
+
+
+			#Handle Question response
+			questionHandles = ['left of','right of',  'in front of', 'behind']; 
+			question = 'Am I ' + questionHandles[act[1]] + ' the table?'; 
+			ax.scatter(x[0],x[1],c='k'); 
+			plt.pause(0.5); 
+			humanInput = raw_input(question); 
+
+			if('y' in humanInput or 'Y' in humanInput):
+				b = self.pz.runVBND(b,act[1]+1); 
+			else:
+				for i in range(0,4):
+					if(i!=act[1]):
+						b = self.pz.runVBND(b,i+1); 
+			b.normalizeWeights(); 
+
+			#save data
+			allB.append(b);
+			allX.append(x);
+			allAct.append(act); 
+			for i in range(0,len(x)):
+				allXInd[i].append(x[i]);  
+
+			reward += self.r[act[0]].pointEval(x); 
+			allReward.append(reward); 
+			
+
+		allAct.append(-1);
+		
+		#print("Simulation Complete. Accumulated Reward: " + str(reward));  
+		return [allB,allX,allXInd,allAct,allReward]; 
+
 	def simulate(self,initialPose = [1,4],initialBelief = None, numSteps = 20,greedy = False,belGen = False):
 
 		#load initial belief
@@ -441,7 +581,8 @@ class PolicyTranslator:
 		#Simulate
 		for count in range(0,numSteps):
 			if(self.exitFlag):
-				break; 
+				break;
+
 
 			#Get action
 			if(greedy):
