@@ -2,17 +2,26 @@
 See wiki for instructions on running caught robber node on Odroid - LT-->
 
 <launch>
-
+  <arg name="catch_dist" default="0.7" />
+  <arg name="cops" default=["pris"] />
+  <arg name="num_cops" default="1" />
+  <arg name="num_robbers" default="1" />
+  <arg name="show_mask" default="False" />
+  <arg name="show_cop_feed" default="False" />
+  <arg name="image_proc" default="False" />
 
   <node name="caught_robber" pkg="caught" type="caught_robber_comp.py" output="screen">
-    <param name="catch_dist" value="0.7" />
-    <param name="show_mask" value="False" />
-    <rosparam param="cops">["pris"]</rosparam>
+    <param name="dist" value="$(arg catch_dist)" />
+    <param name="show_mask" value="$(arg show_mask)" />
   </node>
+
+  <!-- to pass a list of cops see the following line
+  <rosparam param="cops">["pris"]</rosparam>
+-->
 
   <!-- Test caught robber node? Uncomment following
   <node name="test_caught" pkg="caught" type="test_caught.py" output="screen">
-    <param name="num_robbers" value="1" />
+    <param name="num_robbers" value="$(arg num_robbers)" />
   </node>
 -->
 
