@@ -5,7 +5,7 @@ from __future__ import print_function
 
 
     *** ODROID VERSION ***
-
+    See Wiki for running instructions
 
     Node that publishes if a cop has caught a robber
     using OpenCV's color recognition of the robber
@@ -13,7 +13,7 @@ from __future__ import print_function
     To add or update colors of a robber visit the
         robber_colors.yaml file
 
-    To run:
+    See wiki, to run:
     $ ROS_NAMESPACE=<cop name>/camera/rgb rosrun image_proc image_proc
     9
     topic_name: /<cop_name>/camera/rgb/image_color
@@ -111,13 +111,13 @@ class Caught_Robber(object):
 
     def caught_callback(self, ros_image):
         print("Entering Caught Callback: ", end="")
-	if self.publishing == True:
-	    print("Already Published")
-	    return
-	elif self.wait_time > 0:
-	    print("Wait: " + str(self.wait_time))
-	    self.wait_time -= 1
-	    return
+		if self.publishing == True:
+	    	print("Already Published")
+	   		return
+		elif self.wait_time > 0:
+	    	print("Wait: " + str(self.wait_time))
+	    	self.wait_time -= 1
+	    	return
 
         try:
             cv_image = self.bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
@@ -156,14 +156,14 @@ class Caught_Robber(object):
                 if area > self.caught_val:
                     self.counter += 1
                     if (self.counter >= self.caught_count):
-			if self.publishing == False:
-			    self.publishing = True
+                        if self.publishing == False:
+                            self.publishing = True
                             msg = Caught()
-                  	    msg.robber = rob
+                            msg.robber = rob
                             msg.confirm = True
                             self.pub.publish(msg)
                             self.counter = 0 # restart
-			    print("PUBLISHING!!!")
+                            print("PUBLISHING!!!")
                 else:
                     self.counter = 0
 

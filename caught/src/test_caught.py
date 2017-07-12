@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 """ Simple interface to test caught_robber.py """
 
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.1"
+__version__ = "1.2"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -13,13 +14,15 @@ import rospy
 from caught.msg import Caught
 import pymsgbox
 
+DEFAULT_NUM_ROBBERS = 1
+
 class Test_Caught(object):
 
-	def __init__(self, num_robbers):
+	def __init__(self):
 		rospy.init_node('test_caught')
 		rospy.Subscriber('/caught', Caught, self.robber_callback)
 		self.pub = rospy.Publisher('/caught_confirm', Caught, queue_size=10)
-		self.num_robbers = num_robbers
+		self.num_robbers = rospy.get_param('~num_robbers', DEFAULT_NUM_ROBBERS)
 		print("Test Caught Ready!")
 		rospy.spin()
 
@@ -40,4 +43,4 @@ class Test_Caught(object):
 
 
 if __name__ == '__main__':
-    a = Test_Caught(1)
+    a = Test_Caught()

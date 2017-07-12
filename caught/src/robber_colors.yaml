@@ -6,13 +6,13 @@
 zhora:
   r:
     MIN: 30
-    MAX: 100
+    MAX: 110
   g:
     MIN: 120
-    MAX: 210
+    MAX: 220
   b:
-    MIN: 80
-    MAX: 180
+    MIN: 70
+    MAX: 200
 
 # for testing purposes
 # yellow_battery:
