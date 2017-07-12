@@ -456,6 +456,19 @@ class Softmax:
 			bottom += np.exp(self.weights[i][0]*point[0] + self.weights[i][1]*point[1]); 
 		return top/bottom; 
 
+	def pointEvalND(self,softClass,point):
+		topIn = 0;
+		for i in range(0,len(self.weights[0])):
+			topIn+=self.weights[softClass][i]*point[i]; 
+		top = np.exp(topIn); 
+		bottom = 0; 
+		for i in range(0,self.size):
+			bottomIn = 0; 
+			for j in range(0,len(self.weights[0])):
+				bottomIn += self.weights[i][j]*point[j]; 
+			bottom+=np.exp(bottomIn); 
+		return top/bottom; 
+
 	def plot1D(self,low=0,high = 5,res = 100,labels = None,vis = True):
 		x = [(i*(high-low)/res + low) for i in range(0,res)]; 
 		suma = [0]*len(x); 
