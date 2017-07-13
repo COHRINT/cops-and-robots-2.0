@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-""" Simple interface to test caught_robber.py """
+""" Simple interface to test caught_robber.py
+subscribes to the /caught topic and publishes to
+/caught_confirm """
 
 
 __author__ = "LT"
@@ -44,4 +46,4 @@ class Test_Caught(object):
 
 
 if __name__ == '__main__':
-    a = Test_Caught() 
+    a = Test_Caught()
