@@ -127,22 +127,22 @@ def buildGeneralModel():
 	B = np.matrix([-1,1,-1,1,1,-1,0,-1,-1]).T; 
 	'''
 
-	
+	'''
 	#Rectangle Specs
-	numClasses = 5; 
+	numClasses = 4; 
 	boundries = [[1,0],[2,0],[3,0],[4,0]]; 
 	recBounds = [[2,2],[3,4]];
 	#B = np.matrix([-1,0,recBounds[0][0],1,0,-recBounds[1][0],0,1,-recBounds[1][1],0,-1,recBounds[0][1]]).T; 
 	B = np.matrix([0.44721359549995826, -2.220446049250313e-16, -0.8944271909999157, -0.0, 0.24253562503633294, -0.9701425001453319, 0.316227766016838, -5.551115123125783e-17, -0.948683298050514, 0.0, -0.447213595499958, 0.8944271909999159]).T; 
-	
-
-
 	'''
+
+
+	
 	#Pentagon Specs
 	numClasses = 6; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0]]; 
 	B = np.matrix([-1,1,-2,1,1,-2,1,0,-1,0,-1,-2,-1,0,-1]).T; 
-	'''
+	
 
 	'''
 	#Hexagon Specs
@@ -209,8 +209,8 @@ def buildPointsModel():
 	dims = 2;
 	#points = [[2,2],[2,4],[3,4],[3,2]]; 
 	#points = [[-2,-2],[-2,-1],[0,1],[2,-1],[2,-2]];
-	points = [[1,1],[1,2],[3,2],[6,1],[4,-1]];  
-	#points = [[1,1],[3,5],[4,1],[3,0],[4,-2]]; 
+	#points = [[1,1],[1,2],[3,2],[6,1],[4,-1]];  
+	points = [[1,1],[3,5],[4,1],[3,0],[4,-2]]; 
 	pointsx = [p[0] for p in points]; 
 	pointsy = [p[1] for p in points]; 
 	centroid = [sum(pointsx)/len(points),sum(pointsy)/len(points)];
@@ -310,12 +310,21 @@ def slice3DModel():
 
 	dims = 3;
 
-
-	#Rectangle Specs
+	'''
+	#Trapezoidal Pyramid Specs
 	numClasses = 7; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
 	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
+	'''
 	
+	#Octohedron Specs
+	numClasses = 9; 
+	boundries = []; 
+	for i in range(1,numClasses):
+		boundries.append([i,0]); 
+	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
+	
+
 	M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
 
 
@@ -389,7 +398,8 @@ def slice3DModel():
 	ax.set_zlim([-5,5]); 
 	ax.set_title("3D Scatter of Trapezoidal Pyrimid Classes")
 
-	for clas in range(1,7):
+	
+	for clas in range(1,numClasses):
 		shapeEdgesX = []; 
 		shapeEdgesY = [];
 		shapeEdgesZ = []; 
@@ -405,14 +415,15 @@ def slice3DModel():
 						shapeEdgesZ.append((k-10)/2);   
 
 		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ); 
+	
 
 	plt.show(); 
-	#fig = plt.figure(); 
+	#fig = plt.figure(); o
 
 
 if __name__ == "__main__":
 	#buildRectangleModel();
-	#buildGeneralModel(); 
+	# buildGeneralModel(); 
 	#buildPointsModel();
 	#stretch1DModel();  
 	slice3DModel(); 

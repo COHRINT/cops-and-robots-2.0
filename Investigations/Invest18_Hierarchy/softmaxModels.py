@@ -38,7 +38,7 @@ from gaussianMixtures import GM
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import compress
 import scipy.linalg as linalg
-
+from copy import deepcopy
 
 
 
@@ -48,22 +48,31 @@ class Softmax:
 
 	def __init__(self,weights= None,bias = None):
 		
-		if(weights is None):
-			self.weights = [-30,-20,-10,0]; 
-		else:
-			self.weights = weights;
+		self.weights = weights;
 
-		if(bias is None):
-			self.bias = [60,50,30,0];  
-		else:
-			self.bias = bias; 
+		self.bias = bias; 
 
-		self.size = len(self.weights); 
 
-		self.alpha = 3;
-		self.zeta_c = [0]*len(self.weights); 
-		for i in range(0,len(self.weights)):
-			self.zeta_c[i] = random()*10;  
+		if(self.weights is not None):
+			self.size = len(self.weights); 
+
+			self.alpha = 3;
+			self.zeta_c = [0]*len(self.weights); 
+			for i in range(0,len(self.weights)):
+				self.zeta_c[i] = random()*10;  
+
+	def nullspace(self,A,atol=1e-13,rtol=0):
+		A = np.atleast_2d(A)
+		u, s, vh = svd(A)
+		tol = max(atol, rtol * s[0])
+		nnz = (s >= tol).sum()
+		ns = vh[nnz:].conj().T
+		return ns;
+
+	def distance(self,x1,y1,x2,y2):
+		dist = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2); 
+		dist = math.sqrt(dist); 
+		return dist;
 
 	def buildRectangleModel(self,recBounds,steepness = 1):
 
@@ -132,7 +141,6 @@ class Softmax:
 			self.zeta_c[i] = random()*10;  
 
 	def buildGeneralModel(self,dims,numClasses,boundries,B,steepness=1):
-		dims = 2; 
 
 		M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
 
@@ -143,6 +151,93 @@ class Softmax:
 				M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
 
 		A = np.hstack((M,B)); 
+
+		Theta = linalg.lstsq(M,B)[0].tolist();
+
+		weight = []; 
+		bias = []; 
+		'''
+		if(dims == 2):
+			for i in range(0,len(Theta)//(dims+1)):
+				weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0]]); 
+				bias.append(Theta[(dims+1)*i+dims][0]); 
+		elif(dims==3):
+			for i in range(0,len(Theta)//(dims+1)):
+				weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0],Theta[(dims+1)*i+2][0]]); 
+				bias.append(Theta[(dims+1)*i+dims][0]);
+		'''
+		for i in range(0,len(Theta)//(dims+1)):
+			wtmp=[]; 
+			for j in range(0,dims):
+				wtmp.append(Theta[(dims+1)*i+j][0])
+			weight.append(wtmp); 
+			bias.append(Theta[(dims+1)*i+dims][0]); 
+
+
+		steep = steepness;
+		self.weights = (np.array(weight)*steep).tolist(); 
+		self.bias = (np.array(bias)*steep).tolist();
+		self.size = len(self.weights); 
+
+		self.alpha = 3;
+		self.zeta_c = [0]*len(self.weights); 
+		for i in range(0,len(self.weights)):
+			self.zeta_c[i] = random()*10;  
+
+	def buildPointsModel(self,points,steepness=1):
+		dims = 2; 
+
+		pointsx = [p[0] for p in points]; 
+		pointsy = [p[1] for p in points]; 
+		centroid = [sum(pointsx)/len(points),sum(pointsy)/len(points)];
+
+		#for each point to the next, find the normal  between them.
+		B = []; 
+		for i in range(0,len(points)):
+			p1 = points[i]; 
+			 
+			if(i == len(points)-1): 
+				p2 = points[0]; 
+			else:
+				p2 = points[i+1]; 
+			mid = []; 
+			for i in range(0,len(p1)):
+				mid.append((p1[i]+p2[i])/2)
+
+			H = np.matrix([[p1[0],p1[1],1],[p2[0],p2[1],1],[mid[0],mid[1],1]]); 
+
+			#print(H);
+			#print(nullspace(H).T[0]); 
+			#print("");  
+			Hnull = (self.nullspace(H)).tolist();
+			distMed1 = self.distance(mid[0]+Hnull[0][0],mid[1]+Hnull[1][0],centroid[0],centroid[1]); 
+			distMed2 = self.distance(mid[0]-Hnull[0][0],mid[1]-Hnull[1][0],centroid[0],centroid[1]);
+			if(distMed1 < distMed2):
+				Hnull[0][0] = -Hnull[0][0];
+				Hnull[1][0] = -Hnull[1][0];
+				Hnull[2][0] = -Hnull[2][0]; 
+
+			for j in Hnull:
+				B.append(j[0]);
+	 	
+		B = np.matrix(B).T;  
+		 
+		numClasses = len(points)+1; 
+		boundries = []; 
+		for i in range(1,numClasses):
+			boundries.append([i,0]); 
+		
+		M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
+
+		for j in range(0,len(boundries)):
+			for i in range(0,dims+1):
+				M[(dims+1)*j+i,(dims+1)*boundries[j][1]+i] = -1; 
+				M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
+
+		A = np.hstack((M,B)); 
+		#print(np.linalg.matrix_rank(A))
+		#print(np.linalg.matrix_rank(M))
+
 
 		Theta = linalg.lstsq(M,B)[0].tolist();
 
@@ -161,7 +256,6 @@ class Softmax:
 		self.zeta_c = [0]*len(self.weights); 
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
-
 
 	def Estep(self,weight,bias,prior_mean,prior_var,alpha = 0.5,zeta_c = 1,softClassNum=0):
 	
@@ -530,48 +624,36 @@ class Softmax:
 		else:
 			return x,y,dom;
 
-	def plot4DMarginals(self, low = [0,0,0,0], high = [5,5,5,5], res = 20, dims = [2,3], labels = None,vis = True):
-		x,y,z,w = np.mgrid[low[0]:high[0]:(float(high[0]-low[0])/res), low[1]:high[1]:(float(high[1]-low[1])/res), low[2]:high[2]:(float(high[2]-low[2])/res),low[3]:high[3]:(float(high[3]-low[3])/res)]
-		pos = np.dstack((x,y,z,w)); 
+	def plot3D(self,low=[-5,-5,-5],high=[5,5,5]):
+		fig = plt.figure(); 
+		ax = fig.add_subplot(111,projection='3d'); 
+		ax.set_xlabel('X Axis'); 
+		ax.set_ylabel('Y Axis'); 
+		ax.set_zlabel('Z Axis'); 
+		ax.set_xlim([low[0],high[0]]); 
+		ax.set_ylim([low[1],high[1]]); 
+		ax.set_zlim([low[2],high[2]]); 
+		ax.set_title("3D Scatter of Dominant Softmax Classes")
 
-		x3,y3 = np.mgrid[low[0]:high[0]:(float(high[0]-low[0])/res), low[1]:high[1]:(float(high[1]-low[1])/res)];
+		
+		for clas in range(1,self.size):
+			shapeEdgesX = []; 
+			shapeEdgesY = [];
+			shapeEdgesZ = []; 
+			#-5 to 5 on all dims
+			data = np.zeros(shape=(21,21,21)); 
+			for i in range(0,21):
+				for j in range(0,21):
+					for k in range(0,21):
+						data[i][j][k] = self.pointEvalND(clas,[(i-10)/2,(j-10)/2,(k-10)/2]);
+						if(data[i][j][k] > 0.1):
+							shapeEdgesX.append((i-10)/2); 
+							shapeEdgesY.append((j-10)/2); 
+							shapeEdgesZ.append((k-10)/2);   
 
-		model = np.ndarray(shape = (len(self.weights),res,res,res,res)).tolist(); 
-		marg = [[[0 for i in range(0,res)] for j in range(0,res)] for k in range(0,len(self.weights))];
-		for m in range(0,len(self.weights)):
-			for i in range(0,res):
-				xx = (i*(high[0]-low[0])/res + low[0]);
-				for j in range(0,res):
-					yy = (j*(high[1]-low[1])/res + low[1])
-					for k in range(0,res):
-						zz = (k*(high[2]-low[2])/res + low[2]); 
-						for l in range(0,res):
-							ww = (l*(high[3]-low[3])/res + low[3])
-							dem = 0; 
-							for n in range(0,len(self.weights)):
-								dem+=np.exp(self.weights[n][0]*xx + self.weights[n][1]*yy + self.weights[n][2]*zz + self.weights[n][3]*ww + self.bias[n]);
-							model[m][i][j][k][l] = np.exp(self.weights[m][0]*xx + self.weights[m][1]*yy + self.weights[m][2]*zz + self.weights[m][3]*ww + self.bias[m])/dem;
-							marg[m][k][l] += model[m][i][j][k][l]; 
+			ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ); 
 
-		dom = [[0 for i in range(0,res)] for j in range(0,res)]; 
-		for i in range(0,res):
-			for j in range(0,res):
-				dom[i][j] = np.argmax([model[h][(high[0]-low[0])//2][(high[1]-low[1])//2][i][j] for h in range(0,len(self.weights))]);
-				#dom[i][j] = np.argmax([marg[h][i][j] for h in range(0,len(self.weights))]);  
-		if(vis):
-			plt.contourf(x3,y3,dom,cmap = 'viridis'); 
-			
-			fig = plt.figure()
-			ax = fig.gca(projection='3d');
-			colors = ['b','r','g','y','k']; 
-			for i in range(0,len(model)):
-				ax.plot_surface(x3,y3,model[i][(high[0]-low[0])//2][(high[1]-low[1])//2],color = colors[i]);
-				#ax.plot_surface(x3,y3,marg[i],color = colors[i]);  
-			
-			plt.show(); 
-		else:
-			return x3,y3,dom;
-
+		plt.show();
 
 def test1DSoftmax():
 
@@ -683,66 +765,6 @@ def test2DSoftmax():
 	plt.show(); 
 
 
-def test4DSoftmax():
-	#Specify Parameters
-	#2 2D robots obs model
-	
-	#weight = [[0.2157,-0.2271,-0.3824,0.2579],[0.3755,-0.2042,-0.2922,0.4640],[0.4088,-0.1460,-0.3254,-0.1445],[0.5417,0.2403,-0.1250,-0.2403],[0,0,0,0]]; 
-	#bias = [0.4641,-0.0265,0.1397,0.1251,0]
-	weight = [[-0.000000000000000,0.577350269189626,0.000000000000001,-0.577350269189625],[-0.369235473571571,0.203049310453070,0.369235473571572,-0.951651227926181],[0.530986563169930,1.028572859805121,-0.530986563169930,-0.126127678574130],[-0.625091502364266,0.279249212617170,-0.625091502364265,-0.279249212617170],[0,0,0,0]];
-	bias = [-0.577350269189626,0.091325971371189,-0.407341778512092,-0.375378123870669,0]; 
-	
-	
-
-	softClass = 2; 
-	low = [-5,-5]; 
-	high = [5,5]; 
-	res = 100; 
-	steep = 10; 
-	for i in range(0,len(weight)):
-		for j in range(0,len(weight[i])):
-			weight[i][j] = weight[i][j]*steep; 
-		bias[i] = bias[i]*steep; 
-
-	#Define Likelihood Model
-	a = Softmax(weight,bias);
-	#[x1,y1,dom] = a.plot2D(low=low,high=high,res=res,vis=False); 
-	a.plot4DMarginals(low = [-5,-5,-5,-5],high=[5,5,5,5]); 
-
-	#a.plot2D(low=low,high=high,res=res,vis=True); 
-
-	#Define a prior
-	prior = GM(); 
-	var = (np.identity(4)*4).tolist(); 
-	prior.addG(Gaussian([2.5,2.5,2.5,2.5],var,1)); 
-	#prior.addG(Gaussian([3,2,1,2],var,1)); 
-	#prior.addG(Gaussian([2,3,2,1],var,1));
-	#prior.normalizeWeights(); 
-	#[x2,y2,c2] = prior.plot2D(low = low,high = high,res = res, vis = False); 
-
-	
-	post1 = a.runVBND(prior,softClass)
-	#[x3,y3,c3] = post1.plot2D(low = low,high = high,res = res, vis = False); 
-	
-
-	softClassLabels = ['Left','Up','Down','Near','Right']; 
-	
-	#post1.normalizeWeights(); 
-	priorCut = prior.slice2DFrom4D(low=low,high=high,res=res,dims = [2,3],vis=False,retGS = True); 
-	postCut = post1.slice2DFrom4D(low=low,high=high,res=res,dims = [2,3],vis=False,retGS = True); 
-
-	[x1,y1,c1] = priorCut.plot2D(low=low,high=high,res = res, vis = False); 
-	[x2,y2,c2] = postCut.plot2D(low=low,high=high,res = res, vis = False); 
-	
-	fig,axarr = plt.subplots(2,sharex= True,sharey = True);
-	axarr[0].contourf(x1,y1,c1,cmap = 'viridis'); 
-	axarr[0].set_title('Prior GM'); 
-	axarr[1].contourf(x2,y2,c2,cmap = 'viridis'); 
-	axarr[1].set_title('Posterior GM with Observation: ' + softClassLabels[softClass]); 
-	fig.suptitle('4D Fusion of a Gaussian Prior with a Softmax Likelihood, Cut to 2D')
-	
-	plt.show(); 
-
 def testRectangleModel():
 	pz = Softmax(); 
 	pz.buildRectangleModel([[2,2],[3,4]],1); 
@@ -775,7 +797,7 @@ def testRectangleModel():
 
 def testGeneralModel():
 	pz = Softmax(); 
-	#self,dims,numClasses,boundries,B,steepness=1):
+	
 	pz.buildGeneralModel(2,4,[[1,0],[2,0],[3,0]],np.matrix([-1,1,-1,1,1,-1,0,-1,-1]).T); 
 	#print('Plotting Observation Model'); 
 	#pz.plot2D(low=[0,0],high=[10,5],vis=True); 
@@ -803,6 +825,76 @@ def testGeneralModel():
 
 	plt.show();
 
+def testPointsModel():
+	dims = 2;
+	#points = [[2,2],[2,4],[3,4],[3,2]]; 
+	#points = [[-2,-2],[-2,-1],[0,1],[2,-1],[2,-2]];
+	points = [[1,1],[1,2],[3,2],[6,1],[4,-1]];  
+	#points = [[1,1],[3,5],[4,1],[3,0],[4,-2]]; 
+	
+	pz = Softmax(); 
+	pz.buildPointsModel(points,steepness=5); 
+
+	pz.plot2D(low=[-10,-10],high=[10,10],delta = 0.1,vis=True);  
+
+
+def testPlot3D():
+	dims = 3;
+	steep = 10;
+	
+	#Trapezoidal Pyramid Specs
+	numClasses = 7; 
+	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
+	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
+	
+	'''
+	#Octohedron Specs
+	numClasses = 9; 
+	boundries = []; 
+	for i in range(1,numClasses):
+		boundries.append([i,0]); 
+	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
+	'''
+	pz = Softmax(); 
+	pz.buildGeneralModel(dims=dims,numClasses=numClasses,boundries=boundries,B=B,steepness=steep); 
+
+	pz2 = Softmax(deepcopy(pz.weights),deepcopy(pz.bias));
+	pz3 = Softmax(deepcopy(pz.weights),deepcopy(pz.bias));
+	pz4 = Softmax(deepcopy(pz.weights),deepcopy(pz.bias));
+
+
+
+	for i in range(0,len(pz2.weights)):
+		pz2.weights[i] = [pz2.weights[i][0],pz2.weights[i][2]]
+
+	for i in range(0,len(pz3.weights)):
+		pz3.weights[i] = [pz3.weights[i][1],pz3.weights[i][2]]
+
+	for i in range(0,len(pz4.weights)):
+		pz4.weights[i] = [pz4.weights[i][0],pz4.weights[i][1]]
+
+	fig = plt.figure(); 
+	[x,y,c] = pz2.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('X Axis'); 
+	plt.ylabel('Z Axis'); 
+	plt.title('Slice Across Y Axis')
+
+	fig = plt.figure(); 
+	[x,y,c] = pz3.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('Y Axis'); 
+	plt.ylabel('Z Axis');
+	plt.title('Slice Across X axis')
+
+	fig = plt.figure(); 
+	[x,y,c] = pz4.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('X Axis'); 
+	plt.ylabel('Y Axis');
+	plt.title('Slice Across Z Axis'); 
+ 
+	pz.plot3D();  
 
 if __name__ == "__main__":
 
@@ -810,8 +902,10 @@ if __name__ == "__main__":
 	#test2DSoftmax(); 
 	#test4DSoftmax();
 	#testRectangleModel();  
-	testGeneralModel(); 
-	
+	#testGeneralModel(); 
+	#testPointsModel(); 
+	testPlot3D(); 
+
 
 
 	
