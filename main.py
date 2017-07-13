@@ -15,7 +15,7 @@ __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
 
 import matplotlib
-matplotlib.use('Qt4Agg')
+matplotlib.use('Qt5Agg')
 
 import logging
 import time
@@ -90,6 +90,10 @@ class ReliableVagabond(object):
 		"""
 		i = 0
 		max_run_time = self.cfg['main']['max_run_time']
+
+		update_rate = 2
+		self.update_clock(update_rate,self.update)
+
 		while i < max_run_time:
 			self.update(i)
 			i += 1
@@ -101,13 +105,26 @@ class ReliableVagabond(object):
 		#	 i += 1
 			# time.sleep(0.2)
 
-	def update(self, i):
+	def update_clock(self,duration,func,*args):
+	    def g_tick():
+	        t = time.time()
+	        count = 0
+	        while True:
+	            count += 1
+	            yield max(t+count*duration - time.time(),0)
+	    g = g_tick()
+	    while True:
+	        time.sleep(g.next())
+	        func(*args)
+
+	def update(self):
 		"""Update all the major aspects of the simulation and record data.
 		"""
-		logging.debug('Main update frame {}'.format(i))
+		# logging.debug('Main update frame {}'.format(i))
 		# Update all actors
+		# print('callback!')
 		for robot_name, robot in self.robots.iteritems():
-			robot.update(i,self.positions)
+			robot.update(positions=self.positions)
 			tmpKey = self.positions[robot_name];
 			tmpKey[1] = robot.pose2D._pose;
 
