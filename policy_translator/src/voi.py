@@ -179,7 +179,7 @@ class Questioner(object):
         self.delta = delta
 
         self.topic = 'robot_questions'
-        self.pub = rospy.Publisher(self.topic,Question)
+        self.pub = rospy.Publisher(self.topic,Question,queue_size=10)
 
     def weigh_questions(self, priors):
         """

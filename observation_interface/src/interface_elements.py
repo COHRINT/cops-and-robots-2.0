@@ -28,7 +28,7 @@ import PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
-from PyQt5.QtMultimedia import *
+# from PyQt5.QtMultimedia import *
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, CompressedImage
@@ -589,9 +589,9 @@ class MapDisplay(QWidget):
     def ros_update(self, msg):
         # load image
         self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
+        # print(self.image_view.isNull())
         # set image as pixmap in label
         if not self.image_view.isNull():
-            print(self.image_view.isNull())
             self.pic_label.setPixmap(self.image_view)
 
 class VideoContainer(QWidget):

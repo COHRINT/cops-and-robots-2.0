@@ -147,6 +147,7 @@ class GoalPlanner(object):
                                        queue_size=10)
 
         self.goal_status = 'without a goal'
+        self.goal_pose = None
         self.type = type_
         self.feasible_layer = robot.map.feasible_layer
         self.view_distance = view_distance
@@ -338,64 +339,90 @@ class GoalPlanner(object):
         """
         current_status = self.goal_status
         new_status = current_status
-        if current_status == 'without a goal':
-            if self.type == 'stationary':
-                new_status = 'done'
+        # if current_status == 'without a goal':
+        #     if self.type == 'stationary':
+        #         new_status = 'done'
+        #     else:
+        #         self.goal_pose = self.find_goal_pose(positions=positions)
+        #         if not self.feasible_pose(self.goal_pose,
+        #                                     self.robot.map_resolution,
+        #                                     self.robot.diameter,
+        #                                     self.robot.map_width,
+        #                                     self.robot.map_height,
+        #                                     self.robot.occupancy_grid,
+        #                                     self.robot.map_resolution):
+        #             # self.goal_pose = None
+        #             pass
+        #         if self.goal_pose is None:
+        #             new_status = 'without a goal'
+        #         else:
+        #             if self.robot.publish_to_ROS is True:
+        #                 self.create_ROS_goal_message()
+        #             else:
+        #                 self.robot.path_planner.path_planner_status = 'planning'
+        #             new_status = 'moving to goal'
+        #
+        # elif current_status == 'moving to goal':
+        #     if self.is_stuck():
+        #         new_status = 'stuck'
+        #     elif self.goal_pose is None:
+        #         new_status = 'without a goal'
+        #     elif self.is_at_goal():
+        #         new_status = 'at goal'
+        #
+        # elif current_status == 'stuck':
+        #     prev_type = self.type
+        #     #self.type = 'simple'
+        #     self.goal_pose = self.find_goal_pose(positions=positions)
+        #     if not self.feasible_pose(self.goal_pose,
+        #                                 self.robot.map_resolution,
+        #                                 self.robot.diameter,
+        #                                 self.robot.map_width,
+        #                                 self.robot.map_height,
+        #                                 self.robot.occupancy_grid,
+        #                                 self.robot.map_resolution):
+        #         self.goal_pose = None
+        #     self.type = prev_type
+        #     if self.robot.publish_to_ROS is True:
+        #         self.create_ROS_goal_message()
+        #     else:
+        #         self.robot.path_planner.path_planner_status = 'planning'
+        #     new_status = 'moving to goal'
+        #
+        # elif current_status == 'at goal':
+        #     new_status = 'without a goal'
+        #
+        # if current_status != new_status:
+        #     logging.info("{}'s goal_status changed from {} to {}."
+        #                  .format(self.robot.name, current_status, new_status))
+        #
+        # self.goal_status = new_status
+
+
+        prev_type = self.type
+        #self.type = 'simple'
+        old_pose = self.goal_pose
+        self.goal_pose = self.find_goal_pose(positions=positions)
+        if not self.feasible_pose(self.goal_pose,
+                                    self.robot.map_resolution,
+                                    self.robot.diameter,
+                                    self.robot.map_width,
+                                    self.robot.map_height,
+                                    self.robot.occupancy_grid,
+                                    self.robot.map_resolution):
+            self.goal_pose = None
+        self.type = prev_type
+        if self.robot.publish_to_ROS is True and self.is_new_pose(old_pose,self.goal_pose) is True:
+            self.create_ROS_goal_message()
+
+    def is_new_pose(self,old_pose,new_pose):
+        if old_pose is not None and new_pose is not None:
+            if new_pose[0] != old_pose[0] and new_pose[1] != old_pose[1]:
+                return True
             else:
-                self.goal_pose = self.find_goal_pose(positions=positions)
-                if not self.feasible_pose(self.goal_pose,
-                                            self.robot.map_resolution,
-                                            self.robot.diameter,
-                                            self.robot.map_width,
-                                            self.robot.map_height,
-                                            self.robot.occupancy_grid,
-                                            self.robot.map_resolution):
-                    # self.goal_pose = None
-                    pass
-                if self.goal_pose is None:
-                    new_status = 'without a goal'
-                else:
-                    if self.robot.publish_to_ROS is True:
-                        self.create_ROS_goal_message()
-                    else:
-                        self.robot.path_planner.path_planner_status = 'planning'
-                    new_status = 'moving to goal'
-
-        elif current_status == 'moving to goal':
-            if self.is_stuck():
-                new_status = 'stuck'
-            elif self.goal_pose is None:
-                new_status = 'without a goal'
-            elif self.is_at_goal():
-                new_status = 'at goal'
-
-        elif current_status == 'stuck':
-            prev_type = self.type
-            #self.type = 'simple'
-            self.goal_pose = self.find_goal_pose(positions=positions)
-            if not self.feasible_pose(self.goal_pose,
-                                        self.robot.map_resolution,
-                                        self.robot.diameter,
-                                        self.robot.map_width,
-                                        self.robot.map_height,
-                                        self.robot.occupancy_grid,
-                                        self.robot.map_resolution):
-                self.goal_pose = None
-            self.type = prev_type
-            if self.robot.publish_to_ROS is True:
-                self.create_ROS_goal_message()
-            else:
-                self.robot.path_planner.path_planner_status = 'planning'
-            new_status = 'moving to goal'
-
-        elif current_status == 'at goal':
-            new_status = 'without a goal'
-
-        if current_status != new_status:
-            logging.info("{}'s goal_status changed from {} to {}."
-                         .format(self.robot.name, current_status, new_status))
-
-        self.goal_status = new_status
+                return False
+        else:
+            return True
 
 
 class PathPlanner(object):
