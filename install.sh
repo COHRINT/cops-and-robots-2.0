@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_NAME="Cops and Robots 2.0"
-FILE_NAME="cops_and_robots_2"
+FILE_NAME="cnr2"
 
 echo ""
 echo "Welcome to the $PROJECT_NAME installer"
