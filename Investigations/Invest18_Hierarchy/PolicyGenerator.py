@@ -63,7 +63,7 @@ class PolicyGenerator:
 		#Set up default arguments
 		problemName = ''; 
 		belNum = '1'; 
-		self.alphaNum = '1'; 
+		self.alphaNum = '2'; 
 		generate = False; 
 		self.finalMix = 100; 
 		self.maxMix = 10; 
@@ -160,7 +160,7 @@ class PolicyGenerator:
 		#Initialize Gamma
 		self.Gamma = copy.deepcopy(self.r); 
 		for i in range(0,len(self.Gamma)):
-			self.Gamma[i].action = i; 
+			self.Gamma[i].action = [i,2]; 
 			for g in self.Gamma[i].Gs:
 				g.weight = g.weight/(1-self.discount);
 			self.Gamma[i] = self.Gamma[i].kmeansCondensationN(k=self.finalMix);  
@@ -360,7 +360,7 @@ class PolicyGenerator:
 		#for each alpha, each movement, each question, each question answer, each view cone
 		als1 = np.zeros(shape = (len(G),len(self.delA),4,2,2)).tolist(); 
 
-		#questions left, right, in front of, behind
+		#questions left, right, in front of,  behind
 
 		for j in range(0,len(G)):
 			for am in range(0,len(self.delA)):
@@ -512,9 +512,9 @@ class PolicyGenerator:
 
 if __name__ == "__main__":
 
-	#a = PolicyGenerator(sys.argv); 
-	#a.solve(); 
-
+	a = PolicyGenerator(sys.argv); 
+	a.solve(); 
+	'''
 	gamma = np.load('D2QuestSoftmaxAlphas1.npy'); 
 
 	fig,axarr = plt.subplots(len(gamma));
@@ -527,5 +527,6 @@ if __name__ == "__main__":
 		axarr[i].contourf(x,y,c,levels = levels,vmin = minim,vmax = maxim); 
 		axarr[i].set_title(str(gamma[i].action)); 
 	plt.show(); 
+	'''
 
 	

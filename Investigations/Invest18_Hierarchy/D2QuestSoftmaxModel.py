@@ -83,7 +83,7 @@ class ModelSpec:
 
 		if(gen):
 			self.pz = Softmax(); 
-			self.pz.buildRectangleModel([[2,2],[3,4]],10); 
+			self.pz.buildRectangleModel([[2,2],[3,4]],1); 
 			print('Plotting Observation Model'); 
 			self.pz.plot2D(low=[0,0],high=[10,5],vis=True); 
 						
@@ -92,7 +92,7 @@ class ModelSpec:
 			np.save(f,self.pz);
 
 			self.pz2 = Softmax(); 
-			self.pz2.buildRectangleModel([[.75,2.75],[1.25,3.25]],10);
+			self.pz2.buildRectangleModel([[.75,2.75],[1.25,3.25]],2);
 			f = open(self.fileNamePrefix+"2OBS.npy","w"); 
 			np.save(f,self.pz2);  
 

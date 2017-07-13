@@ -25,6 +25,9 @@ from softmaxModels import Softmax
 import scipy.linalg as linalg
 from gaussianMixtures import Gaussian,GM
 import matplotlib.pyplot as plt
+from numpy.linalg import svd
+import math
+from copy import deepcopy
 
 def buildRectangleModel():
 
@@ -124,20 +127,22 @@ def buildGeneralModel():
 	B = np.matrix([-1,1,-1,1,1,-1,0,-1,-1]).T; 
 	'''
 
-	
+	'''
 	#Rectangle Specs
-	numClasses = 5; 
+	numClasses = 4; 
 	boundries = [[1,0],[2,0],[3,0],[4,0]]; 
 	recBounds = [[2,2],[3,4]];
-	B = np.matrix([-1,0,recBounds[0][0],1,0,-recBounds[1][0],0,1,-recBounds[1][1],0,-1,recBounds[0][1]]).T; 
-	
-
+	#B = np.matrix([-1,0,recBounds[0][0],1,0,-recBounds[1][0],0,1,-recBounds[1][1],0,-1,recBounds[0][1]]).T; 
+	B = np.matrix([0.44721359549995826, -2.220446049250313e-16, -0.8944271909999157, -0.0, 0.24253562503633294, -0.9701425001453319, 0.316227766016838, -5.551115123125783e-17, -0.948683298050514, 0.0, -0.447213595499958, 0.8944271909999159]).T; 
 	'''
+
+
+	
 	#Pentagon Specs
 	numClasses = 6; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0]]; 
 	B = np.matrix([-1,1,-2,1,1,-2,1,0,-1,0,-1,-2,-1,0,-1]).T; 
-	'''
+	
 
 	'''
 	#Hexagon Specs
@@ -174,15 +179,254 @@ def buildGeneralModel():
 		weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0]]); 
 		bias.append(Theta[(dims+1)*i+dims][0]); 
 
-	steep = 10;
+	steep = 5;
 	weight = (np.array(weight)*steep).tolist(); 
 	bias = (np.array(bias)*steep).tolist(); 
 	pz = Softmax(weight,bias); 
 	print('Plotting Observation Model'); 
 	#pz.plot2D(low=[2.5,2.5],high=[3.5,3.5],delta = 0.1,vis=True); 
-	pz.plot2D(low=[0,0],high=[10,5],delta = 0.1,vis=True); 
+	#pz.plot2D(low=[0,0],high=[10,5],delta = 0.1,vis=True); 
+	pz.plot2D(low=[-5,-5],high=[5,5],delta = 0.1,vis=True); 
+
+
+def nullspace(A,atol=1e-13,rtol=0):
+	A = np.atleast_2d(A)
+	u, s, vh = svd(A)
+	tol = max(atol, rtol * s[0])
+	nnz = (s >= tol).sum()
+	ns = vh[nnz:].conj().T
+	return ns;
+
+def distance(x1,y1,x2,y2):
+	dist = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2); 
+	dist = math.sqrt(dist); 
+	return dist; 
+
+
+def buildPointsModel():
+	#Ok, so the idea here is that given some points you can 
+	#find the normal for each edge. 
+	dims = 2;
+	#points = [[2,2],[2,4],[3,4],[3,2]]; 
+	#points = [[-2,-2],[-2,-1],[0,1],[2,-1],[2,-2]];
+	#points = [[1,1],[1,2],[3,2],[6,1],[4,-1]];  
+	points = [[1,1],[3,5],[4,1],[3,0],[4,-2]]; 
+	pointsx = [p[0] for p in points]; 
+	pointsy = [p[1] for p in points]; 
+	centroid = [sum(pointsx)/len(points),sum(pointsy)/len(points)];
+
+	#for each point to the next, find the normal  between them.
+	B = []; 
+	for i in range(0,len(points)):
+		p1 = points[i]; 
+		 
+		if(i == len(points)-1): 
+			p2 = points[0]; 
+		else:
+			p2 = points[i+1]; 
+		mid = []; 
+		for i in range(0,len(p1)):
+			mid.append((p1[i]+p2[i])/2)
+
+		H = np.matrix([[p1[0],p1[1],1],[p2[0],p2[1],1],[mid[0],mid[1],1]]); 
+
+		#print(H);
+		#print(nullspace(H).T[0]); 
+		#print("");  
+		Hnull = (nullspace(H)).tolist();
+		distMed1 = distance(mid[0]+Hnull[0][0],mid[1]+Hnull[1][0],centroid[0],centroid[1]); 
+		distMed2 = distance(mid[0]-Hnull[0][0],mid[1]-Hnull[1][0],centroid[0],centroid[1]);
+		if(distMed1 < distMed2):
+			Hnull[0][0] = -Hnull[0][0];
+			Hnull[1][0] = -Hnull[1][0];
+			Hnull[2][0] = -Hnull[2][0]; 
+
+		for j in Hnull:
+			B.append(j[0]);
+ 	
+	B = np.matrix(B).T;  
+	 
+	numClasses = len(points)+1; 
+	boundries = []; 
+	for i in range(1,numClasses):
+		boundries.append([i,0]); 
+	#boundries = [[1,0],[2,0],[3,0],[4,0],[5,0]];
+	M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
+
+	for j in range(0,len(boundries)):
+		for i in range(0,dims+1):
+			M[(dims+1)*j+i,(dims+1)*boundries[j][1]+i] = -1; 
+			M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
+
+	A = np.hstack((M,B)); 
+	#print(np.linalg.matrix_rank(A))
+	#print(np.linalg.matrix_rank(M))
+
+
+	Theta = linalg.lstsq(M,B)[0].tolist();
+
+	weight = []; 
+	bias = []; 
+	for i in range(0,len(Theta)//(dims+1)):
+		weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0]]); 
+		bias.append(Theta[(dims+1)*i+dims][0]); 
+
+	steep = 5;
+	weight = (np.array(weight)*steep).tolist(); 
+	bias = (np.array(bias)*steep).tolist(); 
+	pz = Softmax(weight,bias); 
+	print('Plotting Observation Model'); 
+	#pz.plot2D(low=[2.5,2.5],high=[3.5,3.5],delta = 0.1,vis=True); 
+	#pz.plot2D(low=[0,0],high=[10,5],delta = 0.1,vis=True); 
+	#pz.plot2D(low=[-5,-5],high=[5,5],delta = 0.1,vis=True); 	
+	pz.plot2D(low=[-10,-10],high=[10,10],delta = 0.1,vis=True); 	
+
+
+def stretch1DModel():
+	steep = 5; 
+	weight = (np.array([-3,-2,-1,0])*steep).tolist(); 
+	bias = (np.array([6,5,3,0])*steep).tolist(); 
+
+	low = 0; 
+	high = 5; 
+	res = 100; 
+
+	#Define Likelihood Model
+	a = Softmax(weight,bias);
+	a.plot1D(low = low, high =high); 
+
+	#weight = (np.array([[-1,0],[0,0]])*steep).tolist(); 
+	#bias = (np.array([3,0])*steep).tolist(); 
+	for i in range(0,len(weight)):
+		weight[i] = [weight[i],0];
+
+	b = Softmax(weight,bias); 
+	b.plot2D(low=[0,0],high=[5,5]); 
+
+
+
+def slice3DModel():
+	steep = 1; 
+
+	dims = 3;
+
+	'''
+	#Trapezoidal Pyramid Specs
+	numClasses = 7; 
+	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
+	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
+	'''
+	
+	#Octohedron Specs
+	numClasses = 9; 
+	boundries = []; 
+	for i in range(1,numClasses):
+		boundries.append([i,0]); 
+	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
+	
+
+	M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
+
+
+	for j in range(0,len(boundries)):
+		for i in range(0,dims+1):
+			M[(dims+1)*j+i,(dims+1)*boundries[j][1]+i] = -1; 
+			M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
+
+	A = np.hstack((M,B)); 
+
+	Theta = linalg.lstsq(M,B)[0].tolist();
+
+	weight = []; 
+	bias = []; 
+	for i in range(0,len(Theta)//(dims+1)):
+		weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0],Theta[(dims+1)*i+2][0]]); 
+		bias.append(Theta[(dims+1)*i+dims][0]); 
+
+	steep = 10;
+	weight = (np.array(weight)*steep).tolist(); 
+	bias = (np.array(bias)*steep).tolist(); 
+	pz = Softmax(weight,bias); 
+
+	print('Plotting Observation Model'); 
+	#pz.plot2D(low=[2.5,2.5],high=[3.5,3.5],delta = 0.1,vis=True); 
+	#pz.plot2D(low=[0,0],high=[10,5],delta = 0.1,vis=True); 
 	#pz.plot2D(low=[-5,-5],high=[5,5],delta = 0.1,vis=True); 
+
+	pz2 = Softmax(deepcopy(weight),deepcopy(bias));
+	pz3 = Softmax(deepcopy(weight),deepcopy(bias));
+	pz4 = Softmax(deepcopy(weight),deepcopy(bias));
+
+	for i in range(0,len(pz2.weights)):
+		pz2.weights[i] = [pz2.weights[i][0],pz2.weights[i][2]]
+
+	for i in range(0,len(pz3.weights)):
+		pz3.weights[i] = [pz3.weights[i][1],pz3.weights[i][2]]
+
+	for i in range(0,len(pz4.weights)):
+		pz4.weights[i] = [pz4.weights[i][0],pz4.weights[i][1]]
+
+	fig = plt.figure(); 
+	[x,y,c] = pz2.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('X Axis'); 
+	plt.ylabel('Z Axis'); 
+	plt.title('Slice Across Y Axis')
+
+	fig = plt.figure(); 
+	[x,y,c] = pz3.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('Y Axis'); 
+	plt.ylabel('Z Axis');
+	plt.title('Slice Across X axis')
+
+	fig = plt.figure(); 
+	[x,y,c] = pz4.plot2D(low=[-5,-5],high=[5,5],vis = False); 
+	plt.contourf(x,y,c); 
+	plt.xlabel('X Axis'); 
+	plt.ylabel('Y Axis');
+	plt.title('Slice Across Z Axis'); 
+
+
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111,projection='3d'); 
+	ax.set_xlabel('X Axis'); 
+	ax.set_ylabel('Y Axis'); 
+	ax.set_zlabel('Z Axis'); 
+	ax.set_xlim([-5,5]); 
+	ax.set_ylim([-5,5]); 
+	ax.set_zlim([-5,5]); 
+	ax.set_title("3D Scatter of Trapezoidal Pyrimid Classes")
+
+	
+	for clas in range(1,numClasses):
+		shapeEdgesX = []; 
+		shapeEdgesY = [];
+		shapeEdgesZ = []; 
+		#-5 to 5 on all dims
+		data = np.zeros(shape=(21,21,21)); 
+		for i in range(0,21):
+			for j in range(0,21):
+				for k in range(0,21):
+					data[i][j][k] = pz.pointEvalND(clas,[(i-10)/2,(j-10)/2,(k-10)/2]);
+					if(data[i][j][k] > 0.1):
+						shapeEdgesX.append((i-10)/2); 
+						shapeEdgesY.append((j-10)/2); 
+						shapeEdgesZ.append((k-10)/2);   
+
+		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ); 
+	
+
+	plt.show(); 
+	#fig = plt.figure(); o
+
 
 if __name__ == "__main__":
 	#buildRectangleModel();
-	buildGeneralModel(); 
+	# buildGeneralModel(); 
+	#buildPointsModel();
+	#stretch1DModel();  
+	slice3DModel(); 
+
+
+

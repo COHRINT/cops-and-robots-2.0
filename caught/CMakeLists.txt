@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(caught)
 
+
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -13,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   message_generation
 )
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -72,6 +76,8 @@ find_package(catkin REQUIRED COMPONENTS
    DEPENDENCIES
   std_msgs  # Or other packages containing msgs
  )
+
+ catkin_package()
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
