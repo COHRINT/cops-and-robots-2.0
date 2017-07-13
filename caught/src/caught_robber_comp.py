@@ -13,14 +13,6 @@ from __future__ import print_function
 
     -To add or update colors of a robber visit the
         robber_colors.yaml file
-
-    To run:
-    $ ROS_NAMESPACE=<cop name>/camera/rgb rosrun image_proc image_proc
-    9
-    topic_name: /<cop_name>/camera/rgb/image_color
-
-    To view video feed from cop:
-    $ rosrun image_view image_view image:=/<cop_name>/camera/rgb/image_color
 """
 
 __author__ = "LT"
@@ -29,7 +21,7 @@ __license__ = "GPL"
 __version__ = "1.4.0"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
-__status__ = "Development"
+__status__ = "Stable"
 
 import rospy
 import rospkg
@@ -47,7 +39,7 @@ from cv_bridge import CvBridge, CvBridgeError
 # calculated from find_cam_calib.py
 # coefs = [ 33518.96832373, -48636.45623814,  18884.04641427] # for 0 - 1.5m
 coefs = [ 34706.81758805, -58782.89189293,  27970.47650456] # for 0 - 1.0m
-WAIT_TIME = 200
+WAIT_TIME = 50
 DEFAULT_CATCH_DIST = 0.5
 
 class Caught_Robber(object):
@@ -59,21 +51,17 @@ class Caught_Robber(object):
 
         # Identify benchmark pixels => "a catch"
         dist = rospy.get_param('~catch_dist', DEFAULT_CATCH_DIST)
-        print("Desired catch distance: " + str(dist))
+        rospy.loginfo("Desired catch distance: " + str(dist))
         self.caught_val = self.calibrate_caught_distance(dist)
-        if(self.caught_val == 0):
-            raise Exception('Bad Calibration Value')
-        else:
-            print("Calibration set to: " + str(self.caught_val))
 
         # Identify Cops' image topics to subscribe to
         # All topics have same callback "self.caught_callback"
         copList = rospy.get_param('~cops', ['pris'])
-        print(copList)
+        rospy.logdebug("CopList: " + str(copList))
         for cop in copList:
             video_feed = "/" + cop + '/camera/rgb/image_color'
             rospy.Subscriber(video_feed, Image ,self.caught_callback)
-            print("Caught subscribed to: "+ video_feed)
+            rospy.loginfo("Caught subscribed to: "+ video_feed)
 
         self.num_robbers = 0
         self.pub = rospy.Publisher('/caught' , Caught, queue_size=10)
@@ -89,6 +77,7 @@ class Caught_Robber(object):
                     self.num_robbers += 1
 
         except IOError as ioerr:
+            rospy.logerr("Error in reading robber_colors.yaml")
             print(ioerr)
 
         self.bridge = CvBridge()
@@ -97,7 +86,7 @@ class Caught_Robber(object):
 
         self.counter = 0 # Counter for blob detection consistency
         self.caught_count = 1 # The number counter must reach for a catch (filter consistency in reading)
-        print("Caught_Robber callback ready")
+        rospy.loginfo("Caught Node ready")
         self.show_mask = rospy.get_param('~show_mask', 'True')
         rospy.spin()
 
@@ -105,8 +94,8 @@ class Caught_Robber(object):
     """ Returns the pixel area for a catch given a distance """
     def calibrate_caught_distance(self, dist):
         if (dist > 1.0):
-            print("\n****Invalid distance, Please enter a value" +
-                " below 1.0****\n")
+            rospy.logerr("Invalid distance, Please enter a value" +
+                " below 1.0")
             return 0
         if (dist < .15):
             dist = .15
@@ -114,13 +103,15 @@ class Caught_Robber(object):
 
 
     def caught_callback(self, ros_image):
-        print("Entering Caught Callback: ", end="")
+        rospy.logdebug("Entering Caught Callback: ", end="")
         if self.publishing == True:
-            print("Already Published")
+            rospy.logdebug("Already Published")
             return
         elif self.wait_time > 0:
-            print("Wait: " + str(self.wait_time))
+            rospy.logdebug("Wait: " + str(self.wait_time))
             self.wait_time -= 1
+            if self.wait_time == 0:
+                rospy.loginfo("Ready to Catch again!")
             return
         try:
             cv_image = self.bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
@@ -153,7 +144,7 @@ class Caught_Robber(object):
                 # Find the largest contour
                 c = max(cont, key=cv2.contourArea)
                 area = cv2.contourArea(c)
-                print(" Max Contour: " + str(area))
+                rospy.logdebug("Max Contour: " + str(area))
 
                 # Check publish caught msg
                 if area > self.caught_val:
@@ -165,41 +156,32 @@ class Caught_Robber(object):
                         msg.confirm = True
                         self.pub.publish(msg)
                         self.counter = 0 # restart
-                        rospy.sleep(8)
+                        rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
                 else:
                     self.counter = 0
 
                 if self.show_mask:
                     # cv2.imshow("image", cv_image) #For un affected image view
                     cv2.imshow("mask", output)
-                    cv2.waitKey(500)
+                    cv2.waitKey(5)
 
         except CvBridgeError as e:
             print(e)
 
-        if self.num_robbers == 0:
-            print("\n******************")
-            print("All Robbers Caught!")
-            print("******************\n")
-            rospy.signal_shutdown("All Robbers Caught!")
+
 
     def jail_robber(self, msg):
         if msg.confirm == True:
             self.robber_info[msg.robber]['caught'] = True
             self.num_robbers -= 1
-            print("\n**********\n")
-            print(msg.robber + " Jailed!")
-            print("\n**********\n")
+            rospy.loginfo(msg.robber.capitalize() + " jailed!")
         else:
-            print("\n**********\n")
-            print("It wasn't Zhora...")
-            print("\n**********\n")
+            rospy.loginfo("It wasn't %s...", msg.robber.capitalize())
+            self.wait_time = WAIT_TIME
+            rospy.loginfo("Beginning wait of " + str(self.wait_time) + " cycles")
 	    self.publishing = False
-	self.wait_time = WAIT_TIME
-	if self.num_robbers == 0:
-            print("\n******************")
-            print("All Robbers Caught!")
-            print("******************\n")
+        if self.num_robbers == 0:
+            rospy.loginfo("***All Robbers Caught!***")
             rospy.signal_shutdown("All Robbers Caught!")
 
 if __name__ == '__main__':

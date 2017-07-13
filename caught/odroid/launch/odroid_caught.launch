@@ -1,0 +1,13 @@
+<!-- Launches caught_robber node - LT -->
+
+<launch>
+
+	<arg name="catch_dist" default="0.5" />
+	<arg name="cop_name" default="$(env ROBOT)"/>
+
+	<node name="caught_robber" pkg="caught" type="caught_robber.py" output="screen">
+		<param name="catch_dist" value="$(arg catch_dist)" />
+		<param name="cop_name" value="$(arg cop_name)" />
+	</node>
+
+</launch>

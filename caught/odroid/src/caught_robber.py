@@ -2,33 +2,25 @@
 from __future__ import division
 from __future__ import print_function
 """
-
-
-    *** ODROID VERSION ***
-    See Wiki for running instructions
-
+    *** ODRIOD VERSION ***
     Node that publishes if a cop has caught a robber
     using OpenCV's color recognition of the robber
 
+    Note: Open in nano (Atom does not display actual spacing correctly)
+
+    See cops-and-robots-2.0 Wiki/Caught Script CV for details
+
     To add or update colors of a robber visit the
         robber_colors.yaml file
-
-    See wiki, to run:
-    $ ROS_NAMESPACE=<cop name>/camera/rgb rosrun image_proc image_proc
-    9
-    topic_name: /<cop_name>/camera/rgb/image_color
-
-    To view video feed from cop:
-    $ rosrun image_view image_view image:=/<cop_name>/camera/rgb/image_color
 """
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.4" # ODROID VERSION
+__version__ = "1.5" # ODROID VERSION
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
-__status__ = "Development"
+__status__ = "Stable"
 
 import rospy
 import roslib
@@ -37,7 +29,6 @@ import numpy as np
 import numpy.polynomial.polynomial as poly
 import os
 import yaml
-import sys
 
 from sensor_msgs.msg import Image
 from caught.msg import Caught
@@ -47,25 +38,23 @@ from cv_bridge import CvBridge, CvBridgeError
 # coefs = [ 33518.96832373, -48636.45623814,  18884.04641427] # for 0.125 - 1.5
 coefs = [ 34706.81758805, -58782.89189293,  27970.47650456]
 WAIT_TIME = 200 # cycles between a false alarm and begin search for next catch
+DEFAULT_CATCH_DIST = 0.5
 
 class Caught_Robber(object):
 
 
-    def __init__(self, copList, dist):
-
-        # Identify benchmark pixels => "a catch"
-        self.caught_val = self.calibrate_caught_distance(dist)
-        if(self.caught_val == 0):
-            raise Exception('Bad Calibration Value')
-        else:
-            print("Calibration set to: " + str(self.caught_val))
-
+    def __init__(self):
         rospy.init_node('caught_robber')
+	dist = rospy.get_param('~catch_dist', DEFAULT_CATCH_DIST)
+        # Identify benchmark pixels => "a catch"
+	rospy.loginfo("Desired catch distance: " + str(dist))
+        self.caught_val = self.calibrate_caught_distance(dist)
+
         # Identify Cops' image topics to subscribe to
         # All topics have same callback "self.caught_callback"
-        for cop in copList:
-            video_feed = "/" + cop + '/camera/rgb/image_color'
-            rospy.Subscriber(video_feed, Image, self.caught_callback)
+	cop = rospy.get_param('~cop_name', 'pris')
+        video_feed = "/" + cop + '/camera/rgb/image_color'
+        rospy.Subscriber(video_feed, Image, self.caught_callback)
 
         self.num_robbers = 0
         self.pub = rospy.Publisher('/caught' , Caught, queue_size=10)
@@ -78,9 +67,6 @@ class Caught_Robber(object):
             with open(yaml_cfg_file, 'r') as color_cfg:
                 self.robber_info = yaml.load(color_cfg) # load color info as a dict
                 for rob in self.robber_info:
-		    #print("\n\n\n**************")
-		    #print(rob)
-		    #print("***************\n\n\n")
                     self.robber_info[rob]['caught'] = False
                     self.num_robbers += 1
 
@@ -88,21 +74,21 @@ class Caught_Robber(object):
             print(ioerr)
 
         self.bridge = CvBridge()
-	self.publishing = False # ODROIDs don't have this weird spacing
+	self.publishing = False
 	self.wait_time = 0
 
         self.counter = 0 # Counter for blob detection consistency
         self.caught_count = 1 # The number counter must reach for a catch (filter consistency in reading)
 
-        print("Caught Robber callback ready")
+        rospy.loginfo("Caught Robber callback ready")
         rospy.spin()
 
 
     """ Returns the pixel area for a catch given a distance """
     def calibrate_caught_distance(self, dist):
         if (dist > 1.0):
-            print("\n****Invalid distance, Please enter a value" +
-                " below 1.0****\n")
+            rospy.logerr("Invalid catch distance, Please enter a value" +
+                " above 1.0")
             return 0
         if (dist < .15):
             dist = .15
@@ -110,14 +96,14 @@ class Caught_Robber(object):
 
 
     def caught_callback(self, ros_image):
-        print("Entering Caught Callback: ", end="")
-		if self.publishing == True:
-	    	print("Already Published")
-	   		return
-		elif self.wait_time > 0:
-	    	print("Wait: " + str(self.wait_time))
-	    	self.wait_time -= 1
-	    	return
+        rospy.logdebug("Entering Caught Callback:")
+	if self.publishing == True:
+	    rospy.logdebug("Already Published")
+	    return
+	elif self.wait_time > 0:
+	    rospy.logdebug("Wait: " + str(self.wait_time))
+	    self.wait_time -= 1
+	    return
 
         try:
             cv_image = self.bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
@@ -150,20 +136,20 @@ class Caught_Robber(object):
                 # Find the largest contour
                 c = max(cont, key=cv2.contourArea)
                 area = cv2.contourArea(c)
-                print(" Max Contour: " + str(area))
+                rospy.logdebug("Max Contour: " + str(area))
 
                 # Check publish caught msg
                 if area > self.caught_val:
                     self.counter += 1
                     if (self.counter >= self.caught_count):
-                        if self.publishing == False:
-                            self.publishing = True
+			if self.publishing == False:
+			    self.publishing = True
                             msg = Caught()
-                            msg.robber = rob
+                  	    msg.robber = rob
                             msg.confirm = True
                             self.pub.publish(msg)
                             self.counter = 0 # restart
-                            print("PUBLISHING!!!")
+			    rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
                 else:
                     self.counter = 0
 
@@ -180,27 +166,16 @@ class Caught_Robber(object):
         if msg.confirm == True:
             self.robber_info[msg.robber]['caught'] = True
             self.num_robbers -= 1
-            print("\n**********\n")
-            print(msg.robber + " Jailed!")
-            print("\n**********\n")
+            rospy.loginfo(msg.robber.capitalize() + " jailed!")
         else:
-            print("\n**********\n")
-            print("It wasn't Zhora...")
-            print("\n**********\n")
+            rospy.loginfo("It wasn't %s...", msg.robber.capitalize())
 	    self.publishing = False
-	self.wait_time = WAIT_TIME
+	    self.wait_time = WAIT_TIME
+	    rospy.loginfo("Beginning wait time of " + str(self.wait_time))
 	if self.num_robbers == 0:
-            print("\n******************")
-            print("All Robbers Caught!")
-            print("******************\n")
+            rospy.loginfo("All Robbers Caught!")
             rospy.signal_shutdown("All Robbers Caught!")
 
 
 if __name__ == '__main__':
-    dist = 0.5
-    if len(sys.argv) == 2:
-        dist = float(sys.argv[1])
-    else:
-        print("Using default caught distance: " + str(dist))
-    cop = ["pris"] # for multiple cops
-    a = Caught_Robber(cop, dist)
+    a = Caught_Robber()

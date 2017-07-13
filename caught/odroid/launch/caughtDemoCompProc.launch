@@ -1,0 +1,21 @@
+<!-- Launch file that runs minimal and publishes pris' kinect's image feed
+(/pris/camera/rgb/image_color). On external computer (where rosmaster is running)
+run $roslaunch caught caught.launch and some subscriber to the /caught_confirm
+topic (such as obs interface or $ python test_caught.py). To test caught robber
+node on Odroid: $ roslaunch caughtDemoOdroidProc.launch  -LT --> 
+
+<launch>
+	<arg name="robot_name" value="$(env ROBOT)" />
+	
+	<include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+	
+	<group ns="$(arg robot_name)">	
+	<include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
+		<arg name="rgb_processing" value="true" />
+		<arg name="depth_registration" value="false" />
+		<arg name="depth_processing" value="false" />
+		<arg name="robot_name" value="$(arg robot_name)" />
+		<arg name="scan_topic" value="/$(arg robot_name)/scan" />
+	</include>
+	</group>
+</launch>
