@@ -44,4 +44,4 @@ class Test_Caught(object):
 
 
 if __name__ == '__main__':
-    a = Test_Caught()
+    a = Test_Caught() 
