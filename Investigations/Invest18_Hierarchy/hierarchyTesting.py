@@ -421,12 +421,46 @@ def slice3DModel():
 	#fig = plt.figure(); o
 
 
+def buildRecFromCentroidOrient():
+	centroid = [5,4]; 
+	orient = 145;
+	length = 3; 
+	width = 2; 
+	theta1 = orient*math.pi/180;  
+	
+
+	h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2)); 
+	theta2 = math.asin((width/2)/h); 
+	 
+	s1 = h*math.sin(theta1+theta2); 
+	s2 = h*math.cos(theta1+theta2); 
+
+	s3 = h*math.sin(theta1-theta2); 
+	s4 = h*math.cos(theta1-theta2); 
+
+
+
+	pz = Softmax(); 
+
+	#1. get points
+	points = [];
+	points = [[centroid[0]+s2,centroid[1]+s1],[centroid[0]+s4,centroid[1]+s3],[centroid[0]-s2,centroid[1]-s1],[centroid[0]-s4,centroid[1]-s3]]; 
+	
+	pz.buildPointsModel(points,steepness=2); 
+	pz.plot2D(low=[0,0],high=[10,10]); 
+	
+
+
+
+
+
 if __name__ == "__main__":
 	#buildRectangleModel();
 	# buildGeneralModel(); 
 	#buildPointsModel();
 	#stretch1DModel();  
-	slice3DModel(); 
+	#slice3DModel(); 
+	buildRecFromCentroidOrient(); 
 
 
 
