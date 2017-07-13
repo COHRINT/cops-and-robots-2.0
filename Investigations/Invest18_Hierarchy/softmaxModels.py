@@ -14,10 +14,10 @@ Allows for the creation, and use of Softmax functions
 '''
 
 __author__ = "Luke Burks"
-__copyright__ = "Copyright 2016, Cohrint"
+__copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.2"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -47,11 +47,14 @@ class Softmax:
 
 
 	def __init__(self,weights= None,bias = None):
-		
+		'''
+		Initialize with either:
+		1. Nothing, for empty softmax model
+		2. Vector of weights (n x d) and bias (nx1)
+		'''
+
 		self.weights = weights;
-
 		self.bias = bias; 
-
 
 		if(self.weights is not None):
 			self.size = len(self.weights); 
@@ -62,6 +65,9 @@ class Softmax:
 				self.zeta_c[i] = random()*10;  
 
 	def nullspace(self,A,atol=1e-13,rtol=0):
+		'''
+		Finds the nullspace of a matrix
+		'''
 		A = np.atleast_2d(A)
 		u, s, vh = svd(A)
 		tol = max(atol, rtol * s[0])
@@ -70,15 +76,21 @@ class Softmax:
 		return ns;
 
 	def distance(self,x1,y1,x2,y2):
+		'''
+		The distance formula for 2d systems
+		'''
 		dist = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2); 
 		dist = math.sqrt(dist); 
 		return dist;
 
 	def buildRectangleModel(self,recBounds,steepness = 1):
 
-		#Specify the lower left and upper right points
-		#recBounds = [[2,2],[3,4]]; 
-		#recBounds = [[1,1],[8,4]]; 
+		'''
+		Builds a softmax model in 2 dimensions with a rectangular interior class
+		Inputs
+		recBounds: A 2x2 list, with the coordinates of the lower left and upper right corners of the rectangle
+		steepness: A scalar determining how steep the bounds between softmax classes are
+		'''
 
 		B = np.matrix([-1,0,recBounds[0][0],1,0,-recBounds[1][0],0,1,-recBounds[1][1],0,-1,recBounds[0][1]]).T; 
 		
@@ -141,6 +153,15 @@ class Softmax:
 			self.zeta_c[i] = random()*10;  
 
 	def buildGeneralModel(self,dims,numClasses,boundries,B,steepness=1):
+		'''
+		Builds a softmax model according to the full specification of boudries and a normal vector
+		Inputs
+		dims: the dimensionality of the model
+		numClasses: the number of classes in the model
+		boundries: a list of [2x1] lists which spec out the boundries required in the model
+		B: a list of normals and constants for each boundry
+		steepness: A scalar determining how steep the bounds between softmax classes are
+		'''
 
 		M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
 
@@ -156,16 +177,7 @@ class Softmax:
 
 		weight = []; 
 		bias = []; 
-		'''
-		if(dims == 2):
-			for i in range(0,len(Theta)//(dims+1)):
-				weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0]]); 
-				bias.append(Theta[(dims+1)*i+dims][0]); 
-		elif(dims==3):
-			for i in range(0,len(Theta)//(dims+1)):
-				weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0],Theta[(dims+1)*i+2][0]]); 
-				bias.append(Theta[(dims+1)*i+dims][0]);
-		'''
+
 		for i in range(0,len(Theta)//(dims+1)):
 			wtmp=[]; 
 			for j in range(0,dims):
@@ -185,6 +197,13 @@ class Softmax:
 			self.zeta_c[i] = random()*10;  
 
 	def buildPointsModel(self,points,steepness=1):
+		'''
+		Builds a 2D softmax model by constructing an interior class from the given points
+		Inputs
+		points: list of 2D points that construct a convex polygon
+		steepness: A scalar determining how steep the bounds between softmax classes are
+		'''
+
 		dims = 2; 
 
 		pointsx = [p[0] for p in points]; 
@@ -206,9 +225,6 @@ class Softmax:
 
 			H = np.matrix([[p1[0],p1[1],1],[p2[0],p2[1],1],[mid[0],mid[1],1]]); 
 
-			#print(H);
-			#print(nullspace(H).T[0]); 
-			#print("");  
 			Hnull = (self.nullspace(H)).tolist();
 			distMed1 = self.distance(mid[0]+Hnull[0][0],mid[1]+Hnull[1][0],centroid[0],centroid[1]); 
 			distMed2 = self.distance(mid[0]-Hnull[0][0],mid[1]-Hnull[1][0],centroid[0],centroid[1]);
@@ -257,8 +273,12 @@ class Softmax:
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
 
+
 	def Estep(self,weight,bias,prior_mean,prior_var,alpha = 0.5,zeta_c = 1,softClassNum=0):
-	
+		'''
+		Runs the Expectation step of the Variational Bayes algorithm
+		'''
+
 		#start the VB EM step
 		lamb = [0]*len(weight); 
 
@@ -308,6 +328,9 @@ class Softmax:
 
 
 	def Mstep(self,m,yc,yc2,zeta_c,alpha,steps):
+		'''
+		Runs the Maximization Step of the Variational Bayes algorithm
+		'''
 
 		z = zeta_c; 
 		a = alpha; 
@@ -358,7 +381,10 @@ class Softmax:
 
 
 	def numericalProduct(self,prior,meas,low=0,high=5,res =100,vis = True):
-		
+		'''
+		Multiplies a 1D softmax model by a 1D gaussian mixture over a range
+		For comparison to VB
+		'''
 		[x,softmax] = self.plot1D(low,high,res,vis = False); 
 		prod = [0 for i in range(0,len(x))]; 
 
@@ -372,7 +398,9 @@ class Softmax:
 			plt.show(); 
 
 	def vb_update(self, measurement, prior_mean,prior_var):
-        
+		'''
+		Runs the variational Bayes update
+		'''
 		w = np.array(self.weights)
 		b = np.array(self.bias)
 		m = len(w); 
@@ -544,6 +572,8 @@ class Softmax:
 		return post; 
 
 	def pointEval2D(self,softClass,point):
+		#Evaluates the function at a point in 2D
+
 		top = np.exp(self.weights[softClass][0]*point[0] + self.weights[softClass][1]*point[1]); 
 		bottom = 0; 
 		for i in range(0,self.size):
@@ -551,6 +581,7 @@ class Softmax:
 		return top/bottom; 
 
 	def pointEvalND(self,softClass,point):
+		#Evaluates the function at a point in any dimensionality. 
 		topIn = 0;
 		for i in range(0,len(self.weights[0])):
 			topIn+=self.weights[softClass][i]*point[i]; 
@@ -585,14 +616,11 @@ class Softmax:
 			return [x,softmax]; 
 
 	def plot2D(self,low = [0,0],high = [5,5],labels = None,vis = True,delta=0.1):
-		#x, y = np.mgrid[low[0]:high[0]:(float(high[0]-low[0])/res), low[1]:high[1]:(float(high[1]-low[1])/res)]
 		x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
 		pos = np.dstack((x, y))  
 		resx = int((high[0]-low[0])//delta)+1;
 		resy = int((high[1]-low[1])//delta)+1; 
 
-
-		#model = [[[0 for i in range(0,res)] for j in range(0,res)] for k in range(0,len(self.weights))];
 		model = [[[0 for i in range(0,resy)] for j in range(0,resx)] for k in range(0,len(self.weights))];
 		
 
@@ -842,19 +870,20 @@ def testPlot3D():
 	dims = 3;
 	steep = 10;
 	
+	'''
 	#Trapezoidal Pyramid Specs
 	numClasses = 7; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
 	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
-	
 	'''
+	
 	#Octohedron Specs
 	numClasses = 9; 
 	boundries = []; 
 	for i in range(1,numClasses):
 		boundries.append([i,0]); 
 	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
-	'''
+	
 	pz = Softmax(); 
 	pz.buildGeneralModel(dims=dims,numClasses=numClasses,boundries=boundries,B=B,steepness=steep); 
 
