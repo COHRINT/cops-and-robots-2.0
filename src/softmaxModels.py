@@ -17,7 +17,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.2"
+__version__ = "1.2.1"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -151,6 +151,26 @@ class Softmax:
 		self.zeta_c = [0]*len(self.weights); 
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
+
+	def buildOrientedRecModel(self,centroid,orient,length,width,steepness = 1):
+		'''
+		Builds a rectangular model at the specified centroid with the parameters given
+		'''
+
+		theta1 = orient*math.pi/180;  
+
+		h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2)); 
+		theta2 = math.asin((width/2)/h); 
+		 
+		s1 = h*math.sin(theta1+theta2); 
+		s2 = h*math.cos(theta1+theta2); 
+
+		s3 = h*math.sin(theta1-theta2); 
+		s4 = h*math.cos(theta1-theta2); 
+
+		points = [];
+		points = [[centroid[0]+s2,centroid[1]+s1],[centroid[0]+s4,centroid[1]+s3],[centroid[0]-s2,centroid[1]-s1],[centroid[0]-s4,centroid[1]-s3]];
+		self.buildPointsModel(points,steepness=steepness); 
 
 	def buildGeneralModel(self,dims,numClasses,boundries,B,steepness=1):
 		'''
@@ -925,6 +945,16 @@ def testPlot3D():
  
 	pz.plot3D();  
 
+def testOrientRecModel():
+	cent = [4,4]; 
+	length = 3; 
+	width = 2; 
+	orient = 25; 
+
+	pz = Softmax(); 
+	pz.buildOrientedRecModel(cent,orient,length,width); 
+	pz.plot2D(low=[0,0],high=[10,10]); 
+
 if __name__ == "__main__":
 
 	#test1DSoftmax(); 
@@ -933,8 +963,8 @@ if __name__ == "__main__":
 	#testRectangleModel();  
 	#testGeneralModel(); 
 	#testPointsModel(); 
-	testPlot3D(); 
-
+	#testPlot3D(); 
+	testOrientRecModel(); 
 
 
 	
