@@ -588,9 +588,9 @@ class MapDisplay(QWidget):
     def ros_update(self, msg):
         # load image
         self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
+        # print(self.image_view.isNull())
         # set image as pixmap in label
         if not self.image_view.isNull():
-            print(self.image_view.isNull())
             self.pic_label.setPixmap(self.image_view)
 
 class VideoContainer(QWidget):
