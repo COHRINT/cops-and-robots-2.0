@@ -1,12 +1,12 @@
-# Cops and Robots 1.5
+# Cops and Robots 1.6
 ## Overview
-Cops and Robots 1.5 was a revival of the original Cops and Robots experiment out of the University of Colorado at Boulder's Aerospace Lab, COHRINT, lead by Professor Nisar Ahmed. CnR 1.5 is functional (for issues, see **Current Issues**). The Cops and Robots experiment family (1.0, 1.5, 1.6, 2.0+) demonstate human robotic interaction through robotic probabalistic control algorithms. The basic idea is to have a "cop"/turtlebot "catch"/move close to a "robber"/turtlebot in a 2D map. A human provides observtions to the cop via a gui interface that features 3 security cameras, one cop camera, a belief map and two means of sending observations to the robot: the most valuable yes or no questions (see **Wiki/VOI**) and options for the human to push information to the robot, such as seeing the robber through a security camera. CnR 1.5 uses a 2D numpy array, a "belief" of its environment to estimate the most probable location of the robber, the MAP (maximum a posteriori). This belief becomes updated using observations given from the human through the interface and a viewcone of its own search path. This process repeats until the cop has successfully caught the robber. 
+Cops and Robots 1.6 was **an improved** a revival of the original Cops and Robots experiment out of the University of Colorado at Boulder's Aerospace Lab, COHRINT, lead by Professor Nisar Ahmed. CnR 1.5 is functional (for issues, see **Current Issues**). The Cops and Robots experiment family (1.0, 1.5, 1.6, 2.0+) demonstate human robotic interaction through robotic probabalistic control algorithms. The basic idea is to have a "cop"/turtlebot "catch"/move close to a "robber"/turtlebot in a 2D map. A human provides observtions to the cop via a gui interface that features 3 security cameras, one cop camera, a belief map and two means of sending observations to the robot: the most valuable yes or no questions (see **Wiki/VOI**) and options for the human to push information to the robot, such as seeing the robber through a security camera. CnR 1.5 uses a 2D numpy array, a "belief" of its environment to estimate the most probable location of the robber, the MAP (maximum a posteriori). This belief becomes updated using observations given from the human through the interface and a viewcone of its own search path. This process repeats until the cop has successfully caught the robber. 
 
-The current version under development is CnR 1.6, please visit that branch for an updated status on its development.
+The current version under development is CnR 2.0, please visit that branch for an updated status on its development.
 
 ## Setup
 ### **For difficulties in any part see "Current Issues", first bullet point** ###
-1) Install cops_and_robots/1.5 onto your local machine and catkin_make the package
+1) Install cops_and_robots/1.6 onto your local machine and catkin_make the package
 2) Calibrate vicon cameras and set the origin
 $ python gui.py
 Select configurations
@@ -33,9 +33,9 @@ Select configurations
 
  
 ## For more Information
-* Observation Interface: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface
-* Policy Translator: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator
-* Value of Information: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information
+* [Observation Interface](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface)
+* [Policy Translator](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator)
+* [Value of Information](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information)
 	
 ## Current Issues
 
