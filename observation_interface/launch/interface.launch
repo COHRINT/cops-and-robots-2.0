@@ -8,10 +8,12 @@
 -->
 
 <launch>
-
+  <arg name="cop_name" default="pris"/>
   <!-- Interface -->
   <node name="obs_interface" pkg="observation_interface"
-    type="interface.py" output="screen" />
+    type="interface.py" output="screen" >
+    <param name="cop_name" value="$(arg cop_name)" />
+  </node>
 
   <!-- Cop Video Raw Image Processing -->
   <!-- <node name="image_processing" pkg="image_proc" type="image_proc"

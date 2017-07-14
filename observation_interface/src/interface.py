@@ -64,6 +64,7 @@ class ObservationInterface(QMainWindow):
 
     def __init__(self):
 
+        rospy.init_node('obs_interface')
         self.app_name = 'Cops and Robots 1.5'
 
         super(QMainWindow,self).__init__()
@@ -71,7 +72,7 @@ class ObservationInterface(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self.initUI()
 
-        rospy.init_node('obs_interface')
+
 
         rospy.Subscriber('/caught',Caught,self.caught_callback)
         self.caught_pub = rospy.Publisher('/caught_confirm',Caught,queue_size=10)
@@ -108,7 +109,8 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        self.cop_video = CopVideo('pris')
+        cop_name = rospy.get_param("~cop_name", "pris")
+        self.cop_video = CopVideo(cop_name)
         self.cam_1 = SecurityCamera(1,'Study')
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Kitchen')

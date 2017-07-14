@@ -90,11 +90,8 @@ class Caught_Robber(object):
         self.show_mask = rospy.get_param('~show_mask', 'True')
         rospy.spin()
 
-
-
     def calibrate_caught_distance(self, dist):
-    """ Returns the pixel area for a catch given a distance """
-
+        """ Returns the pixel area for a catch given a distance """
         if (dist > 1.0):
             rospy.logerr("Invalid distance, Please enter a value" +
                 " below 1.0")
@@ -104,9 +101,9 @@ class Caught_Robber(object):
         return poly.polyval(dist, coefs)
 
     def caught_callback(self, ros_image):
-    """  Analyzes cop video feed for robber color values specificed
-    in the yaml file. Color masks image then compares largest contour
-    against the caught_val to verify a catch """
+        """  Analyzes cop video feed for robber color values specificed
+        in the yaml file. Color masks image then compares largest contour
+        against the caught_val to verify a catch """
 
         rospy.logdebug("Entering Caught Callback: ")
         if self.publishing == True:
