@@ -33,9 +33,9 @@ Select configurations
 
  
 ## For more Information
-* Observation Interface: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface
-* Policy Translator: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator
-* Value of Information: https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information
+* [Observation Interface](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface)
+* [Policy Translator](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator)
+* [Value of Information](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information)
 	
 ## Current Issues
 
