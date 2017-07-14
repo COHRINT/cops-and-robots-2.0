@@ -103,6 +103,8 @@ class Caught_Robber(object):
 	elif self.wait_time > 0:
 	    rospy.logdebug("Wait: " + str(self.wait_time))
 	    self.wait_time -= 1
+        if self.wait_time == 0:
+            rospy.loginfo("Ready to catch again!")
 	    return
 
         try:
