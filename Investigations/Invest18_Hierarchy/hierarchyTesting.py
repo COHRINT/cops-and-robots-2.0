@@ -423,7 +423,7 @@ def slice3DModel():
 
 def buildRecFromCentroidOrient():
 	centroid = [5,4]; 
-	orient = 25;
+	orient = 0;
 	length = 2; 
 	width = 4; 
 	theta1 = orient*math.pi/180;  
@@ -444,6 +444,10 @@ def buildRecFromCentroidOrient():
 	points = [];
 	points = [[centroid[0]+s2,centroid[1]+s1],[centroid[0]+s4,centroid[1]+s3],[centroid[0]-s2,centroid[1]-s1],[centroid[0]-s4,centroid[1]-s3]]; 
 	
+	for p in points:
+		plt.scatter(p[0],p[1]); 
+	plt.show(); 
+
 	pz.buildPointsModel(points,steepness=5); 
 	pz.plot2D(low=[0,0],high=[10,10]); 
 
