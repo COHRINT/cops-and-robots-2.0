@@ -1,29 +1,32 @@
 #!/usr/bin/env python
-import yaml
-import os 			# path capabilities
 
 """ Summary:
 	Creates a map object from an inputed 'map.yaml' file (in models dir)
+		with softmax LIKELIHOODs
 	Map includes:
 		1) General info: name, bounds.max_x_y, bounds.min_x_y, origin
 		2) Object hash: 'self.objects', each member is a Map_Object
-		3) Rooms : self.rooms['room_name']['lower_l OR upper_r']
+		3) Rooms : self.rooms['room_name']['lower_l' OR 'upper_r' OR 'likelihood']
 			access the room's lower left coordinate and upper right coord
 	Map_Object includes:
 		name, color, centroid[x, y], major axis, minor axis,
-		orientation from the object's major axis to the map's positive x axis
-		shape (available shapes: oval and rectangle)
+		orientation from the object's major axis to the map's positive x axis,
+		shape (available shapes: oval and rectangle),
+		softmax likelihood
 """
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, COHRINT"
 __credits__ = ["Luke Babier", "Ian Loefgren", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "2.0.0" # Likelihoods added
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
+import yaml
+import os 			# path capabilities
+from softmaxModels import *
 
 class Map(object):
 	""" Map Object from map.yaml file (located in models dir)
@@ -43,8 +46,8 @@ class Map(object):
 	def __init__(self, yaml_file):
 
 		# load yaml file as a dictionary
-		cfg = self._find_yaml(yaml_file)
-		# cfg = yaml.load(open('../models/' + yaml_file, 'r'));
+		# cfg = self._find_yaml(yaml_file)
+		cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
 		if cfg is not None:
 
@@ -64,18 +67,22 @@ class Map(object):
 				self.rooms[room] = {}
 				self.rooms[room]['lower_l'] = lower_l
 				self.rooms[room]['upper_r'] = upper_r
+				self.rooms[room]['softmax'] = Softmax()
+				self.rooms[room]['softmax'].buildRectangleModel([lower_l, upper_r])
 
 			# Store map's objects in self.objects hash
+			self.softmax = Softmax()
 			self.objects = {}
 			for item in cfg:
 				if item != 'info':	# if not general info => object on map
 					map_obj = Map_Object(cfg[item]['name'],
 										cfg[item]['color'],
 										[cfg[item]['centroid_x'], cfg[item]['centroid_y']],
-										cfg[item]['x_len'],
-										cfg[item]['y_len'],
+										cfg[item]['length'],
+										cfg[item]['width'],
 										cfg[item]['orientation'],
-										cfg[item]['shape'])
+										cfg[item]['shape']
+										)
 					self.objects[map_obj.name] = map_obj
 
 
@@ -106,6 +113,7 @@ class Map_Object(object):
 		minor axis (float),
 		orientation from the object's major axis to the map's positive x axis (float)
 		shape (str) (available shapes: oval and rectangle)
+		softmax likelihood
 
 	Parameters
 	----------
@@ -113,12 +121,12 @@ class Map_Object(object):
 		Name of obj
 	color: str
 		Color of obj
-	centroid_pos : list
+	centroid : 2x1 list
 		Centroid location [x, y] [m]
-	x_ax_len: float
-		x axis length of obj [m] (before orientation adjustment)
-	min_ax_len: float
-		y axis length of obj [m] (before orientation adjustment)
+	length: float
+		x axis length of obj [m] (along direction object is facing)
+	width: float
+		y axis width of obj [m] (normal to direction object is facing)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis
 	shape : str
@@ -127,20 +135,32 @@ class Map_Object(object):
 	def __init__(self,
 				name='wall',
 				color='darkblue',
-				centroid_pos=[0.0,0.0],
-				x_len = 0.0,
-				y_len = 0.0,
+				centroid=[0.0,0.0],
+				length = 0.0,
+				width = 0.0,
 				orient=0.0,
 				shape = 'rectangle'
 				):
 		self.name = name
 		self.color = color
-		self.centroid = centroid_pos
-		self.x_len = x_len
-		self.y_len = y_len
+		self.centroid = centroid
+		self.length = length
+		self.width = width
 		self.orient = orient
 
 		self._pick_shape(shape)
+
+		# create the objects likelihood
+		self.softmax = Softmax()
+		self.get_likelihood()
+
+	def get_likelihood(self):
+		"""
+		Create and store corresponding likelihood.
+		Approximate all shapes as rectangles
+		"""
+		self.softmax.buildOrientedRecModel(self.centroid,
+			self.orient, self.length, self.width)
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted
@@ -159,8 +179,27 @@ def test_map_obj():
 		print map1.objects['dining table'].color
 		print map1.rooms['dining room']['lower_l']
 		print map1.rooms['kitchen']['upper_r']
+
 	else:
 		print 'fail'
 
+def test_likelihood():
+	map2 = Map('map2.yaml')
+	if hasattr(map2, 'name'):
+		for obj in map2.objects:
+			print obj
+		print("Dining table:")
+		print (map2.objects['dining table'].softmax.weights)
+		print (map2.objects['dining table'].softmax.bias)
+		print (map2.objects['dining table'].softmax.size)
+		print("Mars Poster:")
+		print(map2.objects['mars poster'].softmax.weights)
+		print("Dining Room: ")
+		print(map2.rooms['dining room']['softmax'].weights)
+	else:
+		print("Failed to initialize Map Object.")
+		raise
+
 if __name__ == "__main__":
-	test_map_obj()
+	#test_map_obj()
+	test_likelihood()
