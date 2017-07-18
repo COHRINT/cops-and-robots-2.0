@@ -78,8 +78,8 @@ class Map(object):
 					map_obj = Map_Object(cfg[item]['name'],
 										cfg[item]['color'],
 										[cfg[item]['centroid_x'], cfg[item]['centroid_y']],
-										cfg[item]['x_len'],
-										cfg[item]['y_len'],
+										cfg[item]['length'],
+										cfg[item]['width'],
 										cfg[item]['orientation'],
 										cfg[item]['shape']
 										)
@@ -123,10 +123,10 @@ class Map_Object(object):
 		Color of obj
 	centroid : 2x1 list
 		Centroid location [x, y] [m]
-	x_len: float
-		x axis length of obj [m] (before orientation adjustment)
-	y_len: float
-		y axis width of obj [m] (before orientation adjustment)
+	length: float
+		x axis length of obj [m] (along direction object is facing)
+	width: float
+		y axis width of obj [m] (normal to direction object is facing)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis
 	shape : str
@@ -136,16 +136,16 @@ class Map_Object(object):
 				name='wall',
 				color='darkblue',
 				centroid=[0.0,0.0],
-				x_len = 0.0,
-				y_len = 0.0,
+				length = 0.0,
+				width = 0.0,
 				orient=0.0,
 				shape = 'rectangle'
 				):
 		self.name = name
 		self.color = color
 		self.centroid = centroid
-		self.x_len = x_len
-		self.y_len = y_len
+		self.length = length
+		self.width = width
 		self.orient = orient
 
 		self._pick_shape(shape)
@@ -160,7 +160,7 @@ class Map_Object(object):
 		Approximate all shapes as rectangles
 		"""
 		self.softmax.buildOrientedRecModel(self.centroid,
-			self.orient, self.x_len, self.y_len)
+			self.orient, self.length, self.width)
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted

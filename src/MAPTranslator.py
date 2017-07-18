@@ -235,8 +235,8 @@ class MAPTranslator(object):
         m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
-            x = m.objects[obj].x_len;
-            y = m.objects[obj].y_len;
+            x = m.objects[obj].length;
+            y = m.objects[obj].width;
             theta = m.objects[obj].orient;
             col = m.objects[obj].color
             if(m.objects[obj].shape == 'oval'):
@@ -262,8 +262,8 @@ class MAPTranslator(object):
 
     def findLLCorner(self, obj):
         """ Returns a 2x1 tuple of x and y coordinate of lower left corner """
-        length = obj.x_len
-        width = obj.y_len
+        length = obj.length
+        width = obj.width
 
         theta1 = obj.orient*math.pi/180;
         h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
