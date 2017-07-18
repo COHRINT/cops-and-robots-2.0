@@ -70,15 +70,18 @@ class ModelSpec:
 
 		if(gen):
 			self.pz = Softmax(); 
-			self.pz.buildRectangleModel([[3,4.5],[5,5]],1); 
+			self.pz.buildOrientedRecModel([4,4.75],270,.5,2,5); 
 			for i in range(0,len(self.pz.weights)):
 				self.pz.weights[i] = [0,0,self.pz.weights[i][0],self.pz.weights[i][1]]; 
 			
 			#print('Plotting Observation Model'); 
 			#self.pz.plot2D(low=[0,0],high=[10,5],vis=True); 
-						
+					
+			
+
 			f = open(self.fileNamePrefix + "OBS.npy","w"); 
 			np.save(f,self.pz);
+
 
 
 		else:
@@ -120,5 +123,5 @@ class ModelSpec:
 if __name__ == '__main__':
 	a = ModelSpec(); 
 	a.buildTransition(); 
-	a.buildReward(gen = True); 
-	#a.buildObs(gen = True); 
+	#a.buildReward(gen = True); 
+	a.buildObs(gen = True); 
