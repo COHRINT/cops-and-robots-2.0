@@ -32,9 +32,9 @@ info:
       max_x: 4.0
       max_y: -1.0
     billiard room:
-      min_x: 0
+      min_x: 0.0
       min_y: 1.4
-      max_x: 4
+      max_x: 4.0
       max_y: 3.68
     dining room:
       min_x: -9.5
@@ -50,7 +50,7 @@ info:
 bookcase:
   name: bookcase
   color: sandybrown
-  centroid_x: 0
+  centroid_x: 0.0
   centroid_y: -1.1662
   x_len: 0.38
   y_len: 0.18
@@ -72,8 +72,8 @@ desk:
 chair:
   name: chair
   color: brown
-  centroid_x: 3.0
-  centroid_y: -2.0
+  centroid_x: 2.975
+  centroid_y: -2.435
   x_len: 0.46
   y_len: 0.41
   # degrees obj's x_len to map's pos-x axis
@@ -83,8 +83,8 @@ chair:
 filing cabinet:
   name: filing cabinet
   color: black
-  centroid_x: -3.7988
-  centroid_y: -0.8912
+  centroid_x: -3.8638
+  centroid_y: -1.3262
   x_len: 0.5
   y_len: 0.37
   # degrees obj's x_len to map's pos-x axis
@@ -94,8 +94,8 @@ filing cabinet:
 dining table:
   name: dining table
   color: brown
-  centroid_x: -7.57
-  centroid_y: -2.54
+  centroid_x: -8.5
+  centroid_y: -2.3
   x_len: 1.17
   y_len: 0.69
   # degrees obj's x_len to map's pos-x axis
@@ -128,7 +128,7 @@ fridge:
   name: fridge
   color: black
   centroid_x: -9.1
-  centroid_y: 3.3
+  centroid_y: 3.07
   x_len: 0.46
   y_len: 0.46
   # degrees obj's x_len to map's pos-x axis
@@ -139,11 +139,11 @@ checkers table:
   name: checkers table
   color: sandybrown
   centroid_x: 2.04
-  centroid_y: 2.66
+  centroid_y: 2.16
   x_len: 0.5
   y_len: 0.5
   # degrees obj's x_len to map's pos-x axis
-  orientation: 270.0
+  orientation: 0.0
   shape: rectangle
 
 fern:
@@ -154,14 +154,14 @@ fern:
   x_len: 0.5
   y_len: 0.5
   # degrees obj's x_len to map's pos-x axis
-  orientation: 90.0
+  orientation: 00.0
   shape: oval
 
 wall_1:
   name: wall_1
   color: sienna
-  centroid_x: -6.5012
-  centroid_y: -0.8476
+  centroid_x: -7.0
+  centroid_y: -1.4988
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
@@ -171,8 +171,8 @@ wall_1:
 wall_2:
   name: wall_2
   color: sienna
-  centroid_x: -6.5012
-  centroid_y: -1.9976
+  centroid_x: -7.0
+  centroid_y: -2.6488
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
@@ -215,8 +215,8 @@ wall_5:
 wall_6:
   name: wall_6
   color: sienna
-  centroid_x: -1.5012
-  centroid_y: -0.8476
+  centroid_x: -2.0
+  centroid_y: -1.4988
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
@@ -336,8 +336,8 @@ wall_16:
 wall_17:
   name: wall_17
   color: sienna
-  centroid_x: 0.6512
-  centroid_y: 1.4
+  centroid_x: 0.0
+  centroid_y: 1.8988
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis
@@ -347,8 +347,8 @@ wall_17:
 wall_18:
   name: wall_18
   color: sienna
-  centroid_x: 0.6512
-  centroid_y: 2.3976
+  centroid_x: 0.0
+  centroid_y: 2.8964
   x_len: 1.15
   y_len: 0.1524
   # degrees obj's x_len to map's pos-x axis

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import division
 
 """ DISCRETIZED MAP TRANSLATOR
@@ -26,7 +27,7 @@ from matplotlib.figure import Figure
 __author__ = ["LT", "Luke Burks"]
 __copyright__ = "Copyright 2017, Cohrint"
 __license__ = "GPL"
-__version__ = "1.1"
+__version__ = "1.2"
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
@@ -46,12 +47,12 @@ class MAPTranslator(object):
     def __init__(self):
         self.delta = 0.1
         # f = self.findFile('likelihoods.npy','./');
-        f = os.path.dirname(__file__) + "/likelihoods.npy"
+        f = os.path.dirname(__file__) + "likelihoods.npy"
         self.likelihoods = np.load(f)
         # self.likelihoods = np.load("likelihoods.npy")
         self.bounds = [-9.6, -3.6, 4, 3.6]
         self.questioner = Questioner(human_sensor=None,target_order=["roy","pris"],target_weights=[11., 10.],bounds=self.bounds,delta=0.1,
-                        repeat_annoyance=0.5, repeat_time_penalty=60)
+                       repeat_annoyance=0.5, repeat_time_penalty=60)
 
     def findFile(self,name,path):
         for root,dirs,files in os.walk(path):
@@ -241,7 +242,7 @@ class MAPTranslator(object):
             if(m.objects[obj].shape == 'oval'):
                 tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             else:
-                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+                tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
             ax.add_patch(tmp)
 
         bearing = -90;
@@ -257,8 +258,21 @@ class MAPTranslator(object):
 
         ax.axis('scaled')
         print('about to save plot')
-        canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
+        canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
 
+    def findLLCorner(self, obj):
+        """ Returns a 2x1 tuple of x and y coordinate of lower left corner """
+        length = obj.x_len
+        width = obj.y_len
+
+        theta1 = obj.orient*math.pi/180;
+        h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
+        theta2 = math.asin((width/2)/h);
+
+        s1 = h*math.sin(theta1+theta2);
+        s2 = h*math.cos(theta1+theta2);
+
+        return (obj.centroid[0]-s2, obj.centroid[1]-s1)
 
 def testGetNextPose(rndm=False):
     """ Creates a belief, call getNextPose to find the MAP

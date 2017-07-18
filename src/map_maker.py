@@ -1,29 +1,32 @@
 #!/usr/bin/env python
-import yaml
-import os 			# path capabilities
 
 """ Summary:
 	Creates a map object from an inputed 'map.yaml' file (in models dir)
+		with softmax LIKELIHOODs
 	Map includes:
 		1) General info: name, bounds.max_x_y, bounds.min_x_y, origin
 		2) Object hash: 'self.objects', each member is a Map_Object
-		3) Rooms : self.rooms['room_name']['lower_l OR upper_r']
+		3) Rooms : self.rooms['room_name']['lower_l' OR 'upper_r' OR 'likelihood']
 			access the room's lower left coordinate and upper right coord
 	Map_Object includes:
 		name, color, centroid[x, y], major axis, minor axis,
-		orientation from the object's major axis to the map's positive x axis
-		shape (available shapes: oval and rectangle)
+		orientation from the object's major axis to the map's positive x axis,
+		shape (available shapes: oval and rectangle),
+		softmax likelihood
 """
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, COHRINT"
 __credits__ = ["Luke Babier", "Ian Loefgren", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "2.0.0" # Likelihoods added
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
+import yaml
+import os 			# path capabilities
+from softmaxModels import *
 
 class Map(object):
 	""" Map Object from map.yaml file (located in models dir)
@@ -64,8 +67,11 @@ class Map(object):
 				self.rooms[room] = {}
 				self.rooms[room]['lower_l'] = lower_l
 				self.rooms[room]['upper_r'] = upper_r
+				# <TODO> add likelihood generation
 
 			# Store map's objects in self.objects hash
+			print("Entering")
+			self.softmax = Softmax()
 			self.objects = {}
 			for item in cfg:
 				if item != 'info':	# if not general info => object on map
@@ -75,7 +81,8 @@ class Map(object):
 										cfg[item]['x_len'],
 										cfg[item]['y_len'],
 										cfg[item]['orientation'],
-										cfg[item]['shape'])
+										cfg[item]['shape'],
+										self.softmax)
 					self.objects[map_obj.name] = map_obj
 
 
@@ -106,6 +113,7 @@ class Map_Object(object):
 		minor axis (float),
 		orientation from the object's major axis to the map's positive x axis (float)
 		shape (str) (available shapes: oval and rectangle)
+		softmax likelihood
 
 	Parameters
 	----------
@@ -113,12 +121,12 @@ class Map_Object(object):
 		Name of obj
 	color: str
 		Color of obj
-	centroid_pos : list
+	centroid : 2x1 list
 		Centroid location [x, y] [m]
-	x_ax_len: float
+	x_len: float
 		x axis length of obj [m] (before orientation adjustment)
-	min_ax_len: float
-		y axis length of obj [m] (before orientation adjustment)
+	y_len: float
+		y axis width of obj [m] (before orientation adjustment)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis
 	shape : str
@@ -127,20 +135,32 @@ class Map_Object(object):
 	def __init__(self,
 				name='wall',
 				color='darkblue',
-				centroid_pos=[0.0,0.0],
+				centroid=[0.0,0.0],
 				x_len = 0.0,
 				y_len = 0.0,
 				orient=0.0,
-				shape = 'rectangle'
+				shape = 'rectangle',
+				softmax = Softmax()
 				):
 		self.name = name
 		self.color = color
-		self.centroid = centroid_pos
+		self.centroid = centroid
 		self.x_len = x_len
 		self.y_len = y_len
 		self.orient = orient
 
 		self._pick_shape(shape)
+
+		# create the objects likelihood
+		#self.get_likelihood(softmax)
+
+	def get_likelihood(self, softmax):
+		"""
+		Create and store corresponding likelihood
+		"""
+		if self.shape == 'rectangle':
+			self.softmax = softmax.buildOrientedRecModel(self.centroid,
+				self.orient, self.x_len, self.y_len)
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted
@@ -159,8 +179,16 @@ def test_map_obj():
 		print map1.objects['dining table'].color
 		print map1.rooms['dining room']['lower_l']
 		print map1.rooms['kitchen']['upper_r']
+
 	else:
 		print 'fail'
 
+def test_likelihood():
+	map2 = Map('map2.yaml')
+	if hasattr(map2, 'name'):
+		print("Dining table likelihood")
+		print (map1.rooms['dining table'].likelihood)
+
 if __name__ == "__main__":
-	test_map_obj()
+	#test_map_obj()
+	test_likelihood()
