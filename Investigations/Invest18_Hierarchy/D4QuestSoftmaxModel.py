@@ -49,7 +49,7 @@ And then doctor belie
 class ModelSpec:
 
 	def __init__(self):
-		self.fileNamePrefix = 'D2QuestSoftmax'; 
+		self.fileNamePrefix = 'D4QuestSoftmax'; 
 
 
 	#Problem specific
@@ -103,14 +103,17 @@ class ModelSpec:
 
 			#Need gaussians along the borders for positive and negative rewards
 			for i in range(0,len(self.r)):
-				for x1 in range(self.bounds[0][0],self.bounds[1][0]):
-					for y1 in range(self.bounds[0][1],self.bounds[1][1]):
-						for x2 in range(self.bounds[0][0],self.bounds[1][0]):
-							for y2 in range(self.bounds[0][1],self.bounds[1][1]):
-								if(math.sqrt((x1-x2)**2 + (y1-y2)**2) < 1):
+				for x1 in range(self.bounds[0][0],self.bounds[0][1]):
+					for y1 in range(self.bounds[1][0],self.bounds[1][1]):
+						for x2 in range(self.bounds[2][0],self.bounds[2][1]):
+							for y2 in range(self.bounds[3][0],self.bounds[3][1]):
+								if(math.sqrt((x1-x2)**2 + (y1-y2)**2) < 0.5):
 									self.r[i].addG(Gaussian([x1,y1,x2,y2],var,1)); 
+									
 
 
+			for r in self.r:
+				r.display(); 
 
 			f = open(self.fileNamePrefix + "REW.npy","w"); 
 			np.save(f,self.r);
@@ -123,5 +126,5 @@ class ModelSpec:
 if __name__ == '__main__':
 	a = ModelSpec(); 
 	a.buildTransition(); 
-	#a.buildReward(gen = True); 
+	a.buildReward(gen = True); 
 	a.buildObs(gen = True); 

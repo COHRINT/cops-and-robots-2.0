@@ -63,10 +63,10 @@ class PolicyGenerator:
 		#Set up default arguments
 		problemName = ''; 
 		belNum = '1'; 
-		self.alphaNum = '1'; 
+		self.alphaNum = '2'; 
 		generate = False; 
 		self.finalMix = 100; 
-		self.maxMix = 10; 
+		self.maxMix = 25; 
 		self.iterations = 1000; 
 		self.useSoft = False; 
 
@@ -136,7 +136,6 @@ class PolicyGenerator:
 			print("Building Observation Models"); 
 		allMod.buildObs(gen=generate);
 		self.pz = allMod.pz;
-		self.pz2 = allMod.pz2; 
 
 		#Build Reward Model
 		if(generate == True):
@@ -155,7 +154,8 @@ class PolicyGenerator:
 		except:
 			print('Belief file not found'); 
 			raise; 
-		
+
+
 			
 		#Initialize Gamma
 		self.Gamma = copy.deepcopy(self.r); 
@@ -164,7 +164,8 @@ class PolicyGenerator:
 			for g in self.Gamma[i].Gs:
 				g.weight = g.weight/(1-self.discount);
 			self.Gamma[i] = self.Gamma[i].kmeansCondensationN(k=self.finalMix);  
-		
+			
+
 		
 		 
 
@@ -355,7 +356,7 @@ class PolicyGenerator:
 		self.preAls = als1; 
 
 	#NOTE: Experimental Factored actions and observations step
-	def preComputeAlsSoftmaxFactored(self):
+	def preComputeAlsSoftmaxFactored(self): 
 		G = self.Gamma; 
 		#for each alpha, each movement, each question, each question answer, each view cone
 		als1 = np.zeros(shape = (len(G),len(self.delA),3,2)).tolist(); 
@@ -385,7 +386,7 @@ class PolicyGenerator:
 							mean = (np.matrix(k.mean) - np.matrix(self.delA[am])).tolist(); 
 							var = (np.matrix(k.var) + np.matrix(self.delAVar)).tolist(); 
 							weight = k.weight; 
-							als1[j][am][aq][oq][ov].addG(Gaussian(mean,var,weight)); 
+							als1[j][am][aq][oq].addG(Gaussian(mean,var,weight)); 
 		self.preAls = als1; 
 
 	#NOTE: Experimental Factored actions and observations step
@@ -393,7 +394,7 @@ class PolicyGenerator:
 		G = self.Gamma; 
 		R = self.r; 
 		pz = self.pz; 
-		pz2 = self.pz2; 
+
 
 		als1 = self.preAls; 
 
@@ -402,11 +403,10 @@ class PolicyGenerator:
 		bestGM = []; 
 
 		for am in range(0,len(self.delA)):
-			for aq in range(0,4):
+			for aq in range(0,3):
 				suma = GM(); 
 				for oq in range(0,2):
-					for ov in range(0,2):
-						suma.addGM(als1[np.argmax([self.continuousDot(als1[j][am][aq][oq][ov],b) for j in range(0,len(als1))])][am][aq][oq][ov]); 
+					suma.addGM(als1[np.argmax([self.continuousDot(als1[j][am][aq][oq],b) for j in range(0,len(als1))])][am][aq][oq]); 
 				suma.scalerMultiply(self.discount); 
 				suma.addGM(R[am]); 
 
@@ -498,8 +498,12 @@ class PolicyGenerator:
 
 
 	def signal_handler(self,signal, frame):
-		print("Stopping Policiy Generation and printing to file"); 
-		self.exitFlag = True; 
+		if(self.exitFlag==False):
+			print("Stopping Policiy Generation and printing to file"); 
+			self.exitFlag = True; 
+		else:
+			print("Overriding Proper Stop Protocol. Shutting down now...")
+			sys.exit();
 
 
 
@@ -509,8 +513,17 @@ if __name__ == "__main__":
 	a = PolicyGenerator(sys.argv); 
 	a.solve();
 
-
-	
+	'''
+	allB = [];
+	for i in range(0,500):
+		tmp = GM(); 
+		tmp.addG(Gaussian([random.random()*10,random.random()*5,random.random()*10,random.random()*5],np.identity(4),1));
+		tmp.addG(Gaussian([random.random()*10,random.random()*5,random.random()*10,random.random()*5],np.identity(4),1)); 
+		tmp.addG(Gaussian([random.random()*10,random.random()*5,random.random()*10,random.random()*5],np.identity(4),1));  
+		allB.append(tmp); 
+	f = open('D4QuestBeliefs1.npy','w');
+	np.save(f,allB);
+	'''
 
 	'''
 	gamma = np.load('D2QuestSoftmaxAlphas1.npy'); 
