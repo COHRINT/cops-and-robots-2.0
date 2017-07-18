@@ -46,8 +46,8 @@ class Map(object):
 	def __init__(self, yaml_file):
 
 		# load yaml file as a dictionary
-		cfg = self._find_yaml(yaml_file)
-		# cfg = yaml.load(open('../models/' + yaml_file, 'r'));
+		# cfg = self._find_yaml(yaml_file)
+		cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
 		if cfg is not None:
 
@@ -70,7 +70,6 @@ class Map(object):
 				# <TODO> add likelihood generation
 
 			# Store map's objects in self.objects hash
-			print("Entering")
 			self.softmax = Softmax()
 			self.objects = {}
 			for item in cfg:
@@ -81,8 +80,8 @@ class Map(object):
 										cfg[item]['x_len'],
 										cfg[item]['y_len'],
 										cfg[item]['orientation'],
-										cfg[item]['shape'],
-										self.softmax)
+										cfg[item]['shape']
+										)
 					self.objects[map_obj.name] = map_obj
 
 
@@ -139,8 +138,7 @@ class Map_Object(object):
 				x_len = 0.0,
 				y_len = 0.0,
 				orient=0.0,
-				shape = 'rectangle',
-				softmax = Softmax()
+				shape = 'rectangle'
 				):
 		self.name = name
 		self.color = color
@@ -152,15 +150,16 @@ class Map_Object(object):
 		self._pick_shape(shape)
 
 		# create the objects likelihood
-		#self.get_likelihood(softmax)
+		self.softmax = Softmax()
+		self.get_likelihood()
 
-	def get_likelihood(self, softmax):
+	def get_likelihood(self):
 		"""
-		Create and store corresponding likelihood
+		Create and store corresponding likelihood.
+		Approximate all shapes as rectangles
 		"""
-		if self.shape == 'rectangle':
-			self.softmax = softmax.buildOrientedRecModel(self.centroid,
-				self.orient, self.x_len, self.y_len)
+		self.softmax.buildOrientedRecModel(self.centroid,
+			self.orient, self.x_len, self.y_len)
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted
@@ -186,8 +185,17 @@ def test_map_obj():
 def test_likelihood():
 	map2 = Map('map2.yaml')
 	if hasattr(map2, 'name'):
-		print("Dining table likelihood")
-		print (map1.rooms['dining table'].likelihood)
+		for obj in map2.objects:
+			print obj
+		print("Dining table:")
+		print (map2.objects['dining table'].softmax.weights)
+		print (map2.objects['dining table'].softmax.bias)
+		print (map2.objects['dining table'].softmax.size)
+		print("Mars Poster:")
+		print(map2.objects['mars poster'].softmax.weights)
+	else:
+		print("Failed to initialize Map Object.")
+		raise
 
 if __name__ == "__main__":
 	#test_map_obj()
