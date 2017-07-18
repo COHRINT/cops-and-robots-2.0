@@ -63,7 +63,7 @@ class PolicyGenerator:
 		#Set up default arguments
 		problemName = ''; 
 		belNum = '1'; 
-		self.alphaNum = '2'; 
+		self.alphaNum = '1'; 
 		generate = False; 
 		self.finalMix = 100; 
 		self.maxMix = 10; 
@@ -104,11 +104,11 @@ class PolicyGenerator:
 		if(problemName == ''):
 			#print('Input Problem Name'); 
 			#problemName = raw_input(); 
-			problemName = 'D2QuestSoftmax'; 
+			problemName = 'D4QuestSoftmax'; 
 
 
 		#belLoad = '../beliefs/' + problemName + 'Beliefs' + belNum + '.npy'; 
-		belLoad = 'D2QuestBeliefs1.npy'; 
+		belLoad = 'D4QuestBeliefs1.npy'; 
 		#self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
 		self.alSave = problemName + 'Alphas' + self.alphaNum + '.npy'; 
 		#modelPath = '../models/'+ problemName + 'Model'; 
@@ -358,40 +358,34 @@ class PolicyGenerator:
 	def preComputeAlsSoftmaxFactored(self):
 		G = self.Gamma; 
 		#for each alpha, each movement, each question, each question answer, each view cone
-		als1 = np.zeros(shape = (len(G),len(self.delA),4,2,2)).tolist(); 
+		als1 = np.zeros(shape = (len(G),len(self.delA),3,2)).tolist(); 
 
 		#questions left, right, in front of,  behind
 
 		for j in range(0,len(G)):
 			for am in range(0,len(self.delA)):
-				for aq in range(0,4):
+				for aq in range(0,3):
 					for oq in range(0,2):
-						for ov in range(0,2):
-							als1[j][am][aq][oq][ov] = GM(); 
-							#get observation from question
-							#If 0, multimodal
-							alObs = GM(); 
-							if(oq == 0):
-								for h in range(0,4):
-									if(h!=aq):
-										alObs.addGM(self.pz.runVBND(G[j],h+1)); 
-							elif(oq == 1):
-								alObs.addGM(self.pz.runVBND(G[j],aq+1)); 
-
-							#Get view cone
-							alObs2 = GM(); 
-							if(ov == 0):
-								for h in range(0,4):
-									alObs2.addGM(self.pz2.runVBND(alObs,h+1)); 
-							elif(ov==1):
-								alObs2.addGM(self.pz2.runVBND(alObs,0)); 
+						als1[j][am][aq][oq] = GM(); 
+						#get observation from question
+						#If 0, multimodal
+						alObs = GM(); 
+						if(oq == 0):
+							for h in range(1,5):
+								if(h!=aq and h!=3):
+									alObs.addGM(self.pz.runVBND(G[j],h)); 
+						elif(oq == 1):
+							if(aq==2):
+								alObs.addGM(self.pz.runVBND(G[j],aq+2));
+							else:
+								alObs.addGM(self.pz.runVBND(G[j],aq+1));
 
 
-							for k in alObs.Gs:
-								mean = (np.matrix(k.mean) - np.matrix(self.delA[am])).tolist(); 
-								var = (np.matrix(k.var) + np.matrix(self.delAVar)).tolist(); 
-								weight = k.weight; 
-								als1[j][am][aq][oq][ov].addG(Gaussian(mean,var,weight)); 
+						for k in alObs.Gs:
+							mean = (np.matrix(k.mean) - np.matrix(self.delA[am])).tolist(); 
+							var = (np.matrix(k.var) + np.matrix(self.delAVar)).tolist(); 
+							weight = k.weight; 
+							als1[j][am][aq][oq][ov].addG(Gaussian(mean,var,weight)); 
 		self.preAls = als1; 
 
 	#NOTE: Experimental Factored actions and observations step
@@ -513,7 +507,11 @@ class PolicyGenerator:
 if __name__ == "__main__":
 
 	a = PolicyGenerator(sys.argv); 
-	a.solve(); 
+	a.solve();
+
+
+	
+
 	'''
 	gamma = np.load('D2QuestSoftmaxAlphas1.npy'); 
 
