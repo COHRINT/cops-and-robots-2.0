@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
-""" DISCRETIZED MAP TRANSLATOR
+""" CONTINUOUS SPACE MAP TRANSLATOR
 -Handles a belief consisting of a 2D numpy array
 -interfaces with the policy_translator_server
 """

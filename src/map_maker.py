@@ -67,8 +67,11 @@ class Map(object):
 				self.rooms[room] = {}
 				self.rooms[room]['lower_l'] = lower_l
 				self.rooms[room]['upper_r'] = upper_r
+				length = upper_r[0] - lower_l[0]
+				width = upper_r[1] - lower_l[1]
+				cent = [lower_l[0] + length/2,lower_l[1]+width/2]
 				self.rooms[room]['softmax'] = Softmax()
-				self.rooms[room]['softmax'].buildRectangleModel([lower_l, upper_r])
+				self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width)
 
 			# Store map's objects in self.objects hash
 			self.softmax = Softmax()
