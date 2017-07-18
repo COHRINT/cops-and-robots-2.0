@@ -67,7 +67,8 @@ class Map(object):
 				self.rooms[room] = {}
 				self.rooms[room]['lower_l'] = lower_l
 				self.rooms[room]['upper_r'] = upper_r
-				# <TODO> add likelihood generation
+				self.rooms[room]['softmax'] = Softmax()
+				self.rooms[room]['softmax'].buildRectangleModel([lower_l, upper_r])
 
 			# Store map's objects in self.objects hash
 			self.softmax = Softmax()
@@ -193,6 +194,8 @@ def test_likelihood():
 		print (map2.objects['dining table'].softmax.size)
 		print("Mars Poster:")
 		print(map2.objects['mars poster'].softmax.weights)
+		print("Dining Room: ")
+		print(map2.rooms['dining room']['softmax'].weights)
 	else:
 		print("Failed to initialize Map Object.")
 		raise
