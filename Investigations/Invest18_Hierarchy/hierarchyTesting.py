@@ -396,7 +396,7 @@ def slice3DModel():
 	ax.set_xlim([-5,5]); 
 	ax.set_ylim([-5,5]); 
 	ax.set_zlim([-5,5]); 
-	ax.set_title("3D Scatter of Trapezoidal Pyrimid Classes")
+	ax.set_title("3D Scatter of Softmax Class Dominance Regions")
 
 	
 	for clas in range(1,numClasses):
@@ -418,14 +418,14 @@ def slice3DModel():
 	
 
 	plt.show(); 
-	#fig = plt.figure(); o
+	#fig = plt.figure(); 
 
 
 def buildRecFromCentroidOrient():
 	centroid = [5,4]; 
-	orient = 145;
-	length = 3; 
-	width = 2; 
+	orient = 0;
+	length = 2; 
+	width = 4; 
 	theta1 = orient*math.pi/180;  
 	
 
@@ -439,28 +439,45 @@ def buildRecFromCentroidOrient():
 	s4 = h*math.cos(theta1-theta2); 
 
 
-
 	pz = Softmax(); 
 
-	#1. get points
 	points = [];
 	points = [[centroid[0]+s2,centroid[1]+s1],[centroid[0]+s4,centroid[1]+s3],[centroid[0]-s2,centroid[1]-s1],[centroid[0]-s4,centroid[1]-s3]]; 
 	
-	pz.buildPointsModel(points,steepness=2); 
-	pz.plot2D(low=[0,0],high=[10,10]); 
-	
+	for p in points:
+		plt.scatter(p[0],p[1]); 
+	plt.show(); 
 
+	pz.buildPointsModel(points,steepness=5); 
+	pz.plot2D(low=[0,0],high=[10,10]); 
+
+
+def buildTriView():
+
+	pose = [2,1,165];
+	l = 3;
+	#Without Cutting
+	triPoints = [[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+	
+	#With Cutting
+	lshort = 0.5
+	triPoints = [[pose[0]+lshort*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*0.261799+math.radians(pose[2]))],[pose[0]+lshort*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+
+
+	pz = Softmax(); 
+	pz.buildPointsModel(triPoints,steepness=10); 
+	pz.plot2D(low=[-10,-10],high=[10,10]); 
 
 
 
 
 if __name__ == "__main__":
 	#buildRectangleModel();
-	# buildGeneralModel(); 
+	#buildGeneralModel(); 
 	#buildPointsModel();
 	#stretch1DModel();  
 	#slice3DModel(); 
 	buildRecFromCentroidOrient(); 
-
+	#buildTriView(); 
 
 

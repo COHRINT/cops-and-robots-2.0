@@ -17,7 +17,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -292,6 +292,17 @@ class Softmax:
 		self.zeta_c = [0]*len(self.weights); 
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
+
+	def buildTriView(self,pose,length = 3,steepness = 2):
+		l = length;
+		#Without Cutting
+		triPoints = [[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+		
+		#With Cutting
+		#lshort = 0.5
+		#triPoints = [[pose[0]+lshort*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*0.261799+math.radians(pose[2]))],[pose[0]+lshort*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+ 
+		self.buildPointsModel(triPoints,steepness=10); 
 
 
 	def Estep(self,weight,bias,prior_mean,prior_var,alpha = 0.5,zeta_c = 1,softClassNum=0):
@@ -703,6 +714,8 @@ class Softmax:
 
 		plt.show();
 
+
+
 def test1DSoftmax():
 
 	weight = [-30,-20,-10,0]; 
@@ -949,10 +962,16 @@ def testOrientRecModel():
 	cent = [4,4]; 
 	length = 3; 
 	width = 2; 
-	orient = 25; 
+	orient = 0; 
 
 	pz = Softmax(); 
 	pz.buildOrientedRecModel(cent,orient,length,width); 
+	pz.plot2D(low=[0,0],high=[10,10]); 
+
+def testTriView():
+	pz = Softmax(); 
+	pose = [2,1.4,15.3]; 
+	pz.buildTriView(pose,length=2,steepness=5);
 	pz.plot2D(low=[0,0],high=[10,10]); 
 
 if __name__ == "__main__":
@@ -964,7 +983,8 @@ if __name__ == "__main__":
 	#testGeneralModel(); 
 	#testPointsModel(); 
 	#testPlot3D(); 
-	testOrientRecModel(); 
+	#testOrientRecModel(); 
+	testTriView(); 
 
 
 	
