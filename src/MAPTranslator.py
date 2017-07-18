@@ -232,7 +232,7 @@ class MAPTranslator(object):
 
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
         ax.contourf(x_space,y_space,belief,cmap="viridis");
-        m = Map('map2.yaml');
+        m = Map('map3.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
             x = m.objects[obj].length;
