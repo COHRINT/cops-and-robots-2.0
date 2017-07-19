@@ -19,7 +19,7 @@ from map_maker import Map
 from matplotlib import patches
 import matplotlib.tri as tri;
 import math
-from voi import Questioner
+# from voi import Questioner
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -51,8 +51,8 @@ class MAPTranslator(object):
         self.likelihoods = np.load(f)
         # self.likelihoods = np.load("likelihoods.npy")
         self.bounds = [-9.6, -3.6, 4, 3.6]
-        self.questioner = Questioner(human_sensor=None,target_order=["roy","pris"],target_weights=[11., 10.],bounds=self.bounds,delta=0.1,
-                       repeat_annoyance=0.5, repeat_time_penalty=60)
+        # self.questioner = Questioner(human_sensor=None,target_order=["roy","pris"],target_weights=[11., 10.],bounds=self.bounds,delta=0.1,
+        #                repeat_annoyance=0.5, repeat_time_penalty=60)
 
     def findFile(self,name,path):
         for root,dirs,files in os.walk(path):
@@ -232,7 +232,7 @@ class MAPTranslator(object):
 
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
         ax.contourf(x_space,y_space,belief,cmap="viridis");
-        m = Map('map3.yaml');
+        m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
             x = m.objects[obj].length;

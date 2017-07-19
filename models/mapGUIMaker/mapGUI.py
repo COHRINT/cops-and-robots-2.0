@@ -10,21 +10,46 @@ __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
-import PyQt4 as qt
+import sys
+from PyQt4.QtGui import *
 
-class Button(qt.QPushButton):
-  
-    def __init__(self, title, parent):
-        super(Button, self).__init__(title, parent)
-        
-        self.setAcceptDrops(True)
+a = QApplication(sys.argv)
+# w = QWidget()
+# QMessageBox.warning(w,"Message", "Are you sure you want to continue?")
 
-    def dragEnterEvent(self, e):
-      
-        if e.mimeData().hasFormat('text/plain'):
-            e.accept()
-        else:
-            e.ignore() 
+w = QMainWindow()
+w.setWindowTitle("Hello World!")
 
-    def dropEvent(self, e):
-        self.setText(e.mimeData().text()) 
+mainMenu = w.menuBar()
+mainMenu.setNativeMenuBar(True)
+fileMenu = mainMenu.addMenu('BIGGY')
+
+mainMenu2 = w.menuBar()
+mainMenu2.setNativeMenuBar(True)
+fileMenu2 = mainMenu2.addMenu('BIGGY2')
+
+mainMenu3 = w.menuBar()
+mainMenu3.setNativeMenuBar(True)
+fileMenu3 = mainMenu3.addMenu('BIGGY3')
+
+exitButton = QAction(QIcon('exit24.png'), 'Exit', w)
+exitButton.setShortcut('Ctrl+Q')
+exitButton.setStatusTip('Exit application')
+exitButton.triggered.connect(w.close)
+fileMenu.addAction(exitButton)
+fileMenu2.addAction(exitButton)
+fileMenu3.addAction(exitButton)
+
+
+
+
+# result = QMessageBox.question(w, 'Message', "Do you like Python?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+#
+# if result == QMessageBox.Yes:
+#     print("Yes.")
+# else:
+#     print("No.")
+
+w.show()
+
+sys.exit(a.exec_())
