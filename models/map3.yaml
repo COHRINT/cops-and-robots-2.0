@@ -96,7 +96,7 @@ dining table:
 
 mars poster:
   name: mars poster
-  color: bisque
+  color: orange
   centroid_x: 2.0
   centroid_y: 3.5
   length: 0.05
@@ -106,7 +106,7 @@ mars poster:
 
 cassini poster:
   name: cassini poster
-  color: black
+  color: yellow
   centroid_x: -2.5
   centroid_y: 3.5
   length: 0.05
