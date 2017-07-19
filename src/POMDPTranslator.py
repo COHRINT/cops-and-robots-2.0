@@ -34,9 +34,105 @@ class POMDPTranslator(object):
 		self.map2 = Map('map2.yaml');
 		self.bounds = [-9.6, -3.6, 4, 3.6]
 		self.delta = 0.1; 
+		self.upperPolicy = np.load('../policies/upperPolicy1.npy'); 
+		self.lowerPolicy = np.load('../policies/D4QuestSoftmaxAlphas1.npy'); 
 
-	def getNextPose(self,belief,obs,copPoses=None):
+	def getNextPose(self,belief,obs=None,copPoses=None):
+
+		#0. update belief
+		newBel = self.beliefUpdate(belief,obs,copPoses); 
+		#1. partition means into separate GMs, 1 for each room
+		allBels = []; 
+		weightSums = []; 
+		for room in self.map2.rooms:
+			tmp = GM(); 
+			tmpw = 0; 
+			for g in belief:
+				m = [g.mean[2],g.mean[3]];
+				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
+					tmp.addG(deepcopy(g)); 
+					tmpw+=g.weight; 
+			tmp.normalizeWeights(); 
+			allBels.append(tmp);
+			weightSums.append(tmpw); 
+		#2. find action from upper level pomdp
+		[room,quests,weights] = self.getUpperAction(weightSums); 
+
+		print(room); 
+		print(quests); 
+		print(weights); 
+
+		#3. find position and questions from lower level pomdp for that room
+
+		#4. weight questions accordingly
+
+		#5. use questioner function to publish questions
+		#6. return new belief and goal pose
+
 		pass;
+
+	def getUpperAction(self,b):
+		bestVal = -100000; 
+		bestInd = 0; 
+		Gamma = self.upperPolicy; 
+
+		questList = []; 
+
+		for j in range(0,len(Gamma)):
+			tmp = self.dotProduct(b,Gamma[j]); 
+			questList.append([tmp,Gamma[j][-1]]); 
+			if(tmp>bestVal):
+				bestVal = tmp; 
+				bestInd = j; 
+
+		a = sorted(questList,key=self.getKey); 
+		b = []; 
+		weights = []; 
+		for i in a:
+			if(i[1]%6 not in b):
+				b.append(i[1]%6);
+				weights.append(i[0]); 
+
+		mi = min(weights);
+		suma = 0;  
+		for i in range(0,len(weights)):
+			weights[i] = weights[i] + mi; 
+			suma+=weights[i]; 
+		for i in range(0,len(weights)):
+			weights[i] = weights[i]/suma; 
+
+		return [int(Gamma[bestInd][-1])//6,b,weights]; 
+
+	def getKey(self,item):
+		return item[0]; 
+
+	def getLowerAction(self,b):
+		act = self.Gamma[np.argmax([self.continuousDot(j,b) for j in self.Gamma])].action;
+		return act; 
+
+	def dotProduct(self,a,b):
+		suma = 0; 
+		for i in range(0,len(a)):
+			suma+=a[i]*b[i]; 
+		return suma; 
+
+	def continuousDot(self,a,b):
+		suma = 0;  
+
+		if(isinstance(a,np.ndarray)):
+			a = a.tolist(); 
+			a = a[0]; 
+
+		if(isinstance(a,list)):
+			a = a[0];
+
+		a.clean(); 
+		b.clean(); 
+
+		for k in range(0,a.size):
+			for l in range(0,b.size):
+				suma += a.Gs[k].weight*b.Gs[l].weight*mvn.pdf(b.Gs[l].mean,a.Gs[k].mean, np.matrix(a.Gs[k].var)+np.matrix(b.Gs[l].var)); 
+		return suma; 
 
 	def beliefUpdate(self, belief, responses = None,copPoses = None):
 		#1. partition means into separate GMs, 1 for each room
@@ -138,7 +234,16 @@ class POMDPTranslator(object):
 
 
 def testGetNextPose():
-	pass;
+	translator = POMDPTranslator(); 
+	b = GM(); 
+	b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
+
+	translator.getNextPose(b,None,[[8,5]]); 
+
+	b2 = GM(); 
+	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
+	translator.getNextPose(b2,None,[[8,5]]); 
+
 
 def testBeliefUpdate():
 	translator = POMDPTranslator(); 
@@ -163,6 +268,6 @@ def testMakeMap():
 
 
 if __name__ == '__main__':
-    #testGetNextPose();
+   	testGetNextPose();
     #testBeliefUpdate();
-    testMakeMap();
+    #testMakeMap();
