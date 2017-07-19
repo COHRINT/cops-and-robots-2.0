@@ -974,6 +974,51 @@ def testTriView():
 	pz.buildTriView(pose,length=2,steepness=5);
 	pz.plot2D(low=[0,0],high=[10,10]); 
 
+def testMakeNear():
+	pzIn = Softmax(); 
+	pzOut = Softmax(); 
+
+	cent = [4,4]; 
+	orient = 0;
+	nearness = 2; 
+
+	lengthIn = 3; 
+	lengthOut = lengthIn+nearness; 
+	widthIn = 2; 
+	widthOut = widthIn+nearness; 
+ 
+
+	pzIn.buildOrientedRecModel(cent,orient,lengthIn,widthIn,steepness=10); 
+	pzOut.buildOrientedRecModel(cent,orient,lengthOut,widthOut,steepness=10); 
+
+	#pzIn.plot2D(low=[0,0],high=[10,10]);
+	#pzOut.plot2D(low=[0,0],high=[10,10]);
+
+	b = GM(); 
+	for i in range(0,10):
+		for j in range(0,10):
+			b.addG(Gaussian([i,j],[[1,0],[0,1]],1)); 
+	b.normalizeWeights(); 
+
+	b1 = GM(); 
+	for i in range(1,5):
+		b1.addGM(pzIn.runVBND(b,i)); 
+	b1.normalizeWeights(); 
+
+	b2 = GM(); 
+	b2.addGM(pzOut.runVBND(b1,0)); 
+	b2.normalizeWeights(); 
+
+	fig,axarr = plt.subplots(3); 
+	[x,y,c] = b.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[0].contourf(x,y,c); 
+	[x,y,c] = b1.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[1].contourf(x,y,c); 
+	[x,y,c] = b2.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[2].contourf(x,y,c); 
+	plt.show(); 
+
+
 if __name__ == "__main__":
 
 	#test1DSoftmax(); 
@@ -984,7 +1029,8 @@ if __name__ == "__main__":
 	#testPointsModel(); 
 	#testPlot3D(); 
 	#testOrientRecModel(); 
-	testTriView(); 
+	#testTriView(); 
+	testMakeNear(); 
 
 
 	
