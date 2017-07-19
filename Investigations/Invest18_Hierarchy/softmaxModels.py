@@ -978,7 +978,7 @@ def testMakeNear():
 	pzIn = Softmax(); 
 	pzOut = Softmax(); 
 
-	cent = [4,4]; 
+	cent = [3.5,3.5]; 
 	orient = 0;
 	nearness = 2; 
 
@@ -986,7 +986,7 @@ def testMakeNear():
 	lengthOut = lengthIn+nearness; 
 	widthIn = 2; 
 	widthOut = widthIn+nearness; 
- 
+
 
 	pzIn.buildOrientedRecModel(cent,orient,lengthIn,widthIn,steepness=10); 
 	pzOut.buildOrientedRecModel(cent,orient,lengthOut,widthOut,steepness=10); 

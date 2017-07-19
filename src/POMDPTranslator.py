@@ -56,22 +56,48 @@ class POMDPTranslator(object):
 			allBels.append(tmp);
 			weightSums.append(tmpw); 
 		#2. find action from upper level pomdp
-		[room,quests,weights] = self.getUpperAction(weightSums); 
+		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums); 
 
-		print(room); 
-		print(quests); 
-		print(weights); 
+		# print(room); 
+		# print(questsHigh); 
+		# print(weightsHigh); 
 
 		#3. find position and questions from lower level pomdp for that room
 
+		#TODO: Fake Questions and goal pose
+		goal_pose = [0,0,0]; 
+		questsLow = [18,43,21,33,58]; 
+		weightsLow = [24,54,23,48,53]; 
+		
+
+		suma = sum(weightsLow); 
+
+		for i in range(0,len(weightsLow)):
+			weightsLow[i] = weightsLow[i]/suma; 
+
 		#4. weight questions accordingly
+		h = []; 
+		for i in range(0,len(questsHigh)):
+			h.append([weightsHigh[i],questsHigh[i]])
+		for i in range(0,len(questsLow)):
+			h.append([weightsLow[i],questsLow[i]])
+		h = sorted(h,key = self.getKey,reverse=True); 
+		questsFull = []; 
+		weightsFull = []; 
+		for i in h:
+			questsFull.append(i[1]);
+			weightsFull.append(i[0]);  
+
 
 		#5. use questioner function to publish questions
-		#6. return new belief and goal pose
 
-		pass;
+
+		#6. return new belief and goal pose
+		return [newBel,goal_pose]; 
+		
 
 	def getUpperAction(self,b):
+		worstVal = 1000000000; 
 		bestVal = -100000; 
 		bestInd = 0; 
 		Gamma = self.upperPolicy; 
@@ -84,8 +110,13 @@ class POMDPTranslator(object):
 			if(tmp>bestVal):
 				bestVal = tmp; 
 				bestInd = j; 
+			if(tmp < worstVal):
+				worstVal=tmp; 
 
-		a = sorted(questList,key=self.getKey); 
+		for i in range(0,len(questList)):
+			questList[i][0] = questList[i][0]-worstVal; 
+
+		a = sorted(questList,key=self.getKey,reverse=True); 
 		b = []; 
 		weights = []; 
 		for i in a:
