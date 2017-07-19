@@ -74,7 +74,6 @@ class Map(object):
 				self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width)
 
 			# Store map's objects in self.objects hash
-			self.softmax = Softmax()
 			self.objects = {}
 			for item in cfg:
 				if item != 'info':	# if not general info => object on map
