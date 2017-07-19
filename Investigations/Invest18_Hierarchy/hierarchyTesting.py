@@ -28,6 +28,9 @@ import matplotlib.pyplot as plt
 from numpy.linalg import svd
 import math
 from copy import deepcopy
+import matplotlib.animation as animation
+import os
+import matplotlib.image as mgimg
 
 def buildRectangleModel():
 
@@ -468,6 +471,174 @@ def buildTriView():
 	pz.buildPointsModel(triPoints,steepness=10); 
 	pz.plot2D(low=[-10,-10],high=[10,10]); 
 
+def make3DSoftmaxAnimation():
+	dims = 3;
+
+	
+	#Trapezoidal Pyramid Specs
+	numClasses = 7; 
+	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
+	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
+	
+	'''
+	#Octohedron Specs
+	numClasses = 9; 
+	boundries = []; 
+	for i in range(1,numClasses):
+		boundries.append([i,0]); 
+	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
+	'''
+
+	M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
+
+
+	for j in range(0,len(boundries)):
+		for i in range(0,dims+1):
+			M[(dims+1)*j+i,(dims+1)*boundries[j][1]+i] = -1; 
+			M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
+
+	A = np.hstack((M,B)); 
+
+	Theta = linalg.lstsq(M,B)[0].tolist();
+
+	weight = []; 
+	bias = []; 
+	for i in range(0,len(Theta)//(dims+1)):
+		weight.append([Theta[(dims+1)*i][0],Theta[(dims+1)*i+1][0],Theta[(dims+1)*i+2][0]]); 
+		bias.append(Theta[(dims+1)*i+dims][0]); 
+
+	steep = 10;
+	weight = (np.array(weight)*steep).tolist(); 
+	bias = (np.array(bias)*steep).tolist(); 
+	pz = Softmax(weight,bias); 
+
+	fig = plt.figure(); 
+	ax = fig.add_subplot(111,projection='3d'); 
+	ax.set_xlabel('X Axis'); 
+	ax.set_ylabel('Y Axis'); 
+	ax.set_zlabel('Z Axis'); 
+	ax.set_xlim([-5,5]); 
+	ax.set_ylim([-5,5]); 
+	ax.set_zlim([-5,5]); 
+	#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
+
+
+
+	dataClear = np.zeros(shape=(101,101,101)); 
+
+	shapeEdgesXClear = []; 
+	shapeEdgesYClear = [];
+	shapeEdgesZClear = []; 
+	#-5 to 5 on all dims
+	data = np.zeros(shape=(101,101,101)); 
+	for i in range(0,101):
+		for j in range(0,101):
+			for k in range(0,101):
+				dataClear[i][j][k] = pz.pointEvalND(0,[(i-50)/10,(j-50)/10,(k-50)/10]);
+				if(dataClear[i][j][k] > 0.0001):
+					shapeEdgesXClear.append((i-50)/10); 
+					shapeEdgesYClear.append((j-50)/10); 
+					shapeEdgesZClear.append((k-50)/10);   
+
+	
+
+
+	count = 0; 
+	#Z Axis
+	for slic in range(-10,10):
+		shapeEdgesX = []; 
+		shapeEdgesY = [];
+		shapeEdgesZ = [];
+		#-5 to 5 on all dims
+		data = np.zeros(shape=(101,101)); 
+		for i in range(0,101):
+			for j in range(0,101):
+					data[i][j] = pz.pointEvalND(0,[(i-50)/10,(j-50)/10,slic/5]);
+					if(data[i][j] > 0.0001):
+						shapeEdgesX.append((i-50)/10); 
+						shapeEdgesY.append((j-50)/10); 
+						shapeEdgesZ.append(slic/5);   
+		ax.cla(); 
+		ax.set_xlabel('X Axis'); 
+		ax.set_ylabel('Y Axis'); 
+		ax.set_zlabel('Z Axis'); 
+		ax.set_xlim([-5,5]); 
+		ax.set_ylim([-5,5]); 
+		ax.set_zlim([-5,5]); 
+		#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
+		ax.scatter(shapeEdgesXClear,shapeEdgesYClear,shapeEdgesZClear,alpha=0.01,color='b')
+		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ,color='k'); 
+		fig.savefig(os.path.dirname(__file__) + '/tmp/img'+str(count)+".png",bbox_inches='tight',pad_inches=0);
+		count+=1;  
+		plt.pause(0.1); 
+
+	#X axis
+	for slic in range(-10,10):
+		shapeEdgesX = []; 
+		shapeEdgesY = [];
+		shapeEdgesZ = [];
+		#-5 to 5 on all dims
+		data = np.zeros(shape=(101,101)); 
+		for i in range(0,101):
+			for j in range(0,101):
+					data[i][j] = pz.pointEvalND(0,[slic/5,(i-50)/10,(j-50)/10]);
+					if(data[i][j] > 0.0001):
+						shapeEdgesY.append((i-50)/10); 
+						shapeEdgesZ.append((j-50)/10); 
+						shapeEdgesX.append(slic/5);   
+		ax.cla(); 
+		ax.set_xlabel('X Axis'); 
+		ax.set_ylabel('Y Axis'); 
+		ax.set_zlabel('Z Axis'); 
+		ax.set_xlim([-5,5]); 
+		ax.set_ylim([-5,5]); 
+		ax.set_zlim([-5,5]); 
+		#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
+		ax.scatter(shapeEdgesXClear,shapeEdgesYClear,shapeEdgesZClear,alpha=0.01,color='b')
+		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ,color='k'); 
+		fig.savefig(os.path.dirname(__file__) + '/tmp/img'+str(count)+".png",bbox_inches='tight',pad_inches=0);
+		count+=1;  
+		plt.pause(0.1); 
+
+	#Y axis
+	for slic in range(-10,10):
+		shapeEdgesX = []; 
+		shapeEdgesY = [];
+		shapeEdgesZ = [];
+		#-5 to 5 on all dims
+		data = np.zeros(shape=(101,101)); 
+		for i in range(0,101):
+			for j in range(0,101):
+					data[i][j] = pz.pointEvalND(0,[(i-50)/10,slic/5,(j-50)/10]);
+					if(data[i][j] > 0.0001):
+						shapeEdgesX.append((i-50)/10); 
+						shapeEdgesZ.append((j-50)/10); 
+						shapeEdgesY.append(slic/5);   
+		ax.cla(); 
+		ax.set_xlabel('X Axis'); 
+		ax.set_ylabel('Y Axis'); 
+		ax.set_zlabel('Z Axis'); 
+		ax.set_xlim([-5,5]); 
+		ax.set_ylim([-5,5]); 
+		ax.set_zlim([-5,5]); 
+		#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
+		ax.scatter(shapeEdgesXClear,shapeEdgesYClear,shapeEdgesZClear,alpha=0.01,color='b')
+		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ,color='k'); 
+		fig.savefig(os.path.dirname(__file__) + '/tmp/img'+str(count)+".png",bbox_inches='tight',pad_inches=0);
+		count+=1;  
+		plt.pause(0.1); 
+
+	#Animate Results
+	fig,ax=plt.subplots()
+	images=[]
+	for k in range(0,count):
+		fname=os.path.dirname(__file__) + '/tmp/img%d.png' %k
+		img=mgimg.imread(fname)
+		imgplot=plt.imshow(img)
+		plt.axis('off')
+		images.append([imgplot])
+	ani=animation.ArtistAnimation(fig,images,interval=20);
+	ani.save('trapezoidalInteriorClass.gif',fps=3,writer='animation.writer')
 
 
 
@@ -477,7 +648,8 @@ if __name__ == "__main__":
 	#buildPointsModel();
 	#stretch1DModel();  
 	#slice3DModel(); 
-	buildRecFromCentroidOrient(); 
+	#buildRecFromCentroidOrient(); 
 	#buildTriView(); 
+	make3DSoftmaxAnimation(); 
 
 
