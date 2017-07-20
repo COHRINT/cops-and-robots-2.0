@@ -42,7 +42,8 @@ PYTHON_DEPENDENCIES=("--upgrade pip"
                       "pandas"
                       "pytest"
                       "descartes"
-                      "pyserial")
+                      "pyserial"
+                      "mpg123")
 PYTHON_DEPENDENCIES_NUM=${#PYTHON_DEPENDENCIES[@]} # subtract 1 b/c --upgrade pip is counted as 2
 
 REPOSITORY_LINK=""

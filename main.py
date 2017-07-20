@@ -161,7 +161,9 @@ class ReliableVagabond(object):
 	def caughtConfirmCallback(self, data):
 		if data.confirm == True:
 			del self.robots[data.robber]
+			os.system('mpg123 sounds/police_siren0.mp3')
 		if len(self.robots) == 0:
+			os.system('mpg123 sounds/police_siren1.mp3')
 			# Code to handle end of program
 
 if __name__ == '__main__':
