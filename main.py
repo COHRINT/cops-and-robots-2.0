@@ -69,6 +69,7 @@ class ReliableVagabond(object):
 			import rospy
 			rospy.init_node(self.cfg['main']['ROS_node_name'],
 							log_level=rospy.DEBUG)
+			rospy.Subscriber('/caught_confirm', Caught, self.caughtConfirmCallback)
 
 		# Link node to Python's logger
 		handler = logging.StreamHandler()
@@ -124,6 +125,8 @@ class ReliableVagabond(object):
 		# Update all actors
 		# print('callback!')
 		for robot_name, robot in self.robots.iteritems():
+			if robot.type_ == 'robber' and robot.caught == True:
+				continue
 			robot.update(positions=self.positions)
 			tmpKey = self.positions[robot_name];
 			tmpKey[1] = robot.pose2D._pose;
@@ -153,6 +156,9 @@ class ReliableVagabond(object):
 
 		# Use Deckard's map as the main map
 		#self.map = self.vagabonds['Deckard'].map
+	def caughtConfirmCallback(self, data):
+		if data.confirm == True:
+
 
 if __name__ == '__main__':
 	rv = ReliableVagabond()
