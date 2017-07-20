@@ -313,20 +313,20 @@ def slice3DModel():
 
 	dims = 3;
 
-	'''
+	
 	#Trapezoidal Pyramid Specs
 	numClasses = 7; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
-	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
-	'''
+	B = np.matrix([0,0,-1,-2,-1,0,.5,-2,0,1,.5,-2,1,0,.5,-2,0,-1,.5,-2,0,0,1,-1]).T; 
 	
+	'''
 	#Octohedron Specs
 	numClasses = 9; 
 	boundries = []; 
 	for i in range(1,numClasses):
 		boundries.append([i,0]); 
 	B = np.matrix([-1,-1,0.5,-1,-1,1,0.5,-1,1,1,0.5,-1,1,-1,0.5,-1,-1,-1,-0.5,-1,-1,1,-0.5,-1,1,1,-0.5,-1,1,-1,-0.5,-1]).T; 
-	
+	'''
 
 	M = np.zeros(shape=(len(boundries)*(dims+1),numClasses*(dims+1)));
 
@@ -478,7 +478,7 @@ def make3DSoftmaxAnimation():
 	#Trapezoidal Pyramid Specs
 	numClasses = 7; 
 	boundries = [[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]; 
-	B = np.matrix([0,0,-1,-1,-1,0,.5,-1,0,1,.5,-1,1,0,.5,-1,0,-1,.5,-1,0,0,1,-1]).T; 
+	B = np.matrix([0,0,-1,-2,-1,0,.5,-2,0,1,.5,-2,1,0,.5,-2,0,-1,.5,-2,0,0,1,-2]).T/4; 
 	
 	'''
 	#Octohedron Specs
@@ -524,54 +524,58 @@ def make3DSoftmaxAnimation():
 
 
 
-	dataClear = np.zeros(shape=(101,101,101)); 
-
-	shapeEdgesXClear = []; 
-	shapeEdgesYClear = [];
-	shapeEdgesZClear = []; 
-	#-5 to 5 on all dims
-	data = np.zeros(shape=(101,101,101)); 
-	for i in range(0,101):
-		for j in range(0,101):
-			for k in range(0,101):
-				dataClear[i][j][k] = pz.pointEvalND(0,[(i-50)/10,(j-50)/10,(k-50)/10]);
-				if(dataClear[i][j][k] > 0.0001):
-					shapeEdgesXClear.append((i-50)/10); 
-					shapeEdgesYClear.append((j-50)/10); 
-					shapeEdgesZClear.append((k-50)/10);   
+	dataClear = np.zeros(shape=(numClasses,21,21,21)); 
+	edgesClear = np.empty(shape=(numClasses,3,0)).tolist(); 
+	for clas in range(0,numClasses):
+		#-5 to 5 on all dims
+		data = np.zeros(shape=(21,21,21)); 
+		for i in range(0,21):
+			for j in range(0,21):
+				for k in range(0,21):
+					dataClear[clas][i][j][k] = pz.pointEvalND(clas,[(i-10)/2,(j-10)/2,(k-10)/2]);
+					if(dataClear[clas][i][j][k] > 0.0001):
+						edgesClear[clas][0].append((i-10)/2); 
+						edgesClear[clas][1].append((j-10)/2); 
+						edgesClear[clas][2].append((k-10)/2);   
 
 	
 
 
 	count = 0; 
+
+	allCols = ['b','g','r','c','m','y','w','#eeefff','#ffa500']; 
+
+	edgesZ = np.empty(shape=(numClasses,20,3,0)).tolist();
 	#Z Axis
+
+
 	for slic in range(-10,10):
-		shapeEdgesX = []; 
-		shapeEdgesY = [];
-		shapeEdgesZ = [];
-		#-5 to 5 on all dims
-		data = np.zeros(shape=(101,101)); 
-		for i in range(0,101):
-			for j in range(0,101):
-					data[i][j] = pz.pointEvalND(0,[(i-50)/10,(j-50)/10,slic/5]);
-					if(data[i][j] > 0.0001):
-						shapeEdgesX.append((i-50)/10); 
-						shapeEdgesY.append((j-50)/10); 
-						shapeEdgesZ.append(slic/5);   
-		ax.cla(); 
-		ax.set_xlabel('X Axis'); 
-		ax.set_ylabel('Y Axis'); 
-		ax.set_zlabel('Z Axis'); 
-		ax.set_xlim([-5,5]); 
-		ax.set_ylim([-5,5]); 
-		ax.set_zlim([-5,5]); 
-		#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
-		ax.scatter(shapeEdgesXClear,shapeEdgesYClear,shapeEdgesZClear,alpha=0.01,color='b')
-		ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ,color='k'); 
+		for clas in range(0,1):
+			#-5 to 5 on all dims
+			data = np.zeros(shape=(101,101)); 
+			for i in range(0,101):
+				for j in range(0,101):
+						data[i][j] = pz.pointEvalND(clas,[(i-50)/10,(j-50)/10,slic/5]);
+						if(data[i][j] > 0.1):
+							edgesZ[clas][slic+10][0].append((i-50)/10); 
+							edgesZ[clas][slic+10][1].append((j-50)/10); 
+							edgesZ[clas][slic+10][2].append(slic/5);   
+			ax.cla(); 
+			ax.set_xlabel('X Axis'); 
+			ax.set_ylabel('Y Axis'); 
+			ax.set_zlabel('Z Axis'); 
+			ax.set_xlim([-5,5]); 
+			ax.set_ylim([-5,5]); 
+			ax.set_zlim([-5,5]); 
+			#ax.set_title("3D Scatter of Softmax Class Dominance Regions")
+		for i in range(0,numClasses):
+			#ax.scatter(edgesClear[i][0],edgesClear[i][1],edgesClear[i][2],alpha=0.15,color=allCols[i]); 
+			ax.scatter(edgesZ[i][slic+10][0],edgesZ[i][slic+10][1],edgesZ[i][slic+10][2],color=allCols[i]); 
+			
 		fig.savefig(os.path.dirname(__file__) + '/tmp/img'+str(count)+".png",bbox_inches='tight',pad_inches=0);
 		count+=1;  
 		plt.pause(0.1); 
-
+	'''
 	#X axis
 	for slic in range(-10,10):
 		shapeEdgesX = []; 
@@ -627,7 +631,7 @@ def make3DSoftmaxAnimation():
 		fig.savefig(os.path.dirname(__file__) + '/tmp/img'+str(count)+".png",bbox_inches='tight',pad_inches=0);
 		count+=1;  
 		plt.pause(0.1); 
-
+	'''
 	#Animate Results
 	fig,ax=plt.subplots()
 	images=[]
@@ -638,7 +642,7 @@ def make3DSoftmaxAnimation():
 		plt.axis('off')
 		images.append([imgplot])
 	ani=animation.ArtistAnimation(fig,images,interval=20);
-	ani.save('trapezoidalInteriorClass.gif',fps=3,writer='animation.writer')
+	ani.save('trapezoidalAllClass3.gif',fps=3,writer='animation.writer')
 
 
 

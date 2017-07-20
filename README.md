@@ -1,6 +1,6 @@
 # Cops and Robots 2.0
 ## Overview
-Cops and Robots 2.0 is a continuous space version of the original CnR experiment out of the University of Colorado at Boulder's Aerospace Lab, COHRINT, lead by Professor Nisar Ahmed. CnR 2.0 is in development. The Cops and Robots experiment family (1.0, 1.5, 1.6, 2.0+) demonstate human robotic interaction through robotic probabalistic control algorithms. The basic idea is to have a "cop"/turtlebot "catch"/move close to a "robber"/turtlebot in a 2D map. A human provides observtions to the cop via a gui interface that features 3 security cameras, one cop camera, a belief map and two means of sending observations to the robot: the most valuable yes or no questions (see **Wiki/VOI**) and options for the human to push information to the robot, such as seeing the robber through a security camera. CnR 2.0 uses a continous space belief, calculated from a POMDP. A cop robot "belief" of its environment to estimate the most probable location of the robber. This belief becomes updated using observations given from the human through the interface and a viewcone of its own search path. This process repeats until the cop has successfully caught the robber. 
+Cops and Robots 2.0 is a continuous space version of the original CnR experiment out of the University of Colorado at Boulder's Aerospace Lab, COHRINT, lead by Professor Nisar Ahmed. CnR 2.0 is in development. The Cops and Robots experiment family (1.0, 1.5, 1.6, 2.0+) demonstrates human robotic interaction through robotic probabalistic control algorithms. The basic idea is to have a "cop"/turtlebot "catch"/move close to a "robber"/turtlebot in a 2D map. A human provides observations to the cop via a gui interface that features 3 security cameras, one cop camera, a belief map and two means of sending observations to the robot: the most valuable yes or no questions (see **Wiki/VOI**) and options for the human to push information to the robot, such as seeing the robber through a security camera. CnR 2.0 uses a continuous space belief, calculated from a POMDP. A cop robot "belief" of its environment to estimate the most probable location of the robber. This belief becomes updated using observations given from the human through the interface and a view cone of its own search path. This process repeats until the cop has successfully caught the robber. 
 Status: **Development**
 ## Setup
 ### **For difficulties in any part see "Current Issues", first bullet point** ###
@@ -29,12 +29,12 @@ Select configurations
 8) Open a terminal window and run $ roslaunch policy_translator policy_translator.launch
 9) Type '1' and hit ENTER to run the experiment
 
- 
+
 ## For more Information
 * [Observation Interface](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Observation-Interface)
 * [Policy Translator](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Policy-Translator)
 * [Value of Information](https://github.com/COHRINT/cops-and-robots-2.0/wiki/Questions-and-Value-of-Information)
-	
+
 ## Current Issues
 
 * run.sh called by gui.py sometimes fails to run a process.
