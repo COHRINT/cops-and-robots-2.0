@@ -38,7 +38,7 @@ class Obs_Queue:
         return f
 
 
-    def add(self, obs_id=0, obs_pos_neg=False):
+    def add(self, obs_model, obs_id=0, obs_pos_neg=False):
         """
         -Adds a single item to the queue
         Parameters
@@ -46,7 +46,7 @@ class Obs_Queue:
         obs_id : integer , corresponds to the index of the numpy likelihood
         obs_pos_neg : Boolean, corresponds to the likelihood being true or untrue
         """
-        obs = [obs_id, obs_pos_neg]
+        obs = [obs_model, obs_id, obs_pos_neg]
         self.Obs.append(obs)
 
     def _delete(self):

@@ -87,17 +87,19 @@ class ReliableVagabond(object):
 	#Start from here
 
 	def headless_mode(self):
-		"""Runs the simulation without any animation output.
+		"""Runs the simulation without any animation output, updating according
+		to specified updated rate
 		"""
 		i = 0
 		max_run_time = self.cfg['main']['max_run_time']
 
-		update_rate = 2
+		# update all robots every <update_rate> seconds
+		update_rate = 2 # [seconds]
 		self.update_clock(update_rate,self.update)
 
-		while i < max_run_time:
-			self.update(i)
-			i += 1
+		# while i < max_run_time:
+		# 	self.update(i)
+		# 	i += 1
 
 		logging.warn('Experiment has reached the max run time of {} frames! \
 						\nExperiment ending...'.format(i))
@@ -107,6 +109,8 @@ class ReliableVagabond(object):
 			# time.sleep(0.2)
 
 	def update_clock(self,duration,func,*args):
+		""" Generator function to time updates, can be passesd any number of args
+		"""
 	    def g_tick():
 	        t = time.time()
 	        count = 0
