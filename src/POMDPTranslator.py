@@ -263,52 +263,52 @@ class POMDPTranslator(object):
 
 		return (obj.centroid[0]-s2, obj.centroid[1]-s1)
 
-		def obs2models(self,obs):
-			"""Map received observation to the appropriate softmax model and class.
-			Observation may be a str type with a pushed observation or a list with
-			question and answer.
-			"""
-			sign = None
-			model = None
-			class_idx = None
-			# check if observation is statement (str) or question (list)
-			if type(obs) is str:
-				# obs = obs.split()
-				if 'not' in obs:
-					sign = False
-				else:
-					sign = True
+	def obs2models(self,obs):
+		"""Map received observation to the appropriate softmax model and class.
+		Observation may be a str type with a pushed observation or a list with
+		question and answer.
+		"""
+		sign = None
+		model = None
+		class_idx = None
+		# check if observation is statement (str) or question (list)
+		if type(obs) is str:
+			# obs = obs.split()
+			if 'not' in obs:
+				sign = False
 			else:
-				sign = obs[1]
-				obs = obs[0]
+				sign = True
+		else:
+			sign = obs[1]
+			obs = obs[0]
 
-			# find map object mentioned in statement
-			for obj in self._map.objects:
-				if re.search(obj,obs):
-					model = self._map.objects[obj].softmax
+		# find map object mentioned in statement
+		for obj in self._map.objects:
+			if re.search(obj,obs):
+				model = self._map.objects[obj].softmax
+				break
+		# if no model is found, try looking for room mentioned in observation
+		if model is None:
+			for room in self._map.rooms:
+				if re.search(room,obs):
+					model = self._map.rooms[room]['softmax']
 					break
-			# if no model is found, try looking for room mentioned in observation
-			if model is None:
-				for room in self._map.rooms:
-					if re.search(room,obs):
-						model = self._map.rooms[room]['softmax']
-						break
 
-			# find softmax class index
-			if 'inside' in obs:
-				class_idx = 0
-			elif 'front' in obs:
-				class_idx = 1
-			elif 'right' in obs:
-				class_idx = 2
-			elif 'behind' in obs:
-				class_idx = 3
-			elif 'left' in obs:
-				class_idx = 4
-			elif 'near' in obs:
-				class_idx = 5
+		# find softmax class index
+		if 'inside' in obs:
+			class_idx = 0
+		elif 'front' in obs:
+			class_idx = 1
+		elif 'right' in obs:
+			class_idx = 2
+		elif 'behind' in obs:
+			class_idx = 3
+		elif 'left' in obs:
+			class_idx = 4
+		elif 'near' in obs:
+			class_idx = 5
 
-			return model, class_idx, sign
+		return model, class_idx, sign
 
 
 def testGetNextPose():
