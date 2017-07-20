@@ -61,7 +61,6 @@ class Robber(Robot):
         self.found_robber = {}
         self.mission_planner = RobberMissionPlanner(self, **mp_cfg)
         self.belief = None
-        self.caught = False
 
     def update(self,i=0,positions=None):
 

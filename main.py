@@ -125,8 +125,6 @@ class ReliableVagabond(object):
 		# Update all actors
 		# print('callback!')
 		for robot_name, robot in self.robots.iteritems():
-			if robot.type_ == 'robber' and robot.caught == True:
-				continue
 			robot.update(positions=self.positions)
 			tmpKey = self.positions[robot_name];
 			tmpKey[1] = robot.pose2D._pose;
@@ -158,7 +156,9 @@ class ReliableVagabond(object):
 		#self.map = self.vagabonds['Deckard'].map
 	def caughtConfirmCallback(self, data):
 		if data.confirm == True:
-
+			del self.robots[data.robber]
+		if len(self.robots) == 0:
+			# Code to handle end of program
 
 if __name__ == '__main__':
 	rv = ReliableVagabond()
