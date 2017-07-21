@@ -94,6 +94,7 @@ class ReliableVagabond(object):
 		max_run_time = self.cfg['main']['max_run_time']
 
 		# update all robots every <update_rate> seconds
+		self.run_experiment = True
 		update_rate = 2 # [seconds]
 		self.update_clock(update_rate,self.update)
 
@@ -101,8 +102,7 @@ class ReliableVagabond(object):
 		# 	self.update(i)
 		# 	i += 1
 
-		logging.warn('Experiment has reached the max run time of {} frames! \
-						\nExperiment ending...'.format(i))
+		logging.warn('')
 		# while self.vagabonds['Deckard'].mission_planner.mission_status != 'stopped':
 		#	 self.update(i)
 		#	 i += 1
@@ -118,7 +118,7 @@ class ReliableVagabond(object):
 	            count += 1
 	            yield max(t+count*duration - time.time(),0)
 	    g = g_tick()
-	    while True:
+	    while self.run_experiment:
 	        time.sleep(g.next())
 	        func(*args)
 
@@ -167,6 +167,7 @@ class ReliableVagabond(object):
 
 		if len(self.robots) == 0:
 			os.system('mpg123 sounds/police_siren1.mp3')
+			self.run_experiment = False
 			# Code to handle end of program
 
 if __name__ == '__main__':
