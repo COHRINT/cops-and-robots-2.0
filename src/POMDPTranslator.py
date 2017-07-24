@@ -57,7 +57,7 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-
+		print(questsHigh); 
 		# print(room);
 		# print(questsHigh);
 		# print(weightsHigh);
@@ -107,7 +107,7 @@ class POMDPTranslator(object):
 		strings = ['Is Roy in the Kitchen','Is Roy in the Dining Room','Is Roy in the Hallway','Is Roy in the Study','Is Roy in the Library','Is Roy in the Billiard Room'];
 		questStrings = []; 
 		for i in range(0,len(questIds)):
-			questStrings.append(strings[questIds]); 
+			questStrings.append(strings[int(questIds[i])]); 
 		return questStrings; 
 
 
@@ -332,14 +332,16 @@ def testGetNextPose():
 	b = GM();
 	b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
 
-	[bnew,goal_pose] = translator.getNextPose(b,None,[[8,5]]);
+	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[8,5]]);
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
-
+	print(qs)
+	
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
-	[bnew,goal_pose] = translator.getNextPose(b2,None,[[8,5]]);
-	
+	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[8,5]]);
+	print(qs);
+
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
 
