@@ -216,6 +216,13 @@ class POMDPTranslator(object):
 			g.var[2][2] += 0.25;
 			g.var[3][3] += 0.25;
 
+		if copPoses is not None:
+			pose = copPoses[len(copPoses)-1]
+			print("MAP COP POSE TO PLOT: {}".format(pose))
+			self.makeBeliefMap(post,pose)
+
+
+
 		return newBelief;
 
 	def makeBeliefMap(self,belief,copPose = [0,0,0]):
@@ -336,7 +343,7 @@ def testGetNextPose():
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
 	print(qs)
-	
+
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
 	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[8,5]]);
