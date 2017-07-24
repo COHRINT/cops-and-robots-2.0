@@ -31,6 +31,8 @@ from copy import deepcopy
 import matplotlib.animation as animation
 import os
 import matplotlib.image as mgimg
+import sys; 
+
 
 def buildRectangleModel():
 
@@ -646,6 +648,322 @@ def make3DSoftmaxAnimation():
 
 
 
+def buildRadialSoftmaxModels():
+	dims = 2;
+
+
+	#Target Model
+	steep = 2; 
+	weight = (np.array([-2,-1,0])*steep).tolist(); 
+	bias = (np.array([6,4,0])*steep).tolist(); 
+
+	for i in range(0,len(weight)):
+		weight[i] = [weight[i],0];
+	pz = Softmax(weight,bias); 
+	obsOffset = [-7,-4];
+	observation = 2; 
+
+	#pz.plot2D(low=[0,0],high=[1,6.28]); 
+	'''
+	H = np.matrix([[2,math.pi*2,1],[2,math.pi*3/4,1],[2,math.pi/2,1]]); 
+	print(nullspace(H)); 
+
+
+	#Modified Target Model
+	#def buildGeneralModel(self,dims,numClasses,boundries,B,steepness=1):
+	B = np.matrix([0.447,0,-0.8944,0.447,0,-0.894]).T;
+	boundries = [[1,0],[2,0]]; 
+	pz = Softmax(); 
+	pz.buildGeneralModel(2,3,boundries,B,steepness=2); 
+	'''
+
+	'''
+	cent = [0,0]; 
+	length = 3; 
+	width = 2; 
+	orient = 0; 
+
+	pz = Softmax(); 
+	pz.buildOrientedRecModel(cent,orient,length,width,steepness=5); 
+	'''
+
+	print('Plotting Observation Model'); 
+	[xobs,yobs,domObs] = plot2DPolar(pz,low=[-10,-10],high=[10,10],delta=0.1,offset=obsOffset,vis=False);  
+	[xobsPol,yobsPol,domObsPol] = pz.plot2D(low=[0,-3.14],high=[10,3.14],delta=0.1,vis=False); 
+
+
+	# fig = plt.figure()
+	# ax = fig.gca(projection='3d');
+	# colors = ['b','g','r','c','m','y','k','w','b','g']; 
+	# for i in range(0,len(model)):
+	# 	ax.plot_surface(x,y,model[i],color = colors[i]); 
+	
+	# plt.show(); 
+
+	#pz.plot2D(low=[-10,-10],high=[10,10]); 
+
+	scaling = o1
+	bcart = GM();
+	for i in range(-10,11): 
+		for j in range(-10,11):
+			# if(i != 0 or j != 0):
+			bcart.addG(Gaussian([i,j],[[scaling,0],[0,scaling]],1)); 
+
+	bcart.normalizeWeights();
+	[xpri,ypri,cpri] = bcart.plot2D(low=[-10,-10],high=[10,10],vis = False);
+	bpol = transformCartToPol(bcart,obsOffset); 
+
+	for i in range(0,3):
+		bpolPrime = pz.runVBND(bpol,i); 
+		bcartPrime = transformPolToCart(bpolPrime,obsOffset); 
+		bcartPrime.normalizeWeights()
+		[xpos,ypos,cpos] = bcartPrime.plot2D(low=[-10,-10],high=[10,10],vis = False); 
+
+	
+		fig,axarr = plt.subplots(3);
+		axarr[0].contourf(xpri,ypri,cpri); 
+		axarr[0].set_ylabel("Prior"); 
+		axarr[1].contourf(xobs,yobs,domObs);
+		axarr[1].set_ylabel("Observation: " + str(i)); 
+		axarr[2].contourf(xpos,ypos,cpos); 
+		axarr[2].set_ylabel("Posterior");
+
+		plt.show(); 
+	
+
+	fig,axarr = plt.subplots(1,2); 
+	axarr[0].contourf(xobs,yobs,domObs); 
+	axarr[1].contourf(xobsPol,yobsPol,domObsPol); 
+	axarr[0].set_title("Cartesian Observations");
+	axarr[1].set_title("Polar Observations"); 
+	axarr[0].set_xlabel("X"); 
+	axarr[0].set_ylabel("Y"); 
+	axarr[1].set_xlabel("Radius (r)"); 
+	axarr[1].set_ylabel("Angle (theta)"); 
+	plt.show(); 
+
+
+
+	bTestCart = GM(); 
+	bTestCart.addG(Gaussian([1,2],[[1,0],[0,1]],.25)); 
+	bTestCart.addG(Gaussian([-3,1],[[3,0],[0,1]],.25)); 
+	bTestCart.addG(Gaussian([1,-4],[[1,0],[0,2]],.25)); 
+	bTestCart.addG(Gaussian([-3,-3],[[2,1.2],[1.2,2]],.25)); 
+	bTestPol = transformCartToPol(bTestCart,[0,0]); 
+
+
+
+	[xTestCart,yTestCart,cTestCart] = bTestCart.plot2D(low=[-10,-10],high=[10,10],vis=False); 
+	[xTestPol,yTestPol,cTestPol] = bTestPol.plot2D(low=[0,-3.14],high=[10,3.14],vis=False); 
+
+	fig,axarr = plt.subplots(1,2); 
+	axarr[0].contourf(xTestCart,yTestCart,cTestCart); 
+	axarr[1].contourf(xTestPol,yTestPol,cTestPol); 
+	axarr[0].set_title("Cartesian Gaussians");
+	axarr[1].set_title("Polar Gaussians"); 
+	axarr[0].set_xlabel("X"); 
+	axarr[0].set_ylabel("Y"); 
+	axarr[1].set_xlabel("Radius (r)"); 
+	axarr[1].set_ylabel("Angle (theta)"); 
+	plt.show(); 
+
+	'''
+	#particle filter
+	xcur = []; 
+	numParticles = 1000; 
+
+	initPart = []; 
+	for i in range(0,int(np.sqrt(numParticles))):
+		for j in range(0,int(np.sqrt(numParticles))):
+			initPart.append([np.random.random()*20-10,np.random.random()*20-10]); 
+	# for i in range(-10,10):
+	# 	for j in range(-10,10):
+	# 		initPart.append([i,j]); 
+
+	fig,axarr = plt.subplots(2); 
+	for i in range(0,len(initPart)):
+		axarr[0].scatter(initPart[i][0],initPart[i][1],c='b'); 
+
+	axarr[0].set_xlim([-10,10]); 
+	axarr[0].set_ylim([-10,10]); 
+	axarr[0].set_title('1000 Particles Randomly Scattered'); 
+
+	xnew = particleFilter(initPart,observation,pz,obsOffset);
+	#for i in range(0,10):
+		#xnew = particleFilter(xnew,observation,pz,obsOffset);
+
+
+
+	for i in range(0,len(xnew)):
+		axarr[1].scatter(xnew[i][0],xnew[i][1],c='b')
+	axarr[1].set_xlim([-10,10]); 
+	axarr[1].set_ylim([-10,10]); 
+	axarr[1].set_title('1000 Particles after a Particle Filter Update'); 
+	plt.show(); 
+
+
+	priorXs = []; 
+	priorYs = []; 
+	postXs = []; 
+	postYs = []; 
+
+
+
+	for i in initPart:
+		priorXs.append(i[0]); 
+		priorYs.append(i[1]);
+	for i in range(0,len(xnew)): 
+		postXs.append(xnew[i][0]); 
+		postYs.append(xnew[i][1]); 
+
+
+	xedgespri = [i for i in range(-10,10)]; 
+	yedgespri = [i for i in range(-10,10)]; 
+
+	xedgespost = [i for i in range(-10,10)]; 
+	yedgespost = [i for i in range(-10,10)]; 
+
+	Hpri,xedgespri,yedgespri = np.histogram2d(priorXs,priorYs,bins=(xedgespri,yedgespri)); 
+	Hpost,xedgespost,yedgespost = np.histogram2d(postXs,postYs,bins=(xedgespost,yedgespost)); 
+	
+
+	fig,axarr = plt.subplots(1,2); 
+	Xpri,Ypri = np.meshgrid(xedgespri,yedgespri); 
+	axarr[0].pcolormesh(Xpri,Ypri,Hpri); 
+	Xpost,Ypost = np.meshgrid(xedgespost,yedgespost); 
+	axarr[1].pcolormesh(Xpost,Ypost,Hpost);
+	axarr[0].set_title("Prior Histogram"); 
+	axarr[1].set_title("Posterior Histogram"); 
+	plt.suptitle("Particle Filter Update with Observation: " + str(observation)); 
+	plt.show(); 
+	'''
+
+def transformCartToPol(bcart,offset = [0,0]):
+	bpol = GM(); 
+		
+	for g in bcart:
+		m = g.mean;
+		m1 = [0,0]; 
+		m1[0] = m[0] - offset[0]; 
+		m1[1] = m[1] - offset[1]; 
+		mPrime = [np.sqrt(m1[0]**2+m1[1]**2),np.arctan2(m1[1],m1[0])];  
+
+		
+		if(m1[0]**2+m1[1]**2 == 0):
+			m1[0] = 0.0001; 
+			m1[1] = 0.0001; 
+		
+
+		J11 = m1[0]/np.sqrt(m1[0]**2+m1[1]**2); 
+		J12 = m1[1]/np.sqrt(m1[0]**2+m1[1]**2); 
+		J21 = -m1[1]/(m1[0]**2+m1[1]**2); 
+		J22 = m1[0]/(m1[0]**2+m1[1]**2); 
+
+		JCarPol = np.matrix([[J11,J12],[J21,J22]]); 
+
+		var = np.matrix(g.var);
+		varPrime = (JCarPol*var*JCarPol.T).tolist();
+
+		bpol.addG(Gaussian(mPrime,varPrime,g.weight));
+
+	return bpol;  
+
+
+def transformPolToCart(bpol,offset=[0,0]):
+	bcart = GM(); 
+	
+	for g in bpol:
+		m = g.mean; 
+		mPrime = [m[0]*math.cos(m[1])+offset[0],m[0]*math.sin(m[1])+offset[1]]; 
+		J11 = math.cos(m[1]); 
+		J12 = -m[0]*math.sin(m[1]); 
+		J21 = math.sin(m[1]); 
+		J22 = m[0]*math.cos(m[1]); 
+
+		JPolCar = np.matrix([[J11,J12],[J21,J22]]); 
+		var = np.matrix(g.var);
+		varPrime = (JPolCar*var*JPolCar.T).tolist();
+
+		bcart.addG(Gaussian(mPrime,varPrime,g.weight)); 
+	return bcart; 
+
+def plot2DPolar(pz,low = [0,0],high = [10,10],offset = [0,0],delta = 0.1,vis = True):
+	x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
+	pos = np.dstack((x, y))  
+	resx = int((high[0]-low[0])//delta)+1;
+	resy = int((high[1]-low[1])//delta)+1; 
+
+	model = [[[0 for i in range(0,resy)] for j in range(0,resx)] for k in range(0,len(pz.weights))];
+	
+
+	for m in range(0,len(pz.weights)):
+		for i in range(0,resx):
+			xx = (i*(high[0]-low[0])/resx + low[0])-offset[0];
+			for j in range(0,resy):
+				yy = (j*(high[1]-low[1])/resy + low[1])-offset[1]; 
+				rcord = math.sqrt(xx**2 + yy**2); 
+
+				thetacord = np.arctan2(yy,xx); 
+				dem = 0; 
+				for k in range(0,len(pz.weights)):
+					dem+=np.exp(pz.weights[k][0]*rcord + pz.weights[k][1]*thetacord + pz.bias[k]);
+				model[m][i][j] = np.exp(pz.weights[m][0]*rcord + pz.weights[m][1]*thetacord + pz.bias[m])/dem;
+
+	dom = [[0 for i in range(0,resy)] for j in range(0,resx)]; 
+	for m in range(0,len(pz.weights)):
+		for i in range(0,resx):
+			for j in range(0,resy):
+				dom[i][j] = np.argmax([model[h][i][j] for h in range(0,len(pz.weights))]);
+
+	if(vis==True):
+		plt.contourf(x,y,dom); 
+	else:
+		return [x,y,dom]; 
+
+
+#Algorithm in Probabilistic Robotics by Thrun, page 98
+def particleFilter(XprevIn,o,pz,offset=[0,0]):
+	Xcur = []; 
+	Xprev = deepcopy(XprevIn); 
+	delA = [-1,1,0]; 
+	delAVar = 0.5;
+	allW = []; 
+	allxcur = []; 
+	for xprev in Xprev:
+			
+		xprev[0] = xprev[0]-offset[0]; 
+		xprev[1] = xprev[1]-offset[1]; 
+
+		xprevprime = [0,0]; 
+		xprevprime[0] = np.sqrt(xprev[0]**2+xprev[1]**2); 
+		xprevprime[1] = np.arctan2(xprev[1],xprev[0]); 
+
+		w = pz.pointEval2D(o,xprevprime); 
+ 		xprev = [0,0]; 
+ 		xprev[0] = xprevprime[0]*math.cos(xprevprime[1])+offset[0]; 
+ 		xprev[1] = xprevprime[0]*math.sin(xprevprime[1])+offset[1]; 
+
+		allW.append(w);
+		allxcur.append(xprev); 
+
+	#normalize weights for kicks
+	suma = 0; 
+	for w in allW:
+		suma+=w; 
+	for i in range(0,len(allW)):
+		allW[i] = allW[i]/suma; 
+
+	allIndexes = [i for i in range(0,len(allxcur))]; 
+	for m in range(0,len(Xprev)):
+
+		c = np.random.choice(allIndexes,p=allW);
+		c = allxcur[c];  
+		Xcur.append(deepcopy(c)); 
+	return Xcur; 
+
+
+
+
 if __name__ == "__main__":
 	#buildRectangleModel();
 	#buildGeneralModel(); 
@@ -654,6 +972,14 @@ if __name__ == "__main__":
 	#slice3DModel(); 
 	#buildRecFromCentroidOrient(); 
 	#buildTriView(); 
-	make3DSoftmaxAnimation(); 
+	#make3DSoftmaxAnimation(); 
+	buildRadialSoftmaxModels(); 
+
+
+
+
+
+
+
 
 

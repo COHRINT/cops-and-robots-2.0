@@ -192,6 +192,9 @@ class Softmax:
 				M[(dims+1)*j+i,(dims+1)*boundries[j][0]+i] = 1; 
 
 		A = np.hstack((M,B)); 
+		#print(np.linalg.matrix_rank(A))
+		#print(np.linalg.matrix_rank(M))
+
 
 		Theta = linalg.lstsq(M,B)[0].tolist();
 
@@ -666,6 +669,8 @@ class Softmax:
 					model[m][i][j] = np.exp(self.weights[m][0]*xx + self.weights[m][1]*yy + self.bias[m])/dem;
 
 		dom = [[0 for i in range(0,resy)] for j in range(0,resx)]; 
+
+
 		for m in range(0,len(self.weights)):
 			for i in range(0,resx):
 				for j in range(0,resy):
@@ -995,8 +1000,8 @@ def testMakeNear():
 	#pzOut.plot2D(low=[0,0],high=[10,10]);
 
 	b = GM(); 
-	for i in range(0,10):
-		for j in range(0,10):
+	for i in range(0,11):
+		for j in range(0,11):
 			b.addG(Gaussian([i,j],[[1,0],[0,1]],1)); 
 	b.normalizeWeights(); 
 

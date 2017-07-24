@@ -65,9 +65,14 @@ class POMDPTranslator(object):
 		#3. find position and questions from lower level pomdp for that room
 
 		#TODO: Fake Questions and goal pose
-		goal_pose = [0,0,0];
-		questsLow = [18,43,21,33,58];
-		weightsLow = [24,54,23,48,53];
+		goal_pose = allBels[room].findMAPN();
+		goal_pose = [goal_pose[2],goal_pose[3]]; 
+
+
+		#questsLow = [18,43,21,33,58];
+		#weightsLow = [24,54,23,48,53];
+		questsLow = []; 
+		weightsLow = []; 
 
 
 		suma = sum(weightsLow);
@@ -90,10 +95,21 @@ class POMDPTranslator(object):
 
 
 		#5. use questioner function to publish questions
-
+		questions = self.getQuestionStrings(questsFull); 
 
 		#6. return new belief and goal pose
-		return [newBel,goal_pose];
+		return [newBel,goal_pose,[questions,questsFull]];
+
+
+
+	def getQuestionStrings(self,questIds):
+
+		strings = ['Is Roy in the Kitchen','Is Roy in the Dining Room','Is Roy in the Hallway','Is Roy in the Study','Is Roy in the Library','Is Roy in the Billiard Room'];
+		questStrings = []; 
+		for i in range(0,len(questIds)):
+			questStrings.append(strings[questIds]); 
+		return questStrings; 
+
 
 
 	def getUpperAction(self,b):
@@ -316,12 +332,16 @@ def testGetNextPose():
 	b = GM();
 	b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
 
-	translator.getNextPose(b,None,[[8,5]]);
+	[bnew,goal_pose] = translator.getNextPose(b,None,[[8,5]]);
+	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
+	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
 
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
-	translator.getNextPose(b2,None,[[8,5]]);
-
+	[bnew,goal_pose] = translator.getNextPose(b2,None,[[8,5]]);
+	
+	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
+	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
 
 def testBeliefUpdate():
 	translator = POMDPTranslator();
