@@ -26,6 +26,7 @@ import math
 import matplotlib.tri as tri;
 import os
 import matplotlib.pyplot as plt
+import re
 
 class POMDPTranslator(object):
 
@@ -34,8 +35,8 @@ class POMDPTranslator(object):
 		self.map2 = Map('map2.yaml');
 		self.bounds = [-9.6, -3.6, 4, 3.6]
 		self.delta = 0.1;
-		self.upperPolicy = np.load('../policies/upperPolicy1.npy');
-		self.lowerPolicy = np.load('../policies/D4QuestSoftmaxAlphas1.npy');
+		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
+		self.lowerPolicy = np.load(os.path.dirname(__file__) + '/../policies/D4QuestSoftmaxAlphas1.npy');
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
@@ -57,7 +58,7 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-		print(questsHigh); 
+		print(questsHigh);
 		# print(room);
 		# print(questsHigh);
 		# print(weightsHigh);
@@ -66,13 +67,13 @@ class POMDPTranslator(object):
 
 		#TODO: Fake Questions and goal pose
 		goal_pose = allBels[room].findMAPN();
-		goal_pose = [goal_pose[2],goal_pose[3]]; 
+		goal_pose = [goal_pose[2],goal_pose[3]];
 
 
 		#questsLow = [18,43,21,33,58];
 		#weightsLow = [24,54,23,48,53];
-		questsLow = []; 
-		weightsLow = []; 
+		questsLow = [];
+		weightsLow = [];
 
 
 		suma = sum(weightsLow);
@@ -95,7 +96,7 @@ class POMDPTranslator(object):
 
 
 		#5. use questioner function to publish questions
-		questions = self.getQuestionStrings(questsFull); 
+		questions = self.getQuestionStrings(questsFull);
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -105,10 +106,10 @@ class POMDPTranslator(object):
 	def getQuestionStrings(self,questIds):
 
 		strings = ['Is Roy in the Kitchen','Is Roy in the Dining Room','Is Roy in the Hallway','Is Roy in the Study','Is Roy in the Library','Is Roy in the Billiard Room'];
-		questStrings = []; 
+		questStrings = [];
 		for i in range(0,len(questIds)):
-			questStrings.append(strings[int(questIds[i])]); 
-		return questStrings; 
+			questStrings.append(strings[int(questIds[i])]);
+		return questStrings;
 
 
 
@@ -219,7 +220,7 @@ class POMDPTranslator(object):
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]
 			print("MAP COP POSE TO PLOT: {}".format(pose))
-			self.makeBeliefMap(post,pose)
+			self.makeBeliefMap(newBelief,pose)
 
 
 
@@ -262,7 +263,7 @@ class POMDPTranslator(object):
 
 		ax.axis('scaled')
 		print('about to save plot')
-		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
+		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
 		#canvas.print_figure('tmpBelief.png',bbox_inches='tight',pad_inches=0)
 
 
@@ -306,15 +307,15 @@ class POMDPTranslator(object):
 			obs = obs[0]
 
 		# find map object mentioned in statement
-		for obj in self._map.objects:
+		for obj in self.map2.objects:
 			if re.search(obj,obs):
-				model = self._map.objects[obj].softmax
+				model = self.map2.objects[obj].softmax
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
-			for room in self._map.rooms:
+			for room in self.map2.rooms:
 				if re.search(room,obs):
-					model = self._map.rooms[room]['softmax']
+					model = self.map2.rooms[room]['softmax']
 					break
 
 		# find softmax class index
@@ -340,8 +341,8 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
 
 	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[8,5]]);
-	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
-	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
+	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	print(qs)
 
 	b2 = GM();
@@ -349,8 +350,8 @@ def testGetNextPose():
 	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[8,5]]);
 	print(qs);
 
-	bnew = translator.cutGMTo2D(bnew,dims=[2,3]); 
-	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
+	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 
 def testBeliefUpdate():
 	translator = POMDPTranslator();

@@ -51,7 +51,7 @@ class PomdpGoalPlanner(GoalPlanner):
 		goal_pose [array]
 			Goal pose in the form [x,y,theta] as [m,m,degrees]
 		"""
-		discrete_flag = True
+		discrete_flag = False
 		if type(self.robot.belief) is np.ndarray:
 			discrete_flag = True
 
@@ -67,6 +67,7 @@ class PomdpGoalPlanner(GoalPlanner):
 			msg.belief = discrete_dehydrate(self.robot.belief)
 		else:
 			if self.robot.belief is not None:
+				self.robot.belief.display()
 				(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.robot.belief)
 			else:
 				msg.weights = []
@@ -75,7 +76,9 @@ class PomdpGoalPlanner(GoalPlanner):
 
 		rospy.wait_for_service('translator')
 		try:
-			pt = rospy.ServiceProxy('translator',discrete_policy_translator_service)
+			pt = rospy.ServiceProxy('translator',policy_translator_service)
+			print msg
+			print msg.variances
 			res = pt(msg)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e

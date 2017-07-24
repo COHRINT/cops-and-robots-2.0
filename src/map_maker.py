@@ -46,8 +46,8 @@ class Map(object):
 	def __init__(self, yaml_file):
 
 		# load yaml file as a dictionary
-		# cfg = self._find_yaml(yaml_file)
-		cfg = yaml.load(open('../models/' + yaml_file, 'r'));
+		cfg = self._find_yaml(yaml_file)
+		# cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
 		if cfg is not None:
 

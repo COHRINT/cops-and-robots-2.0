@@ -29,10 +29,11 @@ import numpy as np
 import math
 import os
 
-import voi # obs_mapping in callbacks
+# import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
 from MAPTranslator import MAPTranslator
+from POMDPTranslator import POMDPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg
 
 # Observation Queue #TODO delete in CnR 2.0
@@ -41,22 +42,24 @@ from obs_queue import Obs_Queue
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
-        if check == 'MAP': # Allow for use of different translators
-            print("Running MAP Translator!")
-            self.pt = MAPTranslator()
-            self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
-        else:
-            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-            self.pt = PolicyTranslator(args)
-            self.trans = "POL"
+        # if check == 'MAP': # Allow for use of different translators
+        #     print("Running MAP Translator!")
+        #     self.pt = MAPTranslator()
+        #     self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
+        # else:
+        #     args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
+        #     self.pt = PolicyTranslator(args)
+        #     self.trans = "POL"
+        self.pt = POMDPTranslator()
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
-        s = rospy.Service('translator',discrete_policy_translator_service,self.handle_policy_translator)
+        s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
 
         # Observations -> likelihood queue
         rospy.Subscriber("/human_push", String, self.human_push_callback)
         rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
+        self.q_pub = rospy.Publisher("/robot_questions",Question,queue_size=10)
         self.queue = Obs_Queue()
 
         # self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
@@ -92,9 +95,9 @@ class PolicyTranslatorServer(object):
 
         res = self.create_message(req.request.name,
                             goal_pose,
-                            weights_updated=weights_updated,
-                            means_updated=means_updated,
-                            variances_updated=variances_updated)
+                            weights=weights_updated,
+                            means=means_updated,
+                            variances=variances_updated)
 
         return res
 
@@ -126,7 +129,13 @@ class PolicyTranslatorServer(object):
 
         copPoses.append(position)
 
-        (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,copPoses)
+        (b_updated,goal_pose,questions) = self.pt.getNextPose(belief,obs,copPoses)
+
+        q_msg = Question()
+        q_msg.qids = questions[1]
+        q_msg.questions = questions[0]
+        q_msg.weights = [0 for x in range(0,len(questions[0]))]
+        self.q_pub.publish(q_msg)
 
         if b_updated is not None:
             (weights,means,variances) = dehydrate_msg(b_updated)
@@ -179,7 +188,7 @@ class PolicyTranslatorServer(object):
         ----------
         data : Answer.msg , Custom Message
         """
-        question = [data.text,data.ans]
+        question = [data.question,data.ans]
         model, class_idx, sign = self.pt.obs2models(question)
         self.queue.add(model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")

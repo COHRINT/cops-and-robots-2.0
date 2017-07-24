@@ -364,6 +364,7 @@ class PullQuestion(QWidget):
         if ans is not None:
             msg = Answer()
             msg.qid = self.qid
+            msg.question = self.sender().parentWidget().text.text()
             msg.ans = ans
             # publish answer
             self.pub.publish(msg)

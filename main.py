@@ -30,6 +30,7 @@ from core.helpers.config import load_config
 from core.robo_tools.vagabond import Vagabond
 from core.robo_tools.cop import Cop
 from core.robo_tools.robber import Robber
+from caught.msg import Caught
 
 class ReliableVagabond(object):
 	"""
@@ -111,16 +112,16 @@ class ReliableVagabond(object):
 	def update_clock(self,duration,func,*args):
 		""" Generator function to time updates, can be passesd any number of args
 		"""
-	    def g_tick():
-	        t = time.time()
-	        count = 0
-	        while True:
-	            count += 1
-	            yield max(t+count*duration - time.time(),0)
-	    g = g_tick()
-	    while self.run_experiment:
-	        time.sleep(g.next())
-	        func(*args)
+		def g_tick():
+			t = time.time()
+			count = 0
+			while True:
+				count += 1
+				yield max(t+count*duration - time.time(),0)
+		g = g_tick()
+		while self.run_experiment:
+			time.sleep(g.next())
+			func(*args)
 
 	def update(self):
 		"""Update all the major aspects of the simulation and record data.
