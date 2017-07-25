@@ -27,6 +27,7 @@ import matplotlib.tri as tri;
 import os
 import matplotlib.pyplot as plt
 import re
+from softmaxModels import Softmax
 
 class POMDPTranslator(object):
 
@@ -218,9 +219,23 @@ class POMDPTranslator(object):
 			g.var[3][3] += 0.25;
 
 		if copPoses is not None:
-			pose = copPoses[len(copPoses)-1]
-			print("MAP COP POSE TO PLOT: {}".format(pose))
-			self.makeBeliefMap(newBelief,pose)
+
+			#update with each pose
+			for pose in copPoses:
+				viewCone = Softmax(); 
+				viewCone.buildTriView(pose,length=1,steepness=10);
+				for i in range(0,len(viewCone.weights)):
+					viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]]; 
+				newerBelief = GM(); 
+				for i in range(1,4):
+					tmpBel = viewCone.runVBND(newBelief,i); 
+					newerBelief.addGM(tmpBel); 
+
+			newBelief = newerBelief; 
+
+			#pose = copPoses[len(copPoses)-1]
+			#print("MAP COP POSE TO PLOT: {}".format(pose))
+			#self.makeBeliefMap(newBelief,pose)
 
 
 
@@ -338,16 +353,20 @@ class POMDPTranslator(object):
 def testGetNextPose():
 	translator = POMDPTranslator();
 	b = GM();
-	b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
-
-	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[8,5]]);
+	#b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
+	for i in range(-9,4):
+		for j in range(-3,3):
+			b.addG(Gaussian([2,2,i,j],np.identity(4).tolist(),1)); 
+	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[1,2,-15.3]]);
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	print(qs)
 
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
-	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[8,5]]);
+	translator.cutGMTo2D(b2,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[1,2,15.3]]);
 	print(qs);
 
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
