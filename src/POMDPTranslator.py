@@ -338,6 +338,7 @@ class POMDPTranslator(object):
 		"""
 		sign = None
 		model = None
+		room_num = None
 		class_idx = None
 		# check if observation is statement (str) or question (list)
 		if type(obs) is str:
@@ -354,12 +355,16 @@ class POMDPTranslator(object):
 		for obj in self.map2.objects:
 			if re.search(obj,obs):
 				model = self.map2.objects[obj].softmax
+				for room, i in enumerate(self.map2.rooms):
+					if obj in room['objects']:
+						room_num = i+1
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
 			for room in self.map2.rooms:
 				if re.search(room,obs):
 					model = self.map2.rooms[room]['softmax']
+					room_num = 0
 					break
 
 		# find softmax class index
@@ -373,10 +378,10 @@ class POMDPTranslator(object):
 			class_idx = 3
 		elif 'left' in obs:
 			class_idx = 4
-		elif 'near' in obs:
-			class_idx = 5
+		# elif 'near' in obs:
+			# class_idx = 5
 
-		return model, class_idx, sign
+		return room_num, model, class_idx, sign
 
 
 def testGetNextPose():

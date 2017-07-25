@@ -72,6 +72,7 @@ class Map(object):
 				cent = [lower_l[0] + length/2,lower_l[1]+width/2]
 				self.rooms[room]['softmax'] = Softmax()
 				self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width)
+				self.rooms[room]['objects'] = cfg['info']['rooms'][room]['objects']
 
 			# Store map's objects in self.objects hash
 			self.objects = {}
