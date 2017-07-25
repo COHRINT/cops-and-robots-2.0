@@ -59,7 +59,7 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-		print(questsHigh);
+		# print(questsHigh);
 		# print(room);
 		# print(questsHigh);
 		# print(weightsHigh);
@@ -200,40 +200,41 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 
 		#2. use queued observations to update appropriate rooms GM
-		for res in responses: 
-			roomNum = res[0]; 
-			mod = res[1]; 
-			clas = res[2]; 
-			sign = res[3]; 
+		for res in responses:
+			roomNum = res[0];
+			mod = res[1];
+			clas = res[2];
+			sign = res[3];
 
 			if(roomNum == 0):
 				#apply to all
 				for i in range(0,len(allBels)):
 					if(sign==True):
-						allBels[i] = mod.runVBND(allBels[i],0); 
+						allBels[i] = mod.runVBND(allBels[i],0);
 					else:
-						tmp = GM(); 
+						tmp = GM();
 						for j in range(1,mod.size):
-							tmp.addGM(mod.runVBND(allBels[i],j)); 
-						allBels[i] = tmp; 
+							tmp.addGM(mod.runVBND(allBels[i],j));
+						allBels[i] = tmp;
 
 			else:
-				#apply to roomNum+1; 
+				#apply to roomNum+1;
 				if(sign == True):
-					allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas); 
+					allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas);
 				else:
-					tmp = GM(); 
+					tmp = GM();
 					for i in range(1,mod.size):
 						if(i!=clas):
-							tmp.addGM(mod.runVBND(allBels[roomNum+1],i)); 
-					allBels[roomNum+1] = tmp; 
+							tmp.addGM(mod.runVBND(allBels[roomNum+1],i));
+					allBels[roomNum+1] = tmp;
 
 
 		#3. recombine beliefs
 		newBelief = GM();
 		for g in allBels:
 			g.scalerMultiply(weightSums[allBels.index(g)]);
-			newBelief.addGM(g);
+			k = g.kmeansCondensationN(5);
+			newBelief.addGM(k);
 		newBelief.normalizeWeights();
 
 		#4. fix cops position in belief
@@ -249,17 +250,17 @@ class POMDPTranslator(object):
 
 			#update with each pose
 			for pose in copPoses:
-				viewCone = Softmax(); 
+				viewCone = Softmax();
 				viewCone.buildTriView(pose,length=1,steepness=4);
 				for i in range(0,len(viewCone.weights)):
-					viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]]; 
-				newerBelief = GM(); 
+					viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+				newerBelief = GM();
 				for i in range(1,5):
-					tmpBel = viewCone.runVBND(newBelief,i); 
-					newerBelief.addGM(tmpBel); 
+					tmpBel = viewCone.runVBND(newBelief,i);
+					newerBelief.addGM(tmpBel);
 
-			newBelief = newerBelief; 
-			newBelief.normalizeWeights(); 
+			newBelief = newerBelief;
+			newBelief.normalizeWeights();
 
 			pose = copPoses[len(copPoses)-1]
 			print("MAP COP POSE TO PLOT: {}".format(pose))
@@ -384,8 +385,8 @@ def testGetNextPose():
 	#b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
 	for i in range(-9,4):
 		for j in range(-3,3):
-			b.addG(Gaussian([0,0,i,j],np.identity(4).tolist(),1)); 
-	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+			b.addG(Gaussian([0,0,i,j],np.identity(4).tolist(),1));
+	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[0,0,-15.3]]);
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]);
@@ -393,7 +394,7 @@ def testGetNextPose():
 	'''
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
-	translator.cutGMTo2D(b2,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	translator.cutGMTo2D(b2,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[1,2,15.3]]);
 	print(qs);
 
