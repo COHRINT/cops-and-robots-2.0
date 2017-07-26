@@ -186,10 +186,13 @@ class POMDPTranslator(object):
 	def beliefUpdate(self, belief, responses = None,copPoses = None):
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
+		allBounds = []; 
+		copBounds = []; 
 		weightSums = [];
 		for room in self.map2.rooms:
 			tmp = GM();
 			tmpw = 0;
+			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]); 
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
 				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
@@ -199,34 +202,62 @@ class POMDPTranslator(object):
 			allBels.append(tmp);
 			weightSums.append(tmpw);
 
-		#2. use queued observations to update appropriate rooms GM
-		for res in responses: 
-			roomNum = res[0]; 
-			mod = res[1]; 
-			clas = res[2]; 
-			sign = res[3]; 
+		for pose in copPoses:
+			roomCount = 0; 
+			for room in self.map2.rooms:
+				if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
+					copBounds.append(roomCount); 
+				roomCount+=1; 
+		
+		for bound in copBounds:
+			pose = copPoses[copBounds.index(bound)]; 
+			viewCone = Softmax(); 
+			viewCone.buildTriView(pose,length=1,steepness=4);
+			for i in range(0,len(viewCone.weights)):
+				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]]; 
+			newerBelief = GM(); 
+			for i in range(1,5):
+				tmpBel = viewCone.runVBND(allBels[bound],i); 
+				newerBelief.addGM(tmpBel); 
+			allBels[bound] = newerBelief; 
 
-			if(roomNum == 0):
-				#apply to all
-				for i in range(0,len(allBels)):
-					if(sign==True):
-						allBels[i] = mod.runVBND(allBels[i],0); 
+		#2. use queued observations to update appropriate rooms GM
+		if(responses is not None):
+			for res in responses: 
+				roomNum = res[0]; 
+				mod = res[1]; 
+				clas = res[2]; 
+				sign = res[3]; 
+
+				if(roomNum == 0):
+					#apply to all
+					for i in range(0,len(allBels)):
+						if(sign==True):
+							allBels[i] = mod.runVBND(allBels[i],0); 
+						else:
+							tmp = GM(); 
+							for j in range(1,mod.size):
+								tmp.addGM(mod.runVBND(allBels[i],j)); 
+							allBels[i] = tmp; 
+
+				else:
+					#apply to roomNum+1; 
+					if(sign == True):
+						allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas); 
 					else:
 						tmp = GM(); 
-						for j in range(1,mod.size):
-							tmp.addGM(mod.runVBND(allBels[i],j)); 
-						allBels[i] = tmp; 
+						for i in range(1,mod.size):
+							if(i!=clas):
+								tmp.addGM(mod.runVBND(allBels[roomNum+1],i)); 
+						allBels[roomNum+1] = tmp; 
 
-			else:
-				#apply to roomNum+1; 
-				if(sign == True):
-					allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas); 
-				else:
-					tmp = GM(); 
-					for i in range(1,mod.size):
-						if(i!=clas):
-							tmp.addGM(mod.runVBND(allBels[roomNum+1],i)); 
-					allBels[roomNum+1] = tmp; 
+		#2.5. Make sure all GMs stay within their rooms bounds:
+		for gm in allBels:
+			for g in gm:
+				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]); 
+				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]); 
+				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]); 
+				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]); 
 
 
 		#3. recombine beliefs
