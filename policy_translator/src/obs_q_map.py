@@ -96,8 +96,8 @@ def gen_questions(yaml_file):
     #             questions['objects'][obj].append(question)
 
     # print questions['rooms']
-    print '\n *** \n'
-    print questions
+    # print '\n *** \n'
+    # print questions
 
     return questions
 

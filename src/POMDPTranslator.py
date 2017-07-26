@@ -28,6 +28,7 @@ import os
 import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
+from obs_q_map import gen_questions
 
 class POMDPTranslator(object):
 
@@ -38,6 +39,7 @@ class POMDPTranslator(object):
 		self.delta = 0.1;
 		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
 		self.lowerPolicy = np.load(os.path.dirname(__file__) + '/../policies/D4QuestSoftmaxAlphas1.npy');
+		self.question_list = gen_questions('map2.yaml')
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
@@ -186,13 +188,13 @@ class POMDPTranslator(object):
 	def beliefUpdate(self, belief, responses = None,copPoses = None):
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
-		allBounds = []; 
-		copBounds = []; 
+		allBounds = [];
+		copBounds = [];
 		weightSums = [];
 		for room in self.map2.rooms:
 			tmp = GM();
 			tmpw = 0;
-			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]); 
+			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
 				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
@@ -203,62 +205,62 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 
 		for pose in copPoses:
-			roomCount = 0; 
+			roomCount = 0;
 			for room in self.map2.rooms:
 				if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
-					copBounds.append(roomCount); 
-				roomCount+=1; 
-		
+					copBounds.append(roomCount);
+				roomCount+=1;
+
 		for bound in copBounds:
-			pose = copPoses[copBounds.index(bound)]; 
-			viewCone = Softmax(); 
+			pose = copPoses[copBounds.index(bound)];
+			viewCone = Softmax();
 			viewCone.buildTriView(pose,length=1,steepness=4);
 			for i in range(0,len(viewCone.weights)):
-				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]]; 
-			newerBelief = GM(); 
+				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+			newerBelief = GM();
 			for i in range(1,5):
-				tmpBel = viewCone.runVBND(allBels[bound],i); 
-				newerBelief.addGM(tmpBel); 
-			allBels[bound] = newerBelief; 
+				tmpBel = viewCone.runVBND(allBels[bound],i);
+				newerBelief.addGM(tmpBel);
+			allBels[bound] = newerBelief;
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
-			for res in responses: 
-				roomNum = res[0]; 
-				mod = res[1]; 
-				clas = res[2]; 
-				sign = res[3]; 
+			for res in responses:
+				roomNum = res[0];
+				mod = res[1];
+				clas = res[2];
+				sign = res[3];
 
 				if(roomNum == 0):
 					#apply to all
 					for i in range(0,len(allBels)):
 						if(sign==True):
-							allBels[i] = mod.runVBND(allBels[i],0); 
+							allBels[i] = mod.runVBND(allBels[i],0);
 						else:
-							tmp = GM(); 
+							tmp = GM();
 							for j in range(1,mod.size):
-								tmp.addGM(mod.runVBND(allBels[i],j)); 
-							allBels[i] = tmp; 
+								tmp.addGM(mod.runVBND(allBels[i],j));
+							allBels[i] = tmp;
 
 				else:
-					#apply to roomNum+1; 
+					#apply to roomNum+1;
 					if(sign == True):
-						allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas); 
+						allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas);
 					else:
-						tmp = GM(); 
+						tmp = GM();
 						for i in range(1,mod.size):
 							if(i!=clas):
-								tmp.addGM(mod.runVBND(allBels[roomNum+1],i)); 
-						allBels[roomNum+1] = tmp; 
+								tmp.addGM(mod.runVBND(allBels[roomNum+1],i));
+						allBels[roomNum+1] = tmp;
 
 		#2.5. Make sure all GMs stay within their rooms bounds:
 		#Also condense each mixture
 		for gm in allBels:
 			for g in gm:
-				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]); 
-				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]); 
-				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]); 
-				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]); 
+				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]);
+				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]);
+				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]);
+				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]);
 
 		for i in range(0,len(allBels)):
 			allBels[i] = allBels[i].kmeansCondensationN(15)
@@ -280,14 +282,14 @@ class POMDPTranslator(object):
 			g.var[2][2] += 0.25;
 			g.var[3][3] += 0.25;
 
-		newBelief.normalizeWeights(); 
+		newBelief.normalizeWeights();
 
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]
 			print("MAP COP POSE TO PLOT: {}".format(pose))
 			self.makeBeliefMap(newBelief,pose)
 
-		
+
 
 		return newBelief;
 
@@ -359,6 +361,7 @@ class POMDPTranslator(object):
 		"""
 		sign = None
 		model = None
+		room_num = None
 		class_idx = None
 		# check if observation is statement (str) or question (list)
 		if type(obs) is str:
@@ -375,12 +378,16 @@ class POMDPTranslator(object):
 		for obj in self.map2.objects:
 			if re.search(obj,obs):
 				model = self.map2.objects[obj].softmax
+				for room, i in self.map2.rooms.iteritems():
+					if obj in room['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
+						room_num = i+1
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
 			for room in self.map2.rooms:
 				if re.search(room,obs):
 					model = self.map2.rooms[room]['softmax']
+					room_num = 0
 					break
 
 		# find softmax class index
@@ -394,22 +401,22 @@ class POMDPTranslator(object):
 			class_idx = 3
 		elif 'left' in obs:
 			class_idx = 4
-		elif 'near' in obs:
-			class_idx = 5
+		# elif 'near' in obs:
+		# 	class_idx = 5
 
-		return model, class_idx, sign
+		return room_num, model, class_idx, sign
 
 
 def testGetNextPose():
 	translator = POMDPTranslator();
 	b = GM();
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
-	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1)); 
-	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1)); 
+	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
+	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
 	#for i in range(-8,3):
 		#for j in range(-1,2):
-			#b.addG(Gaussian([3,2,i,j],np.identity(4).tolist(),1)); 
-	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+			#b.addG(Gaussian([3,2,i,j],np.identity(4).tolist(),1));
+	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[0,0,-15.3]]);
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
 	bnew.plot2D(low=[-9.6,-3.6],high=[4,3.6]);
@@ -417,7 +424,7 @@ def testGetNextPose():
 	'''
 	b2 = GM();
 	b2.addG(Gaussian([-8,2,-8,-2],np.identity(4).tolist(),1));
-	translator.cutGMTo2D(b2,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
+	translator.cutGMTo2D(b2,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]);
 	[bnew,goal_pose,qs] = translator.getNextPose(b2,None,[[1,2,15.3]]);
 	print(qs);
 
