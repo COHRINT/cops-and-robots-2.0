@@ -252,12 +252,16 @@ class POMDPTranslator(object):
 						allBels[roomNum+1] = tmp; 
 
 		#2.5. Make sure all GMs stay within their rooms bounds:
+		#Also condense each mixture
 		for gm in allBels:
 			for g in gm:
 				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]); 
 				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]); 
 				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]); 
 				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]); 
+
+		for i in range(0,len(allBels)):
+			allBels[i] = allBels[i].kmeansCondensationN(15)
 
 
 		#3. recombine beliefs
@@ -399,10 +403,12 @@ class POMDPTranslator(object):
 def testGetNextPose():
 	translator = POMDPTranslator();
 	b = GM();
-	#b.addG(Gaussian([3,2,2,0],np.identity(4).tolist(),1));
-	for i in range(-9,4):
-		for j in range(-3,3):
-			b.addG(Gaussian([0,0,i,j],np.identity(4).tolist(),1)); 
+	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
+	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1)); 
+	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1)); 
+	#for i in range(-8,3):
+		#for j in range(-1,2):
+			#b.addG(Gaussian([3,2,i,j],np.identity(4).tolist(),1)); 
 	translator.cutGMTo2D(b,dims=[2,3]).plot2D(low=[-9.6,-3.6],high=[4,3.6]); 
 	[bnew,goal_pose,qs] = translator.getNextPose(b,None,[[0,0,-15.3]]);
 	bnew = translator.cutGMTo2D(bnew,dims=[2,3]);
