@@ -156,7 +156,7 @@ checkers table:
   length: 0.5
   width: 0.5
   # degrees obj's length to map's pos-x axis
-  orientation: 0.0
+  orientation: 270.0
   shape: rectangle
 
 fern:
@@ -167,7 +167,7 @@ fern:
   length: 0.5
   width: 0.5
   # degrees obj's length to map's pos-x axis
-  orientation: 00.0
+  orientation: 270.0
   shape: oval
 
 wall_1:
