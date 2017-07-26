@@ -276,27 +276,14 @@ class POMDPTranslator(object):
 			g.var[2][2] += 0.25;
 			g.var[3][3] += 0.25;
 
+		newBelief.normalizeWeights(); 
+
 		if copPoses is not None:
-
-			#update with each pose
-			for pose in copPoses:
-				viewCone = Softmax(); 
-				viewCone.buildTriView(pose,length=1,steepness=4);
-				for i in range(0,len(viewCone.weights)):
-					viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]]; 
-				newerBelief = GM(); 
-				for i in range(1,5):
-					tmpBel = viewCone.runVBND(newBelief,i); 
-					newerBelief.addGM(tmpBel); 
-
-			newBelief = newerBelief; 
-			newBelief.normalizeWeights(); 
-
 			pose = copPoses[len(copPoses)-1]
 			print("MAP COP POSE TO PLOT: {}".format(pose))
 			self.makeBeliefMap(newBelief,pose)
 
-		newBelief.normalizeWeights();
+		
 
 		return newBelief;
 

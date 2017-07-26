@@ -22,31 +22,43 @@ info:
       min_y: -3.33
       max_x: -2.0
       max_y: -1.0
+      objects:
+        ['desk','filing cabinet']
     hallway:
       min_x: -9.5
       min_y: -1.0
       max_x: 4.0
       max_y: 1.4
+      objects:
+        ['fern']
     library:
       min_x: -2.0
       min_y: -3.33
       max_x: 4.0
       max_y: -1.0
+      objects:
+        ['bookcase','chair']
     billiard room:
       min_x: 0.0
       min_y: 1.4
       max_x: 4.0
       max_y: 3.68
+      objects:
+        ['checkers table','cassini poster']
     dining room:
       min_x: -9.5
       min_y: -3.33
       max_x: -7.0
       max_y: -1.0
+      objects:
+        ['dining table']
     kitchen:
       min_x: -9.5
       min_y: 1.4
       max_x: 0.0
       max_y: 3.68
+      objects:
+        ['fridge','mars poster']
 
 bookcase:
   name: bookcase
