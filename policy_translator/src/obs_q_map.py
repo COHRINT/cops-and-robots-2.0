@@ -27,7 +27,7 @@ movement_types = ["moving","stopped"]
 
 movement_qualities = ["slowly","moderately","quickly"]
 
-x = np.load('likelihoods.npy')
+# x = np.load('likelihoods.npy')
 
 statements = []
 
@@ -73,20 +73,29 @@ def gen_questions(yaml_file):
 
 
     m = Map(yaml_file)
-    questions = {'rooms':[],'objects':{}}
+    # questions = {'rooms':[],'objects':{}}
+    questions = []
+    i = 0
     for room in m.rooms:
+        print room
+        questions.append([])
         for rel in room_rel:
-            question = 'Is Roy ' + rel + ' ' + 'the ' + room + '?'
-            questions['rooms'].append(question)
-
-    for obj in m.objects:
-        if not re.search('wall',obj):
-            questions['objects'][obj] = []
+            question = 'Is Roy ' + rel + ' the ' + room + '?'
+            questions[i].append(question)
+        for obj in m.rooms[room]['objects']:
             for rel in obj_rel:
-                question = 'Is Roy ' + rel + ' ' + 'the ' + obj + '?'
-                questions['objects'][obj].append(question)
+                question = 'Is Roy ' + rel + ' the ' + obj + '?'
+                questions[i].append(question)
+        i+=1
 
-    print questions['rooms']
+    # for obj in m.objects:
+    #     if not re.search('wall',obj):
+    #         questions['objects'][obj] = []
+    #         for rel in obj_rel:
+    #             question = 'Is Roy ' + rel + ' ' + 'the ' + obj + '?'
+    #             questions['objects'][obj].append(question)
+
+    # print questions['rooms']
     print '\n *** \n'
     print questions
 

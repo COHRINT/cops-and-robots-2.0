@@ -28,6 +28,7 @@ import os
 import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
+from obs_q_map import gen_questions
 
 class POMDPTranslator(object):
 
@@ -38,6 +39,7 @@ class POMDPTranslator(object):
 		self.delta = 0.1;
 		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
 		self.lowerPolicy = np.load(os.path.dirname(__file__) + '/../policies/D4QuestSoftmaxAlphas1.npy');
+		self.question_list = gen_questions('map2.yaml')
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
