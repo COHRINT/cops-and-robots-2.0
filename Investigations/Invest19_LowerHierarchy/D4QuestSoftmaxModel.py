@@ -63,7 +63,9 @@ class ModelSpec:
 		#Library
 		#self.bounds = [[-2,4],[-3.33,-1],[-2,4],[-3.33,-1]];
 		#Billiard
-		self.bounds = [[0,4],[1.4,3.68],[0,4],[1.4,3.68]];
+		#self.bounds = [[0,4],[1.4,3.68],[0,4],[1.4,3.68]];
+		#Kitchen
+		self.bounds = [[-9.5,0],[1.4,3.68],[-9.5,0],[1.4,3.68]];
 
 		self.delAVar = (np.identity(4)*1).tolist(); 
 		self.delAVar[0][0] = 0.00001; 
@@ -90,8 +92,10 @@ class ModelSpec:
 			#self.pz.buildOrientedRecModel([0,-1.1662],270,0.38,0.18,5); 
 
 			#checkers
-			self.pz.buildOrientedRecModel([2.04,2.16],270,0.5,0.5,5); 
+			#self.pz.buildOrientedRecModel([2.04,2.16],270,0.5,0.5,5); 
 
+			#Fridge
+			self.pz.buildOrientedRecModel([-9.1,3.07],315,0.46,0.46,5); 
 
 			for i in range(0,len(self.pz.weights)):
 				self.pz.weights[i] = [0,0,self.pz.weights[i][0],self.pz.weights[i][1]]; 
@@ -112,8 +116,10 @@ class ModelSpec:
 			#self.pz2.buildOrientedRecModel([2.975,-2.435],90,0.46,0.41,5); 
 
 			#cassini
-			self.pz2.buildOrientedRecModel([1.38,3.475],270,0.05,0.56,5); 
+			#self.pz2.buildOrientedRecModel([1.38,3.475],270,0.05,0.56,5); 
 
+			#mars
+			self.pz2.buildOrientedRecModel([-4.38,3.475],270,0.05,0.84,5); 
 
 
 			for i in range(0,len(self.pz2.weights)):

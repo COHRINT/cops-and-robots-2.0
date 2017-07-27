@@ -120,8 +120,8 @@ mars poster:
   color: bisque
   centroid_x: -4.38
   centroid_y: 3.475
-  length: 0.84
-  width: 0.05
+  length: 0.05
+  width: 0.84
   # degrees obj's length to map's pos-x axis
   orientation: 270.0
   shape: rectangle

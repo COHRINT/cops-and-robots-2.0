@@ -539,7 +539,7 @@ def cutGMTo2D(mix,dims = [2,3]):
 
 if __name__ == "__main__":
 
-	
+	'''
 	roomName = 'Kitchen'; 
 	runNumber = 0; 
 
@@ -551,24 +551,28 @@ if __name__ == "__main__":
 		#tmp.addG(Gaussian([-1.1,-1,-6.1,-1],np.identity(4)*0.1,1)); 
 		#tmp.addG(Gaussian([3,-2,-1,-2],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([3.9,2,1.1,2],np.identity(4)*0.01,1)); 
+		tmp.addG(Gaussian([-1,2,-9,2],np.identity(4)*0.01,1));
 	elif(runNumber==1):
 		#tmp.addG(Gaussian([-9,.2,3,.2],np.identity(4)*0.01,1));
 		#tmp.addG(Gaussian([-9.5,-2.15,-7,-2.15],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([-7,-2,-2,-2],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([-1,-2,3,-2],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([1.1,2,3.9,2],np.identity(4)*0.01,1)); 
+		tmp.addG(Gaussian([-9,2,-1,2],np.identity(4)*0.01,1)); 
 	elif(runNumber==2):
 		#tmp.addG(Gaussian([-2,-.8,-2,1.2],np.identity(4)*0.01,1));
 		#tmp.addG(Gaussian([-8.25,-3,-8.25,-1],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([-4.5,-3,-4.5,-1],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([1,-3,1,-1],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([2,1.5,2,3.7],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([2,1.5,2,3.7],np.identity(4)*0.01,1));
+		tmp.addG(Gaussian([-4.1,.1,-4.1,3],np.identity(4)*0.01,1));  
 	elif(runNumber==3):
 		#tmp.addG(Gaussian([-2,1.2,-2,-.8],np.identity(4)*0.01,1));
 		#tmp.addG(Gaussian([-7,-1,-7,-3.33],np.identity(4)*0.01,1)); 
 		#tmp.addG(Gaussian([-4.5,-1,-4.5,-3],np.identity(4)*0.01,1));
 		#tmp.addG(Gaussian([1,-1,1,-3],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([2,3.7,2,1.5],np.identity(4)*0.01,1));   
+		#tmp.addG(Gaussian([2,3.7,2,1.5],np.identity(4)*0.01,1));
+		tmp.addG(Gaussian([-3.9,3,-4.2,.1],np.identity(4)*0.01,1));    
 	allB.append(tmp); 
 	f = open('D4QuestBeliefs1.npy','w');
 	np.save(f,allB);
@@ -577,12 +581,12 @@ if __name__ == "__main__":
 
 	a = PolicyGenerator(sys.argv,runNumber,roomName); 
 	a.solve();
-	
+	'''
 	
 	
 
-	'''
-	gamma = np.load('BilliardAlphasFull.npy'); 
+	
+	gamma = np.load('KitchenAlphasFull.npy'); 
 
 	fig,axarr = plt.subplots(len(gamma));
 	#minim = -100
@@ -596,7 +600,7 @@ if __name__ == "__main__":
 		axarr[i].contourf(x,y,c); 
 		axarr[i].set_title(str(gamma[i].action)); 
 	plt.show(); 
-	'''
+	
 	
 
 	
