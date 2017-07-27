@@ -68,6 +68,8 @@ class PolicyTranslatorServer(object):
         self.delta = 0.1
         self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
+        self.call_count = 0
+
         print('Policy translator service ready.')
 
         rospy.spin()
@@ -121,6 +123,7 @@ class PolicyTranslatorServer(object):
         Rehydrate the belief then get the position of the calling robot, update the
         belief and get a new goal pose. Then dehydrate the updated belief.
         '''
+        goal_pose = None
         copPoses = []
 
         belief = rehydrate_msg(weights,means,variances)
@@ -129,19 +132,26 @@ class PolicyTranslatorServer(object):
 
         copPoses.append(position)
 
+        # if (self.call_count % 4 == 0):
         (b_updated,goal_pose,questions) = self.pt.getNextPose(belief,obs,copPoses)
-
         q_msg = Question()
         q_msg.qids = questions[1]
         q_msg.questions = questions[0]
         q_msg.weights = [0 for x in range(0,len(questions[0]))]
         self.q_pub.publish(q_msg)
 
-        if b_updated is not None:
-            (weights,means,variances) = dehydrate_msg(b_updated)
+        # else:
+        #     b_updated = self.pt.beliefUpdate(belief,obs,copPoses)
+        #     goal_pose = [position[0],position[1]]
+
+        self.call_count += 1
 
         orientation = math.atan2(goal_pose[1]-position[1],goal_pose[0]-position[0])
         goal_pose.append(orientation)
+
+        if b_updated is not None:
+            (weights,means,variances) = dehydrate_msg(b_updated)
+
         belief = [weights,means,variances,goal_pose]
         return belief
 
@@ -173,8 +183,8 @@ class PolicyTranslatorServer(object):
         """
         # strip the space from message
         question = human_push.data.lstrip()
-        model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(model, class_idx, sign)
+        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        self.queue.add(room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 
     def robot_pull_callback(self, data):
@@ -189,8 +199,8 @@ class PolicyTranslatorServer(object):
         data : Answer.msg , Custom Message
         """
         question = [data.question,data.ans]
-        model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(model, class_idx, sign)
+        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        self.queue.add(room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
 def Test_Callbacks():

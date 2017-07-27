@@ -214,7 +214,7 @@ class POMDPTranslator(object):
 		for bound in copBounds:
 			pose = copPoses[copBounds.index(bound)];
 			viewCone = Softmax();
-			viewCone.buildTriView(pose,length=1,steepness=4);
+			viewCone.buildTriView(pose,length=1,steepness=7);
 			for i in range(0,len(viewCone.weights)):
 				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 			newerBelief = GM();
@@ -359,6 +359,7 @@ class POMDPTranslator(object):
 		Observation may be a str type with a pushed observation or a list with
 		question and answer.
 		"""
+		print(obs)
 		sign = None
 		model = None
 		room_num = None
@@ -376,7 +377,7 @@ class POMDPTranslator(object):
 
 		# find map object mentioned in statement
 		for obj in self.map2.objects:
-			if re.search(obj,obs):
+			if re.search(obj,obs.lower()):
 				model = self.map2.objects[obj].softmax
 				for room, i in self.map2.rooms.iteritems():
 					if obj in room['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
@@ -384,26 +385,29 @@ class POMDPTranslator(object):
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
+			print('prolly room')
 			for room in self.map2.rooms:
-				if re.search(room,obs):
+				print(room)
+				if re.search(room,obs.lower()):
 					model = self.map2.rooms[room]['softmax']
 					room_num = 0
 					break
 
 		# find softmax class index
-		if 'inside' in obs:
+		if 'inside' or 'in' in obs.lower():
 			class_idx = 0
-		elif 'front' in obs:
+		elif 'front' in obs.lower():
 			class_idx = 1
-		elif 'right' in obs:
+		elif 'right' in obs.lower():
 			class_idx = 2
-		elif 'behind' in obs:
+		elif 'behind' in obs.lower():
 			class_idx = 3
-		elif 'left' in obs:
+		elif 'left' in obs.lower():
 			class_idx = 4
 		# elif 'near' in obs:
 		# 	class_idx = 5
 
+		print(room_num,model,class_idx,sign)
 		return room_num, model, class_idx, sign
 
 
