@@ -123,7 +123,7 @@ class POMDPTranslator(object):
 			goal_pose = [xpose,ypose,0];
 
 		for i in range(0,len(questsLow)):
-			questsLow[i] = [room,questsLow[i]];
+			questsLow[i] = [room,questsLow[i]+1];
 
 
 		#questsLow = [18,43,21,33,58];
