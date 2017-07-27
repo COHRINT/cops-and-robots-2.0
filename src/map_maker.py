@@ -71,7 +71,9 @@ class Map(object):
 				width = upper_r[1] - lower_l[1]
 				cent = [lower_l[0] + length/2,lower_l[1]+width/2]
 				self.rooms[room]['softmax'] = Softmax()
-				self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width)
+				self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=3)
+				for i in range(0,len(self.rooms[room]['softmax'].weights)):
+					self.rooms[room]['softmax'].weights[i] = [0,0,self.rooms[room]['softmax'].weights[i][0],self.rooms[room]['softmax'].weights[i][1]];
 				self.rooms[room]['objects'] = cfg['info']['rooms'][room]['objects']
 
 			# Store map's objects in self.objects hash
@@ -163,7 +165,7 @@ class Map_Object(object):
 		Approximate all shapes as rectangles
 		"""
 		self.softmax.buildOrientedRecModel(self.centroid,
-			self.orient, self.length, self.width)
+			self.orient, self.length, self.width, steepness=3)
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted

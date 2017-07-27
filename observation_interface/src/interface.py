@@ -109,7 +109,7 @@ class ObservationInterface(QMainWindow):
         # create and add instances of all elements
 
         # left side <- includes all video feeds
-        cop_name = rospy.get_param("~cop_name", "pris")
+        cop_name = rospy.get_param("~cop", "roy")
         self.cop_video = CopVideo(cop_name)
         self.cam_1 = SecurityCamera(1,'Study')
         self.cam_2 = SecurityCamera(2,'Hallway')
