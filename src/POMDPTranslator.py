@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
-from obs_q_map import gen_questions
+#from obs_q_map import gen_questions
 
 
 class POMDPTranslator(object):
@@ -46,7 +46,7 @@ class POMDPTranslator(object):
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		self.question_list = gen_questions('map2.yaml')
+		#self.question_list = gen_questions('map2.yaml')
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
@@ -82,7 +82,6 @@ class POMDPTranslator(object):
 		questsHigh = questHighNew;
 
 		#3. find position and questions from lower level pomdp for that room
-
 
 		roomConversion = [5,4,0,2,3,1];
 		room = roomConversion[room];
@@ -221,6 +220,7 @@ class POMDPTranslator(object):
 		Gamma = self.lowerPolicys[room];
 		valActs = [];
 		for j in range(0,len(Gamma)):
+			print(Gamma[j].action); 
 			valActs.append([self.continuousDot(Gamma[j],b),Gamma[j].action]);
 		a = sorted(valActs,key=self.getKey,reverse=True);
 		quests = [];
@@ -543,7 +543,7 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
-	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),1));
+	b.addG(Gaussian([0,0,-3,0],(np.identity(4)*6).tolist(),1));
 
 	b.normalizeWeights();
 	#for i in range(-8,3):
