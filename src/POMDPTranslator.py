@@ -109,7 +109,7 @@ class POMDPTranslator(object):
 
 		if(copRoom == room_conv):
 			displacement = [0,0,0];
-			dela = 0.5
+			dela = 1
 			if(movement ==0):
 				displacement = [-dela,0,0];
 			elif(movement == 1):
