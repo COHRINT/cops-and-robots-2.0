@@ -166,6 +166,8 @@ class Map_Object(object):
 		"""
 		self.softmax.buildOrientedRecModel(self.centroid,
 			self.orient, self.length, self.width, steepness=3)
+		for i in range(0,len(self.softmax.weights)):
+			self.softmax.weights[i] = [0,0,self.softmax.weights[i][0],self.softmax.weights[i][1]];
 
 	# Selects the shape of the obj
 	# Default = 'rectangle' --- 'oval' also accepted

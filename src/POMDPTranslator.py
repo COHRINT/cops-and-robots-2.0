@@ -49,7 +49,7 @@ class POMDPTranslator(object):
 		self.question_list = gen_questions('map2.yaml')
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
-
+		print('GETTING NEW POSE')
 		#0. update belief
 		newBel = self.beliefUpdate(belief,obs,copPoses);
 		#1. partition means into separate GMs, 1 for each room
@@ -71,10 +71,10 @@ class POMDPTranslator(object):
 		# print(room);
 		# print(questsHigh);
 		# print(weightsHigh);
-		questHighConversion = [37,32,0,14,23,5]
+		questHighConversion = [5,4,0,2,3,1]
 		questHighNew = [];
 		for i in range(0,len(questsHigh)):
-			questHighNew.append(questHighConversion[questsHigh[i]])
+			questHighNew.append(questHighConversion[int(questsHigh[i])])
 		questsHigh = questHighNew;
 		questHighNew = [];
 		for i in range(0,len(questsHigh)):
@@ -83,14 +83,16 @@ class POMDPTranslator(object):
 
 		#3. find position and questions from lower level pomdp for that room
 
-		#TODO: Fake Questions and goal pose
-		#goal_pose = allBels[room].findMAPN();
-		#goal_pose = [goal_pose[2],goal_pose[3]];
 
 		roomConversion = [5,4,0,2,3,1];
 		room = roomConversion[room];
 
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room);
+
+		# TODO: Fake Questions and goal pose
+		# goal_pose = allBels[room].findMAPN();
+		# goal_pose = [goal_pose[2],goal_pose[3]];
+
 
 
 		pose = copPoses[-1];
@@ -265,6 +267,7 @@ class POMDPTranslator(object):
 		return suma;
 
 	def beliefUpdate(self, belief, responses = None,copPoses = None):
+		print('UPDATING BELIEF')
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
 		allBounds = [];
@@ -330,13 +333,13 @@ class POMDPTranslator(object):
 				else:
 					#apply to roomNum+1;
 					if(sign == True):
-						allBels[roomNum+1] = mod.runVBND(allBels[roomNum+1],clas);
+						allBels[roomNum] = mod.runVBND(allBels[roomNum],clas);
 					else:
 						tmp = GM();
 						for i in range(1,mod.size):
 							if(i!=clas):
-								tmp.addGM(mod.runVBND(allBels[roomNum+1],i));
-						allBels[roomNum+1] = tmp;
+								tmp.addGM(mod.runVBND(allBels[roomNum],i));
+						allBels[roomNum] = tmp;
 
 		#2.5. Make sure all GMs stay within their rooms bounds:
 		#Also condense each mixture
@@ -367,7 +370,7 @@ class POMDPTranslator(object):
 			g.var[2][2] += 0.25;
 			g.var[3][3] += 0.25;
 
-		newBelief.normalizeWeights();
+		# newBelief.normalizeWeights();
 
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]
@@ -385,44 +388,44 @@ class POMDPTranslator(object):
 		canvas = FigureCanvas(fig)
 		ax = fig.add_subplot(111)
 
-		'''
+
 		x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
 		bcut = self.cutGMTo2D(belief,dims=[2,3]);
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
 		ax.contourf(x_space,y_space,bel,cmap="viridis");
-		'''
-		allBels = [];
-		allBounds = [];
-		for room in self.map2.rooms:
-			tmp = GM();
-			tmpw = 0;
-			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
-			for g in belief:
-				m = [g.mean[2],g.mean[3]];
-				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
-					tmp.addG(deepcopy(g));
-			allBels.append(tmp);
 
-		x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-
-		pos = np.dstack((x_space, y_space));
-		c = np.zeros(shape=(pos.shape[0],pos.shape[1]));
-		print(c.shape);
-		#for each space
-		xran = np.arange(self.bounds[0],self.bounds[2],self.delta).tolist();
-		yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist();
-
-		for i in range(0,len(xran)):
-			for j in range(0,len(yran)):
-				#for each room
-				for k in range(0,len(allBels)):
-					if(xran[i]>=allBounds[k][0] and xran[i]<=allBounds[k][2] and yran[j]>=allBounds[k][1] and yran[j] <= allBounds[k][3]):
-						bcut = self.cutGMTo2D(allBels[k],dims=[2,3]);
-						for g in bcut:
-							mean = [xran[i],yran[j]];
-							c[i][j] += mvn.pdf(mean,g.mean,g.var)*g.weight;
-
-		ax.contourf(x_space,y_space,c,cmap='viridis');
+		# allBels = [];
+		# allBounds = [];
+		# for room in self.map2.rooms:
+		# 	tmp = GM();
+		# 	tmpw = 0;
+		# 	allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
+		# 	for g in belief:
+		# 		m = [g.mean[2],g.mean[3]];
+		# 		if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
+		# 			tmp.addG(deepcopy(g));
+		# 	allBels.append(tmp);
+		#
+		# x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
+		#
+		# pos = np.dstack((x_space, y_space));
+		# c = np.zeros(shape=(pos.shape[0],pos.shape[1]));
+		# print(c.shape);
+		# #for each space
+		# xran = np.arange(self.bounds[0],self.bounds[2],self.delta).tolist();
+		# yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist();
+		#
+		# for i in range(0,len(xran)):
+		# 	for j in range(0,len(yran)):
+		# 		#for each room
+		# 		for k in range(0,len(allBels)):
+		# 			if(xran[i]>=allBounds[k][0] and xran[i]<=allBounds[k][2] and yran[j]>=allBounds[k][1] and yran[j] <= allBounds[k][3]):
+		# 				bcut = self.cutGMTo2D(allBels[k],dims=[2,3]);
+		# 				for g in bcut:
+		# 					mean = [xran[i],yran[j]];
+		# 					c[i][j] += mvn.pdf(mean,g.mean,g.var)*g.weight;
+		#
+		# ax.contourf(x_space,y_space,c,cmap='viridis');
 
 
 		m = self.map2;
@@ -483,6 +486,7 @@ class POMDPTranslator(object):
 		print(obs)
 		sign = None
 		model = None
+		model_name = None
 		room_num = None
 		class_idx = None
 		# check if observation is statement (str) or question (list)
@@ -500,6 +504,7 @@ class POMDPTranslator(object):
 		for obj in self.map2.objects:
 			if re.search(obj,obs.lower()):
 				model = self.map2.objects[obj].softmax
+				model_name = self.map2.objects[obj].name
 				for i, room in enumerate(self.map2.rooms):
 					if obj in self.map2.rooms[room]['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
 						room_num = i+1
@@ -528,7 +533,7 @@ class POMDPTranslator(object):
 		# elif 'near' in obs:
 		# 	class_idx = 5
 
-		print(room_num,model,class_idx,sign)
+		print(room_num,model,model_name,class_idx,sign)
 		return room_num, model, class_idx, sign
 
 

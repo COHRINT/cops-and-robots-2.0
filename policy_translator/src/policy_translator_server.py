@@ -135,7 +135,8 @@ class PolicyTranslatorServer(object):
         # if (self.call_count % 4 == 0):
         (b_updated,goal_pose,questions) = self.pt.getNextPose(belief,obs,copPoses)
         q_msg = Question()
-        q_msg.qids = questions[1]
+        # q_msg.qids = questions[1]
+        q_msg.qids = [0 for x in range(0,len(questions[0]))]
         q_msg.questions = questions[0]
         q_msg.weights = [0 for x in range(0,len(questions[0]))]
         self.q_pub.publish(q_msg)
