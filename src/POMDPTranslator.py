@@ -270,7 +270,10 @@ class POMDPTranslator(object):
 					tmpw+=g.weight;
 			tmp.normalizeWeights();
 			allBels.append(tmp);
+
 			weightSums.append(tmpw);
+		for i in range(0,len(allBels)):
+			allBels[i].normalizeWeights(); 
 
 		for pose in copPoses:
 			roomCount = 0;
