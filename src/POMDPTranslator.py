@@ -76,14 +76,26 @@ class POMDPTranslator(object):
 		#3. find position and questions from lower level pomdp for that room
 
 		#TODO: Fake Questions and goal pose
-		goal_pose = allBels[room].findMAPN();
-		goal_pose = [goal_pose[2],goal_pose[3]];
+		#goal_pose = allBels[room].findMAPN();
+		#goal_pose = [goal_pose[2],goal_pose[3]];
 
+		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room); 
+		displacement = [0,0,0]; 
+		if(movement ==0):
+			displacement = [-1,0,0]; 
+		elif(movement == 1):
+			displacement = [1,0,0]; 
+		elif(movement == 2):
+			displacement = [0,1,0]; 
+		elif(movement==3):
+			displacement = [0,-1,0]; 
+		goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
+		goal_pose = goal_pose.tolist(); 
 
 		#questsLow = [18,43,21,33,58];
 		#weightsLow = [24,54,23,48,53];
-		questsLow = [];
-		weightsLow = [];
+		#questsLow = [];
+		#weightsLow = [];
 
 
 		suma = sum(weightsLow);
@@ -117,8 +129,10 @@ class POMDPTranslator(object):
 
 		strings = ['Is Roy in the Kitchen','Is Roy in the Dining Room','Is Roy in the Hallway','Is Roy in the Study','Is Roy in the Library','Is Roy in the Billiard Room'];
 		questStrings = [];
+		
 		for i in range(0,len(questIds)):
-			questStrings.append(strings[int(questIds[i])]);
+			if(questIds[i] < 6):
+				questStrings.append(strings[int(questIds[i])]);
 		return questStrings;
 
 
@@ -154,7 +168,7 @@ class POMDPTranslator(object):
 		mi = min(weights);
 		suma = 0;
 		for i in range(0,len(weights)):
-			weights[i] = weights[i] + mi;
+			weights[i] = weights[i] - mi;
 			suma+=weights[i];
 		for i in range(0,len(weights)):
 			weights[i] = weights[i]/suma;
@@ -164,9 +178,31 @@ class POMDPTranslator(object):
 	def getKey(self,item):
 		return item[0];
 
-	def getLowerAction(self,b):
-		act = self.Gamma[np.argmax([self.continuousDot(j,b) for j in self.Gamma])].action;
-		return act;
+	def getLowerAction(self,b,room):
+		#act = Gamma[np.argmax([self.continuousDot(j,b) for j in Gamma])].action;
+		Gamma = self.lowerPolicys[room]; 
+		valActs = []; 
+		for j in range(0,len(Gamma)):
+			valActs.append([self.continuousDot(Gamma[j],b),Gamma[j].action]); 
+		a = sorted(valActs,key=self.getKey,reverse=True);
+		quests = []; 
+		questWeights = []; 
+
+		for i in a:
+			if(i[1][1] not in quests):
+				quests.append(i[1][1]); 
+				questWeights.append(i[0]); 
+		mi = min(questWeights); 
+		for i in range(0,len(questWeights)):
+			questWeights[i] = questWeights[i] -mi; 
+
+		suma = sum(questWeights); 
+
+		for i in range(0,len(questWeights)):
+			questWeights[i] = questWeights[i]/suma; 
+
+
+		return [a[0][1][0],quests,questWeights];
 
 	def dotProduct(self,a,b):
 		suma = 0;
