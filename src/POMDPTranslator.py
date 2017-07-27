@@ -285,27 +285,28 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 
 
-		for pose in copPoses:
-			roomCount = 0;
-			for room in self.map2.rooms:
-				if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
-					copBounds.append(roomCount);
-				roomCount+=1;
+		pose = copPoses[-1]; 
+		roomCount = 0;
+		copBound = 0; 
+		for room in self.map2.rooms:
+			if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
+				copBounds = roomCount; 
+			roomCount+=1;
 
-		for bound in copBounds:
-			pose = copPoses[copBounds.index(bound)];
-			viewCone = Softmax();
-			viewCone.buildTriView(pose,length=1,steepness=7);
-			for i in range(0,len(viewCone.weights)):
-				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
-			newerBelief = GM();
-			for i in range(1,5):
-				tmpBel = viewCone.runVBND(allBels[bound],i);
-				newerBelief.addGM(tmpBel);
-			allBels[bound] = newerBelief;
+	
+		viewCone = Softmax();
+		viewCone.buildTriView(pose,length=1,steepness=7);
+		for i in range(0,len(viewCone.weights)):
+			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+		newerBelief = GM();
+		for i in range(1,5):
+			tmpBel = viewCone.runVBND(allBels[copBounds],i);
+			newerBelief.addGM(tmpBel);
+		allBels[copBounds] = newerBelief;
 
-		for i in range(0,len(allBels)):
-			allBels[i].normalizeWeights(); 
+		#for i in range(0,len(allBels)):
+			#allBels[i].normalizeWeights(); 
+		allBels[copBounds].normalizeWeights(); 
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
