@@ -68,11 +68,14 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-		print(questsHigh);
 		# print(room);
 		# print(questsHigh);
 		# print(weightsHigh);
-
+		questHighConversion = [37,32,0,14,23,5]
+		questsHighNew = []; 
+		for i in range(0,len(questsHigh)):
+			questHighNew.append(questHighConversion[questsHigh[i]])
+		questsHigh = questHighNew; 
 		#3. find position and questions from lower level pomdp for that room
 
 		#TODO: Fake Questions and goal pose
@@ -91,6 +94,23 @@ class POMDPTranslator(object):
 			displacement = [0,-1,0]; 
 		goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
 		goal_pose = goal_pose.tolist(); 
+
+
+		questsLowConversion = 0; 
+		if(room == 1):
+			questsLowConversion = 6; 
+		if(room == 2):
+			questsLowConversion = 15; 
+		if(room == 3):
+			questsLowConversion = 24; 
+		if(room == 4):
+			questsLowConversion = 33; 
+		if(room == 5):
+			questsLowConversion = 38; 
+
+		for i in range(0,len(questsLow)):
+			questsLow[i] = questsLow[i] + questsLowConversion; 
+
 
 		#questsLow = [18,43,21,33,58];
 		#weightsLow = [24,54,23,48,53];
@@ -117,8 +137,12 @@ class POMDPTranslator(object):
 			weightsFull.append(i[0]);
 
 
+
 		#5. use questioner function to publish questions
-		questions = self.getQuestionStrings(questsFull);
+		#questions = self.getQuestionStrings(questsFull);
+		questions = []; 
+		for i in range(0,len(questsFull)):
+			questions.append(self.question_list[questsFull[i]]); 
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
