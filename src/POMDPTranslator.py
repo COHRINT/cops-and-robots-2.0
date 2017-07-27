@@ -272,8 +272,7 @@ class POMDPTranslator(object):
 			allBels.append(tmp);
 
 			weightSums.append(tmpw);
-		for i in range(0,len(allBels)):
-			allBels[i].normalizeWeights(); 
+
 
 		for pose in copPoses:
 			roomCount = 0;
@@ -293,6 +292,9 @@ class POMDPTranslator(object):
 				tmpBel = viewCone.runVBND(allBels[bound],i);
 				newerBelief.addGM(tmpBel);
 			allBels[bound] = newerBelief;
+
+		for i in range(0,len(allBels)):
+			allBels[i].normalizeWeights(); 
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
