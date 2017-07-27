@@ -72,79 +72,41 @@ class POMDPTranslator(object):
 		# print(questsHigh);
 		# print(weightsHigh);
 		questHighConversion = [37,32,0,14,23,5]
-<<<<<<< Updated upstream
-		questHighNew = []; 
-		for i in range(0,len(questsHigh)):
-			questHighNew.append(questHighConversion[questsHigh[i]])
-		questsHigh = questHighNew; 
-		questHighNew = []; 
-		for i in range(0,len(questsHigh)):
-			questHighNew.append([questsHigh[i],0]); 
-		questsHigh = questHighNew; 
-
-=======
 		questHighNew = [];
 		for i in range(0,len(questsHigh)):
-			questHighNew.append(questHighConversion[int(questsHigh[i])])
+			questHighNew.append(questHighConversion[questsHigh[i]])
 		questsHigh = questHighNew;
->>>>>>> Stashed changes
+		questHighNew = [];
+		for i in range(0,len(questsHigh)):
+			questHighNew.append([questsHigh[i],0]);
+		questsHigh = questHighNew;
+
 		#3. find position and questions from lower level pomdp for that room
 
 		#TODO: Fake Questions and goal pose
 		#goal_pose = allBels[room].findMAPN();
 		#goal_pose = [goal_pose[2],goal_pose[3]];
 
-<<<<<<< Updated upstream
-		roomConversion = [5,4,0,2,3,1]; 
-		room = roomConversion[room]; 
+		roomConversion = [5,4,0,2,3,1];
+		room = roomConversion[room];
 
-		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room); 
-		displacement = [0,0,0]; 
-		dela = 0.5
-		if(movement ==0):
-			displacement = [-dela,0,0]; 
-		elif(movement == 1):
-			displacement = [dela,0,0]; 
-		elif(movement == 2):
-			displacement = [0,dela,0]; 
-		elif(movement==3):
-			displacement = [0,-dela,0]; 
-		goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
-		goal_pose = goal_pose.tolist(); 
-
-
-		for i in range(0,len(questsLow)):
-			questsLow[i] = [room,questsLow[i]]; 
-=======
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room);
 		displacement = [0,0,0];
+		dela = 0.5
 		if(movement ==0):
-			displacement = [-1,0,0];
+			displacement = [-dela,0,0];
 		elif(movement == 1):
-			displacement = [1,0,0];
+			displacement = [dela,0,0];
 		elif(movement == 2):
-			displacement = [0,1,0];
+			displacement = [0,dela,0];
 		elif(movement==3):
-			displacement = [0,-1,0];
+			displacement = [0,-dela,0];
 		goal_pose = np.array(copPoses[-1]) + np.array(displacement);
 		goal_pose = goal_pose.tolist();
 
 
-		questsLowConversion = 0;
-		if(room == 1):
-			questsLowConversion = 6;
-		if(room == 2):
-			questsLowConversion = 15;
-		if(room == 3):
-			questsLowConversion = 24;
-		if(room == 4):
-			questsLowConversion = 33;
-		if(room == 5):
-			questsLowConversion = 38;
-
 		for i in range(0,len(questsLow)):
-			questsLow[i] = questsLow[i] + questsLowConversion;
->>>>>>> Stashed changes
+			questsLow[i] = [room,questsLow[i]];
 
 
 		#questsLow = [18,43,21,33,58];
@@ -177,13 +139,7 @@ class POMDPTranslator(object):
 		#questions = self.getQuestionStrings(questsFull);
 		questions = [];
 		for i in range(0,len(questsFull)):
-<<<<<<< Updated upstream
-			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]); 
-=======
-			print('INDX: {}'.format(questsFull[i]))
-			print('Q LIST LEN: {}'.format(len(self.question_list)))
-			questions.append(self.question_list[questsFull[i]]);
->>>>>>> Stashed changes
+			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -334,7 +290,7 @@ class POMDPTranslator(object):
 			allBels[bound] = newerBelief;
 
 		for i in range(0,len(allBels)):
-			allBels[i].normalizeWeights(); 
+			allBels[i].normalizeWeights();
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
@@ -566,14 +522,9 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
-<<<<<<< Updated upstream
 	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),1));
 
-	b.normalizeWeights(); 
-=======
-	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),10));
 	b.normalizeWeights();
->>>>>>> Stashed changes
 	#for i in range(-8,3):
 		#for j in range(-1,2):
 			#b.addG(Gaussian([3,2,i,j],np.identity(4).tolist(),1));
