@@ -68,7 +68,7 @@ bookcase:
   length: 0.38
   width: 0.18
   # degrees obj's length to map's pos-x axis
-  orientation: 0.0
+  orientation: 270
   shape: rectangle
 
 desk:
@@ -90,7 +90,7 @@ chair:
   length: 0.46
   width: 0.41
   # degrees obj's length to map's pos-x axis
-  orientation: 270.0
+  orientation: 90.0
   shape: rectangle
 
 filing cabinet:
@@ -123,7 +123,7 @@ mars poster:
   length: 0.84
   width: 0.05
   # degrees obj's length to map's pos-x axis
-  orientation: 0.0
+  orientation: 270.0
   shape: rectangle
 
 cassini poster:
@@ -131,10 +131,10 @@ cassini poster:
   color: black
   centroid_x: 1.38
   centroid_y: 3.475
-  length: 0.56
-  width: 0.05
+  length: 0.05
+  width: 0.56
   # degrees obj's length to map's pos-x axis
-  orientation: 0.0
+  orientation: 270.0
   shape: rectangle
 
 fridge:

@@ -50,7 +50,7 @@ import matplotlib.image as mgimg
 
 class PolicyGenerator:
 
-	def __init__(self,argv):
+	def __init__(self,argv,alphaNum,roomName):
 	
 
 		#Initialize exit flag
@@ -67,7 +67,7 @@ class PolicyGenerator:
 		generate = False; 
 		self.finalMix = 100; 
 		self.maxMix = 35; 
-		self.iterations = 15; 
+		self.iterations = 35; 
 		self.useSoft = False; 
 
 		#Grab command line arguments for problem
@@ -111,7 +111,7 @@ class PolicyGenerator:
 		belLoad = 'D4QuestBeliefs1.npy'; 
 		#self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
 		#self.alSave = problemName + 'Alphas' + self.alphaNum + '.npy'; 
-		self.alSave = 'DiningAlphas_3.npy'
+		self.alSave = roomName+'Alphas_' + str(alphaNum) + '.npy'
 		#modelPath = '../models/'+ problemName + 'Model'; 
 		modelPath = problemName + 'Model'; 
 		modelName = problemName+'Model'; 
@@ -137,6 +137,8 @@ class PolicyGenerator:
 			print("Building Observation Models"); 
 		allMod.buildObs(gen=generate);
 		self.pz = allMod.pz;
+		self.pz2 = allMod.pz2; 
+
 
 		#Build Reward Model
 		if(generate == True):
@@ -366,28 +368,40 @@ class PolicyGenerator:
 	def preComputeAlsSoftmaxFactored(self): 
 		G = self.Gamma; 
 		#for each alpha, each movement, each question, each question answer, each view cone
-		als1 = np.zeros(shape = (len(G),len(self.delA),3,2)).tolist(); 
+		als1 = np.zeros(shape = (len(G),len(self.delA),8,2)).tolist(); 
 
 		#questions left, right, in front of,  behind
 
 		for j in range(0,len(G)):
 			for am in range(0,len(self.delA)):
-				for aq in range(0,3):
+				for aq in range(0,8):
 					for oq in range(0,2):
 						als1[j][am][aq][oq] = GM(); 
 						#get observation from question
 						#If 0, multimodal
 						alObs = GM(); 
-						if(oq == 0):
-							for h in range(1,5):
-								if(h!=aq and h!=3):
-									alObs.addGM(self.pz.runVBND(G[j],h)); 
-						elif(oq == 1):
-							if(aq==2):
-								alObs.addGM(self.pz.runVBND(G[j],aq+2));
-							else:
+						if(aq < 4):
+							if(oq == 0):
+								for h in range(1,5):
+									if(h!=aq+1):
+										alObs.addGM(self.pz.runVBND(G[j],h)); 
+							elif(oq == 1):
+								#if(aq==2):
+									#alObs.addGM(self.pz.runVBND(G[j],aq+2));
+								#else:
+									#alObs.addGM(self.pz.runVBND(G[j],aq+1));
 								alObs.addGM(self.pz.runVBND(G[j],aq+1));
-
+						else:
+							if(oq == 0):
+								for h in range(1,5):
+									if(h!=aq-4+1):
+										alObs.addGM(self.pz2.runVBND(G[j],h)); 
+							elif(oq == 1):
+								#if(aq==2):
+									#alObs.addGM(self.pz.runVBND(G[j],aq+2));
+								#else:
+									#alObs.addGM(self.pz.runVBND(G[j],aq+1));
+								alObs.addGM(self.pz2.runVBND(G[j],aq-4+1));
 
 						for k in alObs.Gs:
 							mean = (np.matrix(k.mean) - np.matrix(self.delA[am])).tolist(); 
@@ -410,7 +424,7 @@ class PolicyGenerator:
 		bestGM = []; 
 
 		for am in range(0,len(self.delA)):
-			for aq in range(0,3):
+			for aq in range(0,8):
 				suma = GM(); 
 				for oq in range(0,2):
 					suma.addGM(als1[np.argmax([self.continuousDot(als1[j][am][aq][oq],b) for j in range(0,len(als1))])][am][aq][oq]); 
@@ -508,8 +522,10 @@ class PolicyGenerator:
 
 	def signal_handler(self,signal, frame):
 		if(self.exitFlag==False):
-			print("Stopping Policiy Generation and printing to file"); 
-			self.exitFlag = True; 
+			answer = raw_input("Did you want to stop execution?"); 
+			if(answer=='y' or answer=='Y'):
+				print("Stopping Policiy Generation and printing to file"); 
+				self.exitFlag = True; 
 		else:
 			print("Overriding Proper Stop Protocol. Shutting down now...")
 			sys.exit();
@@ -523,41 +539,50 @@ def cutGMTo2D(mix,dims = [2,3]):
 
 if __name__ == "__main__":
 
-
-	#a = PolicyGenerator(sys.argv); 
-	#a.solve();
-
-
-	'''
-	allB = []; 
 	
-	tmp = GM(); 
-	tmp.addG(Gaussian([5,2.5,1,2.5],np.identity(4)*0.001,1));
-	allB.append(tmp); 
-	
-	tmp = GM(); 
-	tmp.addG(Gaussian([5,2.5,9,2.5],np.identity(4)*0.001,1)); 
-	allB.append(tmp); 
+	roomName = 'Kitchen'; 
+	runNumber = 0; 
 
-	tmp = GM(); 
-	tmp.addG(Gaussian([5,2.5,5,4.5],np.identity(4)*0.001,1)); 
-	allB.append(tmp); 
-	'''
-	
-	'''
 	allB = []; 
 	tmp = GM();
-	#tmp.addG(Gaussian([-7,-2.15,-9.5,-2.15],np.identity(4)*0.01,1)); 
-	#tmp.addG(Gaussian([-9.5,-2.15,-7,-2.15],np.identity(4)*0.01,1)); 
-	#tmp.addG(Gaussian([-8.25,-3,-8.25,-1],np.identity(4)*0.01,1)); 
-	tmp.addG(Gaussian([-9,-1.1,-9,-2.9],np.identity(4)*0.01,1)); 
+	if(runNumber==0):
+		#tmp.addG(Gaussian([3,.2,-9,.2],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-7,-2.15,-9.5,-2.15],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-1.1,-1,-6.1,-1],np.identity(4)*0.1,1)); 
+		#tmp.addG(Gaussian([3,-2,-1,-2],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([3.9,2,1.1,2],np.identity(4)*0.01,1)); 
+	elif(runNumber==1):
+		#tmp.addG(Gaussian([-9,.2,3,.2],np.identity(4)*0.01,1));
+		#tmp.addG(Gaussian([-9.5,-2.15,-7,-2.15],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-7,-2,-2,-2],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-1,-2,3,-2],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([1.1,2,3.9,2],np.identity(4)*0.01,1)); 
+	elif(runNumber==2):
+		#tmp.addG(Gaussian([-2,-.8,-2,1.2],np.identity(4)*0.01,1));
+		#tmp.addG(Gaussian([-8.25,-3,-8.25,-1],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-4.5,-3,-4.5,-1],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([1,-3,1,-1],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([2,1.5,2,3.7],np.identity(4)*0.01,1)); 
+	elif(runNumber==3):
+		#tmp.addG(Gaussian([-2,1.2,-2,-.8],np.identity(4)*0.01,1));
+		#tmp.addG(Gaussian([-7,-1,-7,-3.33],np.identity(4)*0.01,1)); 
+		#tmp.addG(Gaussian([-4.5,-1,-4.5,-3],np.identity(4)*0.01,1));
+		#tmp.addG(Gaussian([1,-1,1,-3],np.identity(4)*0.01,1));
+		#tmp.addG(Gaussian([2,3.7,2,1.5],np.identity(4)*0.01,1));   
 	allB.append(tmp); 
 	f = open('D4QuestBeliefs1.npy','w');
 	np.save(f,allB);
-	'''
+	f.close(); 
 
+
+	a = PolicyGenerator(sys.argv,runNumber,roomName); 
+	a.solve();
 	
-	gamma = np.load('DiningAlphasFull.npy'); 
+	
+	
+
+	'''
+	gamma = np.load('BilliardAlphasFull.npy'); 
 
 	fig,axarr = plt.subplots(len(gamma));
 	#minim = -100
@@ -567,11 +592,11 @@ if __name__ == "__main__":
 	for i in range(0,len(gamma)):
 		gamma[i].display(); 
 		gammaPrime = cutGMTo2D(gamma[i],dims=[0,1]); 
-		x,y,c = gammaPrime.plot2D(low=[-9.5,-3.33],high=[-7,-1],vis=False); 
+		x,y,c = gammaPrime.plot2D(low=[0,1.4],high=[4,3.6],vis=False); 
 		axarr[i].contourf(x,y,c); 
 		axarr[i].set_title(str(gamma[i].action)); 
 	plt.show(); 
-	
+	'''
 	
 
 	

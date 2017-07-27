@@ -54,10 +54,18 @@ class ModelSpec:
 	#Problem specific
 	def buildTransition(self):
 		#self.bounds = [[0,10],[0,5],[0,10],[0,5]]; 
-		#self.bounds = [[-9.5,4],[-1,1.4],[-9.5,4],[-1,1.4]]; 
-		self.bounds = [[-9.5,-7],[-3.33,-1],[-9.5,-7],[-3.33,-1]]
+		#Hallway
+		#self.bounds = [[-9.5,4],[-1,1.4],[-9.5,4],[-1,1.4]];
+		#Dining Room
+		#self.bounds = [[-9.5,-7],[-3.33,-1],[-9.5,-7],[-3.33,-1]] 
+		#Study
+		#self.bounds = [[-7,-2],[-3.33,-1],[-7,-2],[-3.33,-1]];
+		#Library
+		#self.bounds = [[-2,4],[-3.33,-1],[-2,4],[-3.33,-1]];
+		#Billiard
+		self.bounds = [[0,4],[1.4,3.68],[0,4],[1.4,3.68]];
 
-		self.delAVar = (np.identity(4)*4).tolist(); 
+		self.delAVar = (np.identity(4)*1).tolist(); 
 		self.delAVar[0][0] = 0.00001; 
 		self.delAVar[1][1] = 0.00001; 
 		#self.delA = [[-0.5,0],[0.5,0],[0,-0.5],[0,0.5],[0,0],[-0.5,-0.5],[0.5,-0.5],[-0.5,0.5],[0.5,0.5]]; 
@@ -67,28 +75,65 @@ class ModelSpec:
 
 
 	def buildObs(self,gen=True):
-		#cardinal + 1 model
-		#left,right,up,down,near
+
 
 		if(gen):
 			self.pz = Softmax(); 
-			self.pz.buildOrientedRecModel([-8.5,-2.3],90,1.17,0.69,5); 
+
+			#Vern
+			#self.pz.buildOrientedRecModel([-2.475,1.06],270,0.5,0.5,5); 
+
+			#Desk
+			#self.pz.buildOrientedRecModel([-5.5,-2.0],0,0.61,0.99,5); 
+
+			#bookcase
+			#self.pz.buildOrientedRecModel([0,-1.1662],270,0.38,0.18,5); 
+
+			#checkers
+			self.pz.buildOrientedRecModel([2.04,2.16],270,0.5,0.5,5); 
+
+
 			for i in range(0,len(self.pz.weights)):
 				self.pz.weights[i] = [0,0,self.pz.weights[i][0],self.pz.weights[i][1]]; 
 			
 			#print('Plotting Observation Model'); 
 			#self.pz.plot2D(low=[0,0],high=[10,5],vis=True); 
-					
-			
 
 			f = open(self.fileNamePrefix + "OBS.npy","w"); 
 			np.save(f,self.pz);
+
+			
+			self.pz2 = Softmax(); 
+
+			#filing cabinet
+			#self.pz2.buildOrientedRecModel([-3.8638,-1.3262],270,0.5,.37,5); 
+			
+			#chair
+			#self.pz2.buildOrientedRecModel([2.975,-2.435],90,0.46,0.41,5); 
+
+			#cassini
+			self.pz2.buildOrientedRecModel([1.38,3.475],270,0.05,0.56,5); 
+
+
+
+			for i in range(0,len(self.pz2.weights)):
+				self.pz2.weights[i] = [0,0,self.pz2.weights[i][0],self.pz2.weights[i][1]]; 
+			
+
+
+
+			#print('Plotting Observation Model'); 
+			#self.pz.plot2D(low=[0,0],high=[10,5],vis=True); 
+
+			f = open(self.fileNamePrefix + "OBS2.npy","w"); 
+			np.save(f,self.pz2);
+			
 
 
 
 		else:
 			self.pz = np.load(self.fileNamePrefix + "OBS.npy").tolist(); 
-			
+			self.pz2 = np.load(self.fileNamePrefix+ "OBS2.npy").tolist(); 
 
 
 	#Problem Specific
