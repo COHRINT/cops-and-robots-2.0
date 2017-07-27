@@ -41,8 +41,8 @@ class POMDPTranslator(object):
 		self.delta = 0.1;
 		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
 		#self.lowerPolicy = np.load(os.path.dirname(__file__) + '/../policies/D4QuestSoftmaxAlphas1.npy')
-		roomNames = ['Hallway','Billiard','Study','Library','Dining','Kitchen']; 
-		self.lowerPolicys = []; 
+		roomNames = ['Hallway','Billiard','Study','Library','Dining','Kitchen'];
+		self.lowerPolicys = [];
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
@@ -72,6 +72,7 @@ class POMDPTranslator(object):
 		# print(questsHigh);
 		# print(weightsHigh);
 		questHighConversion = [37,32,0,14,23,5]
+<<<<<<< Updated upstream
 		questHighNew = []; 
 		for i in range(0,len(questsHigh)):
 			questHighNew.append(questHighConversion[questsHigh[i]])
@@ -81,12 +82,19 @@ class POMDPTranslator(object):
 			questHighNew.append([questsHigh[i],0]); 
 		questsHigh = questHighNew; 
 
+=======
+		questHighNew = [];
+		for i in range(0,len(questsHigh)):
+			questHighNew.append(questHighConversion[int(questsHigh[i])])
+		questsHigh = questHighNew;
+>>>>>>> Stashed changes
 		#3. find position and questions from lower level pomdp for that room
 
 		#TODO: Fake Questions and goal pose
 		#goal_pose = allBels[room].findMAPN();
 		#goal_pose = [goal_pose[2],goal_pose[3]];
 
+<<<<<<< Updated upstream
 		roomConversion = [5,4,0,2,3,1]; 
 		room = roomConversion[room]; 
 
@@ -107,6 +115,36 @@ class POMDPTranslator(object):
 
 		for i in range(0,len(questsLow)):
 			questsLow[i] = [room,questsLow[i]]; 
+=======
+		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room);
+		displacement = [0,0,0];
+		if(movement ==0):
+			displacement = [-1,0,0];
+		elif(movement == 1):
+			displacement = [1,0,0];
+		elif(movement == 2):
+			displacement = [0,1,0];
+		elif(movement==3):
+			displacement = [0,-1,0];
+		goal_pose = np.array(copPoses[-1]) + np.array(displacement);
+		goal_pose = goal_pose.tolist();
+
+
+		questsLowConversion = 0;
+		if(room == 1):
+			questsLowConversion = 6;
+		if(room == 2):
+			questsLowConversion = 15;
+		if(room == 3):
+			questsLowConversion = 24;
+		if(room == 4):
+			questsLowConversion = 33;
+		if(room == 5):
+			questsLowConversion = 38;
+
+		for i in range(0,len(questsLow)):
+			questsLow[i] = questsLow[i] + questsLowConversion;
+>>>>>>> Stashed changes
 
 
 		#questsLow = [18,43,21,33,58];
@@ -137,9 +175,15 @@ class POMDPTranslator(object):
 
 		#5. use questioner function to publish questions
 		#questions = self.getQuestionStrings(questsFull);
-		questions = []; 
+		questions = [];
 		for i in range(0,len(questsFull)):
+<<<<<<< Updated upstream
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]); 
+=======
+			print('INDX: {}'.format(questsFull[i]))
+			print('Q LIST LEN: {}'.format(len(self.question_list)))
+			questions.append(self.question_list[questsFull[i]]);
+>>>>>>> Stashed changes
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -150,7 +194,7 @@ class POMDPTranslator(object):
 
 		strings = ['Is Roy in the Kitchen','Is Roy in the Dining Room','Is Roy in the Hallway','Is Roy in the Study','Is Roy in the Library','Is Roy in the Billiard Room'];
 		questStrings = [];
-		
+
 		for i in range(0,len(questIds)):
 			if(questIds[i] < 6):
 				questStrings.append(strings[int(questIds[i])]);
@@ -201,26 +245,26 @@ class POMDPTranslator(object):
 
 	def getLowerAction(self,b,room):
 		#act = Gamma[np.argmax([self.continuousDot(j,b) for j in Gamma])].action;
-		Gamma = self.lowerPolicys[room]; 
-		valActs = []; 
+		Gamma = self.lowerPolicys[room];
+		valActs = [];
 		for j in range(0,len(Gamma)):
-			valActs.append([self.continuousDot(Gamma[j],b),Gamma[j].action]); 
+			valActs.append([self.continuousDot(Gamma[j],b),Gamma[j].action]);
 		a = sorted(valActs,key=self.getKey,reverse=True);
-		quests = []; 
-		questWeights = []; 
+		quests = [];
+		questWeights = [];
 
 		for i in a:
 			if(i[1][1] not in quests):
-				quests.append(i[1][1]); 
-				questWeights.append(i[0]); 
-		mi = min(questWeights); 
+				quests.append(i[1][1]);
+				questWeights.append(i[0]);
+		mi = min(questWeights);
 		for i in range(0,len(questWeights)):
-			questWeights[i] = questWeights[i] -mi; 
+			questWeights[i] = questWeights[i] -mi;
 
-		suma = sum(questWeights); 
+		suma = sum(questWeights);
 
 		for i in range(0,len(questWeights)):
-			questWeights[i] = questWeights[i]/suma; 
+			questWeights[i] = questWeights[i]/suma;
 
 
 		return [a[0][1][0],quests,questWeights];
@@ -375,8 +419,8 @@ class POMDPTranslator(object):
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
 		ax.contourf(x_space,y_space,bel,cmap="viridis");
 		'''
-		allBels = []; 
-		allBounds = []; 
+		allBels = [];
+		allBounds = [];
 		for room in self.map2.rooms:
 			tmp = GM();
 			tmpw = 0;
@@ -386,15 +430,15 @@ class POMDPTranslator(object):
 				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
 					tmp.addG(deepcopy(g));
 			allBels.append(tmp);
-			
+
 		x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
 
 		pos = np.dstack((x_space, y_space));
 		c = np.zeros(shape=(pos.shape[0],pos.shape[1]));
-		print(c.shape); 
+		print(c.shape);
 		#for each space
 		xran = np.arange(self.bounds[0],self.bounds[2],self.delta).tolist();
-		yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist(); 
+		yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist();
 
 		for i in range(0,len(xran)):
 			for j in range(0,len(yran)):
@@ -406,7 +450,7 @@ class POMDPTranslator(object):
 							mean = [xran[i],yran[j]];
 							c[i][j] += mvn.pdf(mean,g.mean,g.var)*g.weight;
 
-		ax.contourf(x_space,y_space,c,cmap='viridis'); 
+		ax.contourf(x_space,y_space,c,cmap='viridis');
 
 
 		m = self.map2;
@@ -484,30 +528,30 @@ class POMDPTranslator(object):
 		for obj in self.map2.objects:
 			if re.search(obj,obs.lower()):
 				model = self.map2.objects[obj].softmax
-				for room, i in self.map2.rooms.iteritems():
-					if obj in room['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
+				for i, room in enumerate(self.map2.rooms):
+					if obj in self.map2.rooms[room]['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
 						room_num = i+1
+						print self.map2.rooms[room]['objects']
+						print room_num
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
-			print('prolly room')
 			for room in self.map2.rooms:
-				print(room)
 				if re.search(room,obs.lower()):
 					model = self.map2.rooms[room]['softmax']
 					room_num = 0
 					break
 
 		# find softmax class index
-		if 'inside' or 'in' in obs.lower():
+		if re.search('inside',obs.lower()) or re.search('in',obs.lower()):
 			class_idx = 0
-		elif 'front' in obs.lower():
+		if re.search('front',obs.lower()):
 			class_idx = 1
-		elif 'right' in obs.lower():
+		elif re.search('right',obs.lower()):
 			class_idx = 2
-		elif 'behind' in obs.lower():
+		elif re.search('behind',obs.lower()):
 			class_idx = 3
-		elif 'left' in obs.lower():
+		elif re.search('left',obs.lower()):
 			class_idx = 4
 		# elif 'near' in obs:
 		# 	class_idx = 5
@@ -522,9 +566,14 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
+<<<<<<< Updated upstream
 	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),1));
 
 	b.normalizeWeights(); 
+=======
+	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),10));
+	b.normalizeWeights();
+>>>>>>> Stashed changes
 	#for i in range(-8,3):
 		#for j in range(-1,2):
 			#b.addG(Gaussian([3,2,i,j],np.identity(4).tolist(),1));

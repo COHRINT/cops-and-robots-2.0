@@ -63,12 +63,12 @@ class Cop(Robot):
         # self.belief = GM([[-2,0,-6,3]],[[6,0,0,0],[0,6,0,0],[0,0,6,0],[0,0,0,6]],1)
         self.belief = GM()
         self.belief.addNewG([-6,3,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
-        self.belief.addNewG([-7,2,-3,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        self.belief.addNewG([-7,2,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
         self.belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
         self.belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
         self.belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study
         self.belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room
-        # self.belief.normalizeWeights()
+        self.belief.normalizeWeights()
         bounds = [-9.6, -3.6, 4, 3.6]
         delta = 0.1
         # self.belief = self.belief.discretize2D(low=[bounds[0],bounds[1]],high=[bounds[2],bounds[3]],delta=delta)
