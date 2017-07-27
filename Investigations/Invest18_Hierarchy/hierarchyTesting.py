@@ -32,7 +32,7 @@ import matplotlib.animation as animation
 import os
 import matplotlib.image as mgimg
 import sys; 
-
+import time
 
 def buildRectangleModel():
 
@@ -962,6 +962,51 @@ def particleFilter(XprevIn,o,pz,offset=[0,0]):
 	return Xcur; 
 
 
+def testInvertedSoftmaxModels():
+
+	b = GM(); 
+	b.addG(Gaussian([2,2],[[1,0],[0,1]],1)); 
+	b.addG(Gaussian([4,2],[[1,0],[0,1]],1)); 
+	b.addG(Gaussian([2,4],[[1,0],[0,1]],1)); 
+	b.addG(Gaussian([3,3],[[1,0],[0,1]],1)); 
+	b.normalizeWeights(); 
+
+	b.plot2D(); 
+
+
+	pz = Softmax(); 
+	pz.buildOrientedRecModel([2,2],0,1,1,5); 
+	#pz.plot2D(); 
+
+	startTime = time.clock(); 
+	b2 = GM(); 
+	for i in range(1,5):
+		b2.addGM(pz.runVBND(b,i)); 
+	print(time.clock()-startTime); 
+	b2.plot2D(); 
+
+	startTime = time.clock(); 
+	b3 = GM(); 
+	b3.addGM(b); 
+	tmpB = pz.runVBND(b,0); 
+	tmpB.normalizeWeights(); 
+	tmpB.scalerMultiply(-1); 
+	
+
+	b3.addGM(tmpB);
+
+	
+	tmpBWeights = b3.getWeights(); 
+	mi = min(b3.getWeights()); 
+	#print(mi); 
+	for g in b3.Gs:
+		g.weight = g.weight-mi; 
+	
+
+	b3.normalizeWeights(); 
+	print(time.clock()-startTime); 
+	#b3.display();  
+	b3.plot2D(); 
 
 
 if __name__ == "__main__":
@@ -973,8 +1018,8 @@ if __name__ == "__main__":
 	#buildRecFromCentroidOrient(); 
 	#buildTriView(); 
 	#make3DSoftmaxAnimation(); 
-	buildRadialSoftmaxModels(); 
-
+	#buildRadialSoftmaxModels(); 
+	testInvertedSoftmaxModels(); 
 
 
 

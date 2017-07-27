@@ -91,19 +91,34 @@ class POMDPTranslator(object):
 		room = roomConversion[room]; 
 
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room); 
-		displacement = [0,0,0]; 
-		dela = 0.5
-		if(movement ==0):
-			displacement = [-dela,0,0]; 
-		elif(movement == 1):
-			displacement = [dela,0,0]; 
-		elif(movement == 2):
-			displacement = [0,dela,0]; 
-		elif(movement==3):
-			displacement = [0,-dela,0]; 
-		goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
-		goal_pose = goal_pose.tolist(); 
+		
 
+		pose = copPoses[-1]; 
+		roomCount = 0;
+		copRoom = 0; 
+		for room in self.map2.rooms:
+			if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
+				copRoom = roomCount; 
+				break; 
+			roomCount+=1;
+
+		if(copRoom == room):
+			displacement = [0,0,0]; 
+			dela = 0.5
+			if(movement ==0):
+				displacement = [-dela,0,0]; 
+			elif(movement == 1):
+				displacement = [dela,0,0]; 
+			elif(movement == 2):
+				displacement = [0,dela,0]; 
+			elif(movement==3):
+				displacement = [0,-dela,0]; 
+			goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
+			goal_pose = goal_pose.tolist(); 
+		else:
+			xpose = (self.map2.rooms[room]['max_x'] + self.map2.rooms[room]['min_x'])/2; 
+			ypose = (self.map2.rooms[room]['max_y'] + self.map2.rooms[room]['min_y'])/2;
+			goal_pose = [xpose,ypose,0]; 
 
 		for i in range(0,len(questsLow)):
 			questsLow[i] = [room,questsLow[i]]; 
@@ -332,7 +347,7 @@ class POMDPTranslator(object):
 				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]);
 
 		for i in range(0,len(allBels)):
-			allBels[i] = allBels[i].kmeansCondensationN(15)
+			allBels[i] = allBels[i].kmeansCondensationN(6)
 
 
 		#3. recombine beliefs
