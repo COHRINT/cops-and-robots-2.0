@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
-#from obs_q_map import gen_questions
+from obs_q_map import gen_questions
 
 
 class POMDPTranslator(object):
@@ -46,7 +46,10 @@ class POMDPTranslator(object):
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		#self.question_list = gen_questions('map2.yaml')
+		self.question_list = gen_questions('map2.yaml')
+		print self.question_list
+
+		self.rooms_map = {0:'hallway',1:'billiard room',2:'study',3:'library',4:'dining room',5:'kitchen'}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
@@ -83,8 +86,9 @@ class POMDPTranslator(object):
 
 		#3. find position and questions from lower level pomdp for that room
 
+
 		roomConversion = [5,4,0,2,3,1];
-		room = roomConversion[room];
+		room_conv = roomConversion[room];
 
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room);
 
@@ -103,7 +107,7 @@ class POMDPTranslator(object):
 				break;
 			roomCount+=1;
 
-		if(copRoom == room):
+		if(copRoom == room_conv):
 			displacement = [0,0,0];
 			dela = 0.5
 			if(movement ==0):
@@ -117,8 +121,8 @@ class POMDPTranslator(object):
 			goal_pose = np.array(copPoses[-1]) + np.array(displacement);
 			goal_pose = goal_pose.tolist();
 		else:
-			xpose = (self.map2.rooms[room]['max_x'] + self.map2.rooms[room]['min_x'])/2;
-			ypose = (self.map2.rooms[room]['max_y'] + self.map2.rooms[room]['min_y'])/2;
+			xpose = (self.map2.rooms[self.rooms_map[room_conv]]['upper_r'][0] + self.map2.rooms[self.rooms_map[room_conv]]['lower_l'][0])/2;
+			ypose = (self.map2.rooms[self.rooms_map[room_conv]]['upper_r'][1] + self.map2.rooms[self.rooms_map[room_conv]]['lower_l'][1])/2;
 			goal_pose = [xpose,ypose,0];
 
 		for i in range(0,len(questsLow)):
@@ -155,6 +159,10 @@ class POMDPTranslator(object):
 		#questions = self.getQuestionStrings(questsFull);
 		questions = [];
 		for i in range(0,len(questsFull)):
+			print questsFull
+			print i
+			print questsFull[i][0]
+			print questsFull[i][1]
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
 		#6. return new belief and goal pose
@@ -220,7 +228,6 @@ class POMDPTranslator(object):
 		Gamma = self.lowerPolicys[room];
 		valActs = [];
 		for j in range(0,len(Gamma)):
-			print(Gamma[j].action); 
 			valActs.append([self.continuousDot(Gamma[j],b),Gamma[j].action]);
 		a = sorted(valActs,key=self.getKey,reverse=True);
 		quests = [];
@@ -331,6 +338,7 @@ class POMDPTranslator(object):
 							allBels[i] = tmp;
 
 				else:
+					print('ROOM NUM: {}'.format(roomNum))
 					#apply to roomNum+1;
 					if(sign == True):
 						allBels[roomNum] = mod.runVBND(allBels[roomNum],clas);
@@ -543,7 +551,7 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
-	b.addG(Gaussian([0,0,-3,0],(np.identity(4)*6).tolist(),1));
+	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),1));
 
 	b.normalizeWeights();
 	#for i in range(-8,3):
