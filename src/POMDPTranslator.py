@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
-#from obs_q_map import gen_questions
+from obs_q_map import gen_questions
 
 
 class POMDPTranslator(object):
@@ -46,7 +46,7 @@ class POMDPTranslator(object):
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		#self.question_list = gen_questions('map2.yaml')
+		self.question_list = gen_questions('map2.yaml')
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
