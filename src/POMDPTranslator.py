@@ -72,7 +72,7 @@ class POMDPTranslator(object):
 		# print(questsHigh);
 		# print(weightsHigh);
 		questHighConversion = [37,32,0,14,23,5]
-		questsHighNew = []; 
+		questHighNew = []; 
 		for i in range(0,len(questsHigh)):
 			questHighNew.append(questHighConversion[questsHigh[i]])
 		questsHigh = questHighNew; 
@@ -84,14 +84,15 @@ class POMDPTranslator(object):
 
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room); 
 		displacement = [0,0,0]; 
+		dela = 0.5
 		if(movement ==0):
-			displacement = [-1,0,0]; 
+			displacement = [-dela,0,0]; 
 		elif(movement == 1):
-			displacement = [1,0,0]; 
+			displacement = [dela,0,0]; 
 		elif(movement == 2):
-			displacement = [0,1,0]; 
+			displacement = [0,dela,0]; 
 		elif(movement==3):
-			displacement = [0,-1,0]; 
+			displacement = [0,-dela,0]; 
 		goal_pose = np.array(copPoses[-1]) + np.array(displacement); 
 		goal_pose = goal_pose.tolist(); 
 
@@ -520,7 +521,8 @@ def testGetNextPose():
 	b.addG(Gaussian([3,2,-2,2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-8,-2],np.identity(4).tolist(),1));
 	b.addG(Gaussian([3,2,-4,-2],np.identity(4).tolist(),1));
-	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),10)); 
+	b.addG(Gaussian([0,0,2,2],(np.identity(4)*6).tolist(),1));
+
 	b.normalizeWeights(); 
 	#for i in range(-8,3):
 		#for j in range(-1,2):
