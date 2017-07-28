@@ -339,15 +339,15 @@ class POMDPTranslator(object):
 
 				else:
 					print('ROOM NUM: {}'.format(roomNum))
-					#apply to roomNum+1;
+					#apply to roomNum-1;
 					if(sign == True):
-						allBels[roomNum] = mod.runVBND(allBels[roomNum],clas);
+						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas);
 					else:
 						tmp = GM();
 						for i in range(1,mod.size):
 							if(i!=clas):
-								tmp.addGM(mod.runVBND(allBels[roomNum],i));
-						allBels[roomNum] = tmp;
+								tmp.addGM(mod.runVBND(allBels[roomNum-1],i));
+						allBels[roomNum-1] = tmp;
 
 		#2.5. Make sure all GMs stay within their rooms bounds:
 		#Also condense each mixture
