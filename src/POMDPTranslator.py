@@ -372,11 +372,15 @@ class POMDPTranslator(object):
 		#4. fix cops position in belief
 		for g in newBelief:
 			g.mean = [copPoses[0][0],copPoses[0][1],g.mean[2],g.mean[3]];
+			g.var[0][0] = 0.1; 
+			g.var[0][1] = 0; 
+			g.var[1][0] = 0; 
+			g.var[1][1] = 0; 
 
 		#5. add uncertainty for robber position
 		for g in newBelief:
-			g.var[2][2] += 0.25;
-			g.var[3][3] += 0.25;
+			g.var[2][2] += 0.5;
+			g.var[3][3] += 0.5;
 
 		# newBelief.normalizeWeights();
 
