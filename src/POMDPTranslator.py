@@ -49,7 +49,7 @@ class POMDPTranslator(object):
 		self.question_list = gen_questions('map2.yaml')
 		print self.question_list
 
-		# TODO: You switched the study and library??????
+		# TODO: You switched the study and library?????? And the billiard and dining?0
 		self.rooms_map = {0:'hallway',4:'billiard room',3:'study',2:'library',1:'dining room',5:'kitchen'}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
@@ -103,7 +103,7 @@ class POMDPTranslator(object):
 		roomCount = 0;
 		copRoom = 7;
 		for room in self.map2.rooms:
-			if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
+			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
 				copRoom = roomCount;
 				break;
 			roomCount+=1;
