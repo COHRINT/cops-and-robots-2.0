@@ -49,7 +49,8 @@ class POMDPTranslator(object):
 		self.question_list = gen_questions('map2.yaml')
 		print self.question_list
 
-		self.rooms_map = {0:'hallway',1:'billiard room',2:'study',3:'library',4:'dining room',5:'kitchen'}
+		# TODO: You switched the study and library??????
+		self.rooms_map = {0:'hallway',1:'billiard room',3:'study',2:'library',4:'dining room',5:'kitchen'}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
@@ -109,7 +110,7 @@ class POMDPTranslator(object):
 
 		if(copRoom == room_conv):
 			displacement = [0,0,0];
-			dela = 1
+			dela = 1.0
 			if(movement ==0):
 				displacement = [-dela,0,0];
 			elif(movement == 1):
