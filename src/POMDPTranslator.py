@@ -379,7 +379,7 @@ class POMDPTranslator(object):
 			g.var[0][0] = 0.1; 
 			g.var[0][1] = 0; 
 			g.var[1][0] = 0; 
-			g.var[1][1] = 0; 
+			g.var[1][1] = 0.1; 
 
 		#5. add uncertainty for robber position
 		for g in newBelief:
