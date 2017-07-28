@@ -148,7 +148,7 @@ class PolicyTranslatorServer(object):
         self.call_count += 1
 
         orientation = math.atan2(goal_pose[1]-position[1],goal_pose[0]-position[0])
-        goal_pose.append(orientation)
+        goal_pose[2] = orientation
 
         if b_updated is not None:
             (weights,means,variances) = dehydrate_msg(b_updated)
