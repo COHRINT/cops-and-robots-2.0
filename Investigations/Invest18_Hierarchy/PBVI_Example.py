@@ -364,10 +364,10 @@ if __name__ == "__main__":
 	ans = PBVISolver(); 
 	#ans.solve(50); 
 
-	#seeAlphas(ans); 
+	seeAlphas(ans); 
 
 	#compareToMDP(ans); 
 
 	#checkBoth(ans); 
 
-	simulate(ans); 
+	#simulate(ans); 

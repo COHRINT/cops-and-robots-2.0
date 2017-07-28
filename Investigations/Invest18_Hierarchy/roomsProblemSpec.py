@@ -28,6 +28,7 @@ Rewards: 100 for taking the action associated with the
 correct state
 -10 for taking every other action
 
+####OLD#######
 rooms: 
 0:Kitchen
 1:Dining Room
@@ -66,6 +67,8 @@ class ModelSpec:
 		3:Study
 		4:Library
 		5:Billiard Room
+
+
 		'''
 		'''
 		for i in range(0,self.N):

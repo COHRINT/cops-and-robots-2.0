@@ -100,7 +100,7 @@ class POMDPTranslator(object):
 
 		pose = copPoses[-1];
 		roomCount = 0;
-		copRoom = 0;
+		copRoom = 7;
 		for room in self.map2.rooms:
 			if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
 				copRoom = roomCount;
