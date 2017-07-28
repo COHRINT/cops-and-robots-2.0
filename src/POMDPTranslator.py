@@ -50,7 +50,7 @@ class POMDPTranslator(object):
 		print self.question_list
 
 		# TODO: You switched the study and library??????
-		self.rooms_map = {0:'hallway',1:'billiard room',3:'study',2:'library',4:'dining room',5:'kitchen'}
+		self.rooms_map = {0:'hallway',4:'billiard room',3:'study',2:'library',1:'dining room',5:'kitchen'}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
