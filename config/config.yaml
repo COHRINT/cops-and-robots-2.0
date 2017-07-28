@@ -31,4 +31,4 @@ robots:
       type_: simple
     pose_source: tf
     type_: robber
-    use: false
+    use: true

@@ -90,7 +90,7 @@ class POMDPTranslator(object):
 		roomConversion = [5,4,0,2,3,1];
 		room_conv = roomConversion[room];
 
-		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room);
+		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room_conv);
 
 		# TODO: Fake Questions and goal pose
 		# goal_pose = allBels[room].findMAPN();
@@ -126,7 +126,7 @@ class POMDPTranslator(object):
 			goal_pose = [xpose,ypose,0];
 
 		for i in range(0,len(questsLow)):
-			questsLow[i] = [room,questsLow[i]+1];
+			questsLow[i] = [room_conv,questsLow[i]+1];
 
 
 		#questsLow = [18,43,21,33,58];
@@ -146,6 +146,7 @@ class POMDPTranslator(object):
 			h.append([weightsHigh[i],questsHigh[i]])
 		for i in range(0,len(questsLow)):
 			h.append([weightsLow[i],questsLow[i]])
+		print('H: {}'.format(h))
 		h = sorted(h,key = self.getKey,reverse=True);
 		questsFull = [];
 		weightsFull = [];
@@ -246,7 +247,7 @@ class POMDPTranslator(object):
 		for i in range(0,len(questWeights)):
 			questWeights[i] = questWeights[i]/suma;
 
-
+		print('ACTION: {}'.format(a[0][1][0]))
 		return [a[0][1][0],quests,questWeights];
 
 	def dotProduct(self,a,b):
@@ -286,7 +287,7 @@ class POMDPTranslator(object):
 			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
-				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
+				if(m[0] < self.map2.rooms[room]['upper_r'][0] and m[0] > self.map2.rooms[room]['lower_l'][0] and m[1] < self.map2.rooms[room]['upper_r'][1] and m[1] > self.map2.rooms[room]['lower_l'][1]):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
 			tmp.normalizeWeights();
@@ -299,7 +300,7 @@ class POMDPTranslator(object):
 		roomCount = 0;
 		copBound = 0;
 		for room in self.map2.rooms:
-			if(pose[0] <= self.map2.rooms[room]['upper_r'][0] and pose[0] >= self.map2.rooms[room]['lower_l'][0] and pose[1] <= self.map2.rooms[room]['upper_r'][1] and pose[1] >= self.map2.rooms[room]['lower_l'][1]):
+			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
 				copBounds = roomCount;
 			roomCount+=1;
 
@@ -317,6 +318,8 @@ class POMDPTranslator(object):
 		#for i in range(0,len(allBels)):
 			#allBels[i].normalizeWeights();
 		allBels[copBounds].normalizeWeights();
+
+		print('allBels LENGTH: {}'.format(allBels))
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
@@ -353,10 +356,10 @@ class POMDPTranslator(object):
 		#Also condense each mixture
 		for gm in allBels:
 			for g in gm:
-				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]);
-				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]);
-				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]);
-				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]);
+				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0])+0.01;
+				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2])-0.01;
+				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1])+0.01;
+				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3])-0.01;
 
 		for i in range(0,len(allBels)):
 			allBels[i] = allBels[i].kmeansCondensationN(6)
