@@ -30,8 +30,7 @@ done
 
 
 # Define system packages required and Python packages required
-SYSTEM_DEPENDENCIES=("python-pip"
-                      "python-pyqt5")
+SYSTEM_DEPENDENCIES=("python-pip")
 SYSTEM_DEPENDENCIES_NUM=${#SYSTEM_DEPENDENCIES[@]}
 
 PYTHON_DEPENDENCIES=("--upgrade pip"
@@ -43,7 +42,8 @@ PYTHON_DEPENDENCIES=("--upgrade pip"
                       "pytest"
                       "descartes"
                       "pyserial"
-                      "mpg123")
+                      "mpg123"
+                      "PyQt5")
 PYTHON_DEPENDENCIES_NUM=${#PYTHON_DEPENDENCIES[@]} # subtract 1 b/c --upgrade pip is counted as 2
 
 REPOSITORY_LINK=""
@@ -86,7 +86,7 @@ if [ "$create_env" == "y" ]; then
   cd $dir_name
   virtualenv --system-site-packages $env_name
   echo "Sourcing environment..."
-  source $dir_name/$env_name/bin/activate
+  . $dir_name/$env_name/bin/activate
   echo "Type the commmand 'source $dir_name/$env_name/bin/activate' to activate this environment."
   echo "Type 'deactivate' to deactivate the environment"
 fi
