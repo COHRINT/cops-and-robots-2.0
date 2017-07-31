@@ -588,9 +588,15 @@ class MapDisplay(QWidget):
         self.show()
 
     def ros_update(self, msg):
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
         # load image
-        self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
+        # self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
         # print(self.image_view.isNull())
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+        self.image_view = QPixmap.fromImage(self.image)
         # set image as pixmap in label
         if not self.image_view.isNull():
             self.pic_label.setPixmap(self.image_view)
