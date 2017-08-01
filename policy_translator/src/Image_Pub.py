@@ -30,10 +30,10 @@ bridge = CvBridge()
 
 r = rospy.Rate(1) # 1Hz
 while not rospy.is_shutdown():
-	bgr = cv2.imread(os.path.abspath('./tmpBelief.png'))
+	bgr = cv2.imread(os.path.abspath('../tmp/tmpBelief.png'))
 	rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 	msg = bridge.cv2_to_imgmsg(rgb, encoding="passthrough")
 	# msg = Image() # pass an empty msg
-	print('publishing image')
+	rospy.logdebug('publishing image')
 	pub.publish(msg)
 	r.sleep()
