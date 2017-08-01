@@ -50,7 +50,8 @@ class POMDPTranslator(object):
 		print self.question_list
 
 		# TODO: You switched the study and library?????? And the billiard and dining?0
-		self.rooms_map = {0:'hallway',4:'billiard room',3:'study',2:'library',1:'dining room',5:'kitchen'}
+		self.rooms_map = {5:'hallway',4:'billiard room',0:'study',2:'library',1:'dining room',3:'kitchen'}
+		self.rooms_map_inv = {'hallway':5,'billiard room':4,'study':0,'library':2,'dining room':1,'kitchen':3}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
@@ -104,7 +105,7 @@ class POMDPTranslator(object):
 		copRoom = 7;
 		for room in self.map2.rooms:
 			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
-				copRoom = roomCount;
+				copRoom = self.rooms_map_inv[room]
 				break;
 			roomCount+=1;
 
@@ -299,10 +300,10 @@ class POMDPTranslator(object):
 
 		pose = copPoses[-1];
 		roomCount = 0;
-		copBound = 0;
+		copBounds = 0;
 		for room in self.map2.rooms:
 			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
-				copBounds = roomCount;
+				copBounds = self.rooms_map_inv[room]
 			roomCount+=1;
 
 
@@ -376,10 +377,10 @@ class POMDPTranslator(object):
 		#4. fix cops position in belief
 		for g in newBelief:
 			g.mean = [copPoses[0][0],copPoses[0][1],g.mean[2],g.mean[3]];
-			g.var[0][0] = 0.1; 
-			g.var[0][1] = 0; 
-			g.var[1][0] = 0; 
-			g.var[1][1] = 0.1; 
+			g.var[0][0] = 0.1;
+			g.var[0][1] = 0;
+			g.var[1][0] = 0;
+			g.var[1][1] = 0.1;
 
 		#5. add uncertainty for robber position
 		for g in newBelief:
