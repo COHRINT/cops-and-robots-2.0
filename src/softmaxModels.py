@@ -1058,12 +1058,24 @@ def testMakeNear():
 	plt.show(); 
 
 def testLogisticRegression():
-	X = [[1,3],[2,2],[3,3]]; 
-	t = [1,2,3]; 
-
+	X = [[1,3],[2,2]]; 
+	t = [0,1]; 
+	cols = ['r','b','g','y','w','k','m']; 
 	a = Softmax(); 
-	a.logRegress(X,t,5); 
-	a.plot2D(); 
+	a.logRegress(X,t,1); 
+	[x,y,c] = a.plot2D(vis = False); 
+
+	plt.contourf(x,y,c); 
+	for i in range(0,len(X)):
+		plt.scatter(X[i][0],X[i][1],c=cols[t[i]]); 
+	plt.show(); 
+
+	
+	testPoint = [1,2]; 
+	winPercent = a.pointEvalND(1,testPoint); 
+	lossPercent = a.pointEvalND(0,testPoint); 
+	print(winPercent,lossPercent); 
+
 
 if __name__ == "__main__":
 
