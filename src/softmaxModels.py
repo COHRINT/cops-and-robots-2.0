@@ -39,7 +39,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy import compress
 import scipy.linalg as linalg
 from copy import deepcopy
-
+from scipy import sparse
+from sklearn.linear_model import LogisticRegression
 
 
 
@@ -716,6 +717,44 @@ class Softmax:
 
 
 
+	def logRegress(self,X,t,steepness = 1):
+		
+		dim = len(X[0]); 
+
+		fitter = LogisticRegression(solver = 'newton-cg',multi_class = 'multinomial'); 
+		fitter.fit(X,t); 
+		newCoef = fitter.coef_.tolist(); 
+		weights = []; 
+		for i in range(0,len(newCoef)):
+			weights.append(newCoef[i]); 
+		bias = []; 
+		newBias = fitter.intercept_.tolist(); 
+		for i in range(0,len(newBias)):
+			bias.append(newBias[i]); 
+		
+
+
+		ze = [0]*dim; 
+		weights.append(ze); 
+		bias.append(0); 
+
+
+		self.weights = (np.array(weights)*steepness).tolist(); 
+		self.bias = (np.array(bias)*steepness).tolist();
+
+		if(self.weights is not None):
+			self.size = len(self.weights); 
+
+			self.alpha = 3;
+			self.zeta_c = [0]*len(self.weights); 
+			for i in range(0,len(self.weights)):
+				self.zeta_c[i] = random()*10;  
+
+
+
+
+
+
 def test1DSoftmax():
 
 	weight = [-30,-20,-10,0]; 
@@ -1018,6 +1057,13 @@ def testMakeNear():
 	axarr[2].contourf(x,y,c); 
 	plt.show(); 
 
+def testLogisticRegression():
+	X = [[1,3],[2,2],[3,3]]; 
+	t = [1,2,3]; 
+
+	a = Softmax(); 
+	a.logRegress(X,t,5); 
+	a.plot2D(); 
 
 if __name__ == "__main__":
 
@@ -1030,8 +1076,8 @@ if __name__ == "__main__":
 	#testPlot3D(); 
 	#testOrientRecModel(); 
 	#testTriView(); 
-	testMakeNear(); 
-
+	#testMakeNear(); 
+	testLogisticRegression(); 
 
 	
 
