@@ -14,6 +14,6 @@
 
   <!-- Belief map image publishing -->
   <node name="interface_map" pkg="policy_translator"
-    type="Image_pub.py" output="screen"/>
+    type="Image_Pub.py" output="screen"/>
 
 </launch>
