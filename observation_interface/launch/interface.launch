@@ -12,10 +12,10 @@
   <arg name="connect" default="false"/>
 
   <!-- Set environement variables for network -->
-  <node name="environ_var" pkg="observation_interface"
-    type="master_set.sh"
+  <!-- <node name="environ_var" pkg="observation_interface"
+    type="master_set.sh" >
     <param name="connection_type" value="$(arg connect)" />
-  </node>
+  </node> -->
 
   <!-- Interface -->
   <node name="obs_interface" pkg="observation_interface"
