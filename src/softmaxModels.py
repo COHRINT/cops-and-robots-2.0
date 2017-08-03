@@ -1063,10 +1063,10 @@ def testLogisticRegression():
 		plt.scatter(X[i][0],X[i][1],c=cols[t[i]]); 
 
 
-	testPoint = [1,1]; 
+	testPoint = [1,2]; 
 	winPercent = a.pointEvalND(1,testPoint); 
 	lossPercent = a.pointEvalND(0,testPoint); 
-	print(winPercent,lossPercent); 
+	print('Win:' + str(winPercent),'Loss:' + str(lossPercent)); 
 	plt.show(); 
 
 
