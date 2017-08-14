@@ -16,7 +16,21 @@
   </node>
 
   <!-- Cop Video Raw Image Processing -->
-  <node name="image_processing" pkg="image_proc" type="image_proc"
-    ns="/$(arg cop)/camera/rgb" />
+  <!-- <node name="image_processing" pkg="image_proc" type="image_proc"
+    ns="/$(arg cop)/camera/rgb" /> -->
+
+  <!-- Theora republishers -->
+  <node name="cop_republish" pkg="image_transport" type="republish"
+    args="theora in:=/$(arg cop)/camera/rgb/image_color raw out:=/$(arg cop)/camera/rgb/image_decompressed" />
+
+  <node name="cam1_republish" pkg="image_transport" type="republish"
+    args="theora in:=/cam1/usb_cam/image_raw raw out:=/cam1/usb_cam/image_decompressed" />
+
+  <node name="cam2_republish" pkg="image_transport" type="republish"
+    args="theora in:=/cam2/usb_cam/image_raw raw out:=/cam2/usb_cam/image_decompressed" />
+
+  <node name="cam3_republish" pkg="image_transport" type="republish"
+    args="theora in:=/cam3/usb_cam/image_raw raw out:=/cam3/usb_cam/image_decompressed" />
+
 
 </launch>

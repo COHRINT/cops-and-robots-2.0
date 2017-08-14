@@ -398,7 +398,7 @@ class GoalPlanner(object):
         #
         # self.goal_status = new_status
 
-
+        #<>TODO: make sure robbers don't get rapid goal pose update as well!
         prev_type = self.type
         #self.type = 'simple'
         old_pose = self.goal_pose

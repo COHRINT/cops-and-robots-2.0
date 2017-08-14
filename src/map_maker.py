@@ -26,6 +26,10 @@ __status__ = "Development"
 
 import yaml
 import os 			# path capabilities
+from collections import OrderedDict
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib import patches
 from softmaxModels import *
 
 class Map(object):
@@ -53,8 +57,8 @@ class Map(object):
 
 			# Get map's general info
 			self.name = cfg['info']['name']
-			#self.map_bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
-			#self.map_bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
+			self.bounds = [cfg['info']['bounds']['min_x'],cfg['info']['bounds']['min_y'],
+							cfg['info']['bounds']['max_x'],cfg['info']['bounds']['max_y']]
 			self.origin = [cfg['info']['origin']['x_coord'], cfg['info']['origin']['y_coord']]
 
 			# Add room boundaries to the map
@@ -107,6 +111,90 @@ class Map(object):
 		except IOError as ioerr:
 			print str(ioerr)
 			return None
+
+	def make_occupancy_grid(self,res):
+		"""
+		Occupancy grid creation from a yaml file.
+			- Uses the map associated with the instance of the Map class.
+			- Saves occupancy grid as a png with only black and white coloring.
+
+		Inputs
+		-------
+			- res - desired resolution for occupancy grid in [m/px]
+
+		Outputs
+		-------
+			- returns nothing
+			- saves occupancy grid
+		"""
+		#<>TODO: refactor into a sperate module?
+		# create matplotlib figure to plot map
+		fig = Figure()
+		canvas = FigureCanvas(fig)
+		ax = fig.add_subplot(111)
+
+		# get dpi of figure
+		dpi = float(fig.get_dpi())
+		print("DPI: {}".format(dpi))
+		# calculate required size in pixels of occupancy grid
+		x_size_px = (self.bounds[2]-self.bounds[0]) / res
+		y_size_px = (self.bounds[3]-self.bounds[1]) / res
+		# calculate required size in inches
+		x_size_in = x_size_px / dpi
+		y_size_in = y_size_px / dpi
+		#specify size of figure in inches
+		fig.set_size_inches(x_size_in,y_size_in)
+
+		# add patches for all objects in yaml file
+		for obj in self.objects:
+		    cent = self.objects[obj].centroid;
+		    x = self.objects[obj].length;
+		    y = self.objects[obj].width;
+		    theta = self.objects[obj].orient;
+		    col = self.objects[obj].color
+		    if(self.objects[obj].shape == 'oval'):
+		        tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc='black',ec='black');
+		    else:
+				# skip plotting posters as they aren't actually protruding into the space
+				if 'poster' in obj:
+					continue
+				else:
+					# find the location of the lower left corner of the object for plotting
+					length = x
+					width = y
+					theta1 = theta*math.pi/180;
+					h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
+					theta2 = math.asin((width/2)/h);
+					s1 = h*math.sin(theta1+theta2);
+					s2 = h*math.cos(theta1+theta2)
+					xL = cent[0]-s2
+					yL = cent[1]-s1
+
+					tmp = patches.Rectangle((xL,yL),width = x, height=y,angle=theta,fc='black',ec='black');
+
+		    ax.add_patch(tmp)
+
+		# save the matplotlib figure
+		ax.set_xlim(self.bounds[0],self.bounds[2])
+		ax.set_ylim(self.bounds[1],self.bounds[3])
+		ax.axis('image')
+		ax.get_xaxis().set_visible(False)
+		ax.get_yaxis().set_visible(False)
+		print('about to save plot')
+		canvas.print_figure(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),bbox_inches='tight',pad_inches=0)
+
+	def make_occupancy_yaml(self,res,occ_thresh=0.2,free_thresh=0.65):
+		yaml_content = {'image': self.name.lower()+'_occupancy.png',
+						'resolution': res,
+						'origin': [self.bounds[0],self.bounds[1],0.0],
+						'occupied_thresh': occ_thresh,
+						'free_thresh': free_thresh,
+						'negate': 0}
+		
+		file_name = os.path.dirname(__file__) + '/' + self.name.lower() + '_occupancy.yaml'
+
+		with open(file_name,'w') as yaml_file:
+			yaml.safe_dump(yaml_content,yaml_file,allow_unicode=False)
 
 class Map_Object(object):
 	"""
@@ -207,6 +295,13 @@ def test_likelihood():
 		print("Failed to initialize Map Object.")
 		raise
 
+def test_occ_grid_gen():
+	map_= Map('map2.yaml')
+	res = 0.01
+	map_.make_occupancy_grid(res)
+	map_.make_occupancy_yaml(res)
+
 if __name__ == "__main__":
 	#test_map_obj()
-	test_likelihood()
+	# test_likelihood()
+	test_occ_grid_gen()
