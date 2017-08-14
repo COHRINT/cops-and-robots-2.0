@@ -39,7 +39,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy import compress
 import scipy.linalg as linalg
 from copy import deepcopy
-
+from scipy import sparse
+from sklearn.linear_model import LogisticRegression
 
 
 
@@ -602,27 +603,18 @@ class Softmax:
 			post.addG(Gaussian(mu,var,g.weight*np.exp(logCHat))); 
 		return post; 
 
-	def pointEval2D(self,softClass,point):
-		#Evaluates the function at a point in 2D
-
-		top = np.exp(self.weights[softClass][0]*point[0] + self.weights[softClass][1]*point[1]); 
-		bottom = 0; 
-		for i in range(0,self.size):
-			bottom += np.exp(self.weights[i][0]*point[0] + self.weights[i][1]*point[1]); 
-		return top/bottom; 
-
 	def pointEvalND(self,softClass,point):
 		#Evaluates the function at a point in any dimensionality. 
 		topIn = 0;
 		for i in range(0,len(self.weights[0])):
 			topIn+=self.weights[softClass][i]*point[i]; 
-		top = np.exp(topIn); 
+		top = np.exp(topIn+self.bias[softClass]); 
 		bottom = 0; 
 		for i in range(0,self.size):
 			bottomIn = 0; 
 			for j in range(0,len(self.weights[0])):
 				bottomIn += self.weights[i][j]*point[j]; 
-			bottom+=np.exp(bottomIn); 
+			bottom+=np.exp(bottomIn + self.bias[i]); 
 		return top/bottom; 
 
 	def plot1D(self,low=0,high = 5,res = 100,labels = None,vis = True):
@@ -713,6 +705,44 @@ class Softmax:
 			ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ); 
 
 		plt.show();
+
+
+
+	def logRegress(self,X,t,steepness = 1):
+		
+		dim = len(X[0]); 
+
+		fitter = LogisticRegression(solver = 'newton-cg',multi_class = 'multinomial'); 
+		fitter.fit(X,t); 
+		newCoef = fitter.coef_.tolist(); 
+		weights = []; 
+		for i in range(0,len(newCoef)):
+			weights.append(newCoef[i]); 
+		bias = []; 
+		newBias = fitter.intercept_.tolist(); 
+		for i in range(0,len(newBias)):
+			bias.append(newBias[i]); 
+		
+
+
+		ze = [0]*dim; 
+		weights.append(ze); 
+		bias.append(0); 
+
+
+		self.weights = (np.array(weights)*steepness).tolist(); 
+		self.bias = (np.array(bias)*steepness).tolist();
+
+		if(self.weights is not None):
+			self.size = len(self.weights); 
+
+			self.alpha = 3;
+			self.zeta_c = [0]*len(self.weights); 
+			for i in range(0,len(self.weights)):
+				self.zeta_c[i] = random()*10;  
+
+
+
 
 
 
@@ -1018,6 +1048,28 @@ def testMakeNear():
 	axarr[2].contourf(x,y,c); 
 	plt.show(); 
 
+def testLogisticRegression():
+	X = [[1,3],[2,4],[2,2],[4,3]]; 
+	t = [0,0,1,1]; 
+	cols = ['r','b','g','y','w','k','m']; 
+	a = Softmax(); 
+	a.logRegress(X,t,1); 
+	#a.plot2D(vis = True); 
+	[x,y,c] = a.plot2D(vis = False); 
+
+
+	plt.contourf(x,y,c); 
+	for i in range(0,len(X)):
+		plt.scatter(X[i][0],X[i][1],c=cols[t[i]]); 
+
+
+	testPoint = [1,2]; 
+	winPercent = a.pointEvalND(1,testPoint); 
+	lossPercent = a.pointEvalND(0,testPoint); 
+	print('Win:' + str(winPercent),'Loss:' + str(lossPercent)); 
+	plt.show(); 
+
+
 
 if __name__ == "__main__":
 
@@ -1030,8 +1082,8 @@ if __name__ == "__main__":
 	#testPlot3D(); 
 	#testOrientRecModel(); 
 	#testTriView(); 
-	testMakeNear(); 
-
+	#testMakeNear(); 
+	testLogisticRegression(); 
 
 	
 

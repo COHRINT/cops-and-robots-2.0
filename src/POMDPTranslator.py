@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
-from obs_q_map import gen_questions
+#from obs_q_map import gen_questions
 
 
 class POMDPTranslator(object):
@@ -46,8 +46,8 @@ class POMDPTranslator(object):
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		self.question_list = gen_questions('map2.yaml')
-		print self.question_list
+		#self.question_list = gen_questions('map2.yaml')
+		#print self.question_list
 
 		# TODO: You switched the study and library?????? And the billiard and dining?0
 		self.rooms_map = {0:'hallway',4:'billiard room',3:'study',2:'library',1:'dining room',5:'kitchen'}
@@ -409,6 +409,7 @@ class POMDPTranslator(object):
 		bcut = self.cutGMTo2D(belief,dims=[2,3]);
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
 		ax.contourf(x_space,y_space,bel,cmap="viridis");
+	
 
 		# allBels = [];
 		# allBounds = [];
@@ -421,16 +422,16 @@ class POMDPTranslator(object):
 		# 		if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
 		# 			tmp.addG(deepcopy(g));
 		# 	allBels.append(tmp);
-		#
+		
 		# x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-		#
+		
 		# pos = np.dstack((x_space, y_space));
 		# c = np.zeros(shape=(pos.shape[0],pos.shape[1]));
 		# print(c.shape);
 		# #for each space
 		# xran = np.arange(self.bounds[0],self.bounds[2],self.delta).tolist();
 		# yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist();
-		#
+		
 		# for i in range(0,len(xran)):
 		# 	for j in range(0,len(yran)):
 		# 		#for each room
@@ -440,7 +441,7 @@ class POMDPTranslator(object):
 		# 				for g in bcut:
 		# 					mean = [xran[i],yran[j]];
 		# 					c[i][j] += mvn.pdf(mean,g.mean,g.var)*g.weight;
-		#
+		
 		# ax.contourf(x_space,y_space,c,cmap='viridis');
 
 
