@@ -87,7 +87,10 @@ if [ "$create_env" == "y" ]; then
   virtualenv --system-site-packages $env_name
   echo "Sourcing environment..."
   source $dir_name/$env_name/bin/activate
-  echo "Type the commmand 'source $dir_name/$env_name/bin/activate' to activate this environment."
+  echo "Adding alias to bashrc..."
+  echo "alias $FILE_NAME='source $dir_name/$env_name/bin/activate'" >> $HOME/.bashrc
+  source $HOME/.bashrc
+  echo "Type the commmand '$FILE_NAME' to activate this environment."
   echo "Type 'deactivate' to deactivate the environment"
 fi
 

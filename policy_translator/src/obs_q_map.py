@@ -80,11 +80,11 @@ def gen_questions(yaml_file):
         print room
         questions.append([])
         for rel in room_rel:
-            question = 'Is Roy ' + rel + ' the ' + room + '?'
+            question = 'Is Zhora ' + rel + ' the ' + room + '?'
             questions[i].append(question)
         for obj in m.rooms[room]['objects']:
             for rel in obj_rel:
-                question = 'Is Roy ' + rel + ' the ' + obj + '?'
+                question = 'Is Zhora ' + rel + ' the ' + obj + '?'
                 questions[i].append(question)
         i+=1
 
