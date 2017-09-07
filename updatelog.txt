@@ -14,4 +14,23 @@ the beginning, e.g. [TEST RESULTS] or [BUG], and make sure to add a date.
 [UPDATE] 09-07-2017
 
 Delete me when there is a proper first entry, but it seemed like something
-needed to be here.
+needed to be here. lol great keeping it!
+
+[UPDATE] 09-07-2017 (I apologize in advance for the length haha)
+
+Robots:
+  -Pris' eMMC can't find the kernel (u-boot happens, serial terminal gives the Exynos's terminal)
+  -Zhora's currently using Arch (we don't have another Zhora)
+  -Deckard's Kinect does not turn on (when kinect is connected to odroid, no red light (or green light))
+  -Roy Great :)
+Tasks: (with suggested priorities)
+  1) Rerun experiment (U3's haven't crashed through connection lately)
+    once a crash happens, let's do a yes test and look for a consistent crash and take data
+  2) Make an XU4 image (the one's I've made do not end up even booting when connected)
+  
+New Materials:
+  1) USB to eMMC
+  2) More eMMC chips would be awesome
+  
+Comments:
+I'm down to work on whatever you see as our best option/fix!
