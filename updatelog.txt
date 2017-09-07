@@ -1,0 +1,17 @@
+UPDATE LOG FOR COPS AND ROBOTS VERSION 2.0
+
+This log serves as a location to document changes, test results, comments and 
+and other useful information related to the development of CnR 2.0.
+
+Please make sure to pull changes to the file before logging anything to ensure
+entries remain in the proper order.
+
+When adding an entry, label it with the type of entry in square brackets at
+the beginning, e.g. [TEST RESULTS] or [BUG], and make sure to add a date.
+
+-------------------------------------------------------------------------------
+
+[UPDATE] 09-07-2017
+
+Delete me when there is a proper first entry, but it seemed like something
+needed to be here.
