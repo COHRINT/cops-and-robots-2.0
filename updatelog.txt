@@ -16,7 +16,7 @@ the beginning, e.g. [TEST RESULTS] or [BUG], and make sure to add a date.
 Delete me when there is a proper first entry, but it seemed like something
 needed to be here. lol great keeping it!
 
-[UPDATE] 09-07-2017 (I apologize in advance for the length haha)
+[UPDATE] 09-07-2017
 
 Robots:
   -Pris' eMMC can't find the kernel (u-boot happens, serial terminal gives the Exynos's terminal)
