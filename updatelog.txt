@@ -34,3 +34,19 @@ New Materials:
   
 Comments:
 I'm down to work on whatever you see as our best option/fix!
+
+[UPDATE] 09-12-2017
+
+Testing:
+  - Successful stress testing on Odroid U3 while it was powered by a powered hub.
+  - Crashes when connected to battery power. Then netiher config would crash at all.
+
+Testing plan for TH:
+  - Attempt to run experiment
+  - Once space is occupied, attempt to create Odroid XU4 image
+  - Next, attempt to connect to Deckard's kinect via computer
+
+Misc:
+  - The odroid battery packs have two USB ports which output different amounts of
+    current. One port does 1.5A, the other 2.1A. They are designated by one or
+    two lightning bolts.
