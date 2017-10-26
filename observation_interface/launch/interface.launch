@@ -13,8 +13,12 @@
   <node name="obs_interface" pkg="observation_interface"
     type="interface.py" output="screen" />
 
+
+  <node name="cop_republish" pkg="image_transport" type="republish"
+    args="theora in:=/$(arg cop)/image_color raw out:=/$(arg cop)/image_color_decomp" />
+
   <!-- Cop Video Raw Image Processing -->
   <!-- <node name="image_processing" pkg="image_proc" type="image_proc"
-    ns="/$(arg cop)/camera/rgb" /> -->
+    ns="/$(arg cop)/" /> -->
 
 </launch>
