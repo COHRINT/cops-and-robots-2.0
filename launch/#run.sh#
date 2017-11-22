@@ -36,10 +36,12 @@ robots=("deckard" "roy" "pris" "zhora")
 # needs to match config.yaml!
 
 
+# **LT: Usually start with these already running**
+
 # start roscore and vicon_sys
-# xterm -e bash -c "roscore" &
-# sleep 2
-# xterm -e bash -c "roslaunch ~/vicon_sys.launch" &
+#xterm -e bash -c "roscore" &
+#sleep 2
+#xterm -e bash -c "roslaunch ~/vicon_sys.launch" &
 
 # echo "--------------------"
 # echo " "

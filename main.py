@@ -1,158 +1,97 @@
 #!/usr/bin/env python
 
 '''
-Core Tools testbed main function. Runs an experiement using parameters specified
-in 'config.yaml'.
+Cops and Robots launchig file. Contains the update loop in the __init__ function
 '''
 
-__author__ = ["Ian Loefgren", "Sierra Williams"]
+__author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren","Sierra Williams","Matt Aiken","Nick Sweet"]
 __license__ = "GPL"
-__version__ = "2.0"
-__maintainer__ = "Ian Loefgren"
-__email__ = "ian.loefgren@colorado.edu"
+__version__ = "1.0"
+__maintainer__ = "Luke Barbier"
+__email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
 
-import matplotlib
-matplotlib.use('Qt5Agg')
 
-import logging
-import time
+from pdb import set_trace
+
 import sys
 import os
-
-import numpy as np
-#import matplotlib.pyplot as plt
-#import matplotlib.animation as animation
+import rospy
 
 from core.helpers.config import load_config
-from core.robo_tools.vagabond import Vagabond
 from core.robo_tools.cop import Cop
 from core.robo_tools.robber import Robber
+from core.robo_tools.gaussianMixtures import GM
 
-class ReliableVagabond(object):
+class MainTester(object):
 	"""
-	Parameters
-	----------
-	param : param_type, optional
-		param_description
-	Attributes
-	----------
-	attr : attr_type
-		attr_description
+        Starts the CnR experiment
+
 	Methods
 	----------
-	attr : attr_type
-		attr_description
+	1) __init__() : launches the experiment and contains the main loop
+        2) create_actors() : creates each robot as either a cop or robber
+        3) update_actors() : calls the robot.update() method of each robot
+        
 	"""
+        map_bounds = [-9.6, -3.6, 4, 3.6]
+        num_robots = 2 # Maximum number of robots our experiment is designed for
+
+        # Related to Cop's belief 
+        cop_initial_belief = GM([[-6,2.5],[1,0],[-4,-2]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
+        delta = 0.1
 
 	def __init__(self, config_file='config/config.yaml'):
 
-		# Load configuration files
-		self.cfg = load_config(config_file)
-
-	   # Configure Python's logging
-		logger_level = logging.getLevelName(self.cfg['main']['logging_level'])
-		logger_format = '[%(levelname)-7s] %(funcName)-30s %(message)s'
-		try:
-			logging.getLogger().setLevel(logger_level)
-			logging.getLogger().handlers[0]\
-				.setFormatter(logging.Formatter(logger_format))
-		except IndexError:
-			logging.basicConfig(format=logger_format,
-								level=logger_level,
-							   )
-		np.set_printoptions(precision=self.cfg['main']['numpy_print_precision'],suppress=True)
-		# Set up a ROS node (if using ROS)
-		if self.cfg['main']['use_ROS']:
-			import rospy
-			rospy.init_node(self.cfg['main']['ROS_node_name'],
-							log_level=rospy.DEBUG)
-
-		# Link node to Python's logger
-		handler = logging.StreamHandler()
-		handler.setFormatter(logging.Formatter(logger_format))
-		logging.getLogger().addHandler(handler)
-
-		# robot positions
-		self.positions = {}
-
+                print("Starting Cops and Robots")
+                
+		rospy.init_node("Python_Node")
+                
 		# Create robots
-		self.create_actors()
-		time.sleep(4)
-		self.headless_mode()
+		self.init_cop_robber(config_file)
 
-	#Start from here
+                # Main Loop
+                print("Entering Main Loop")
+                while True:
+                        self.update_cop_robber()
+                        
 
-	def headless_mode(self):
-		"""Runs the simulation without any animation output.
-		"""
-		i = 0
-		max_run_time = self.cfg['main']['max_run_time']
+	def init_cop_robber(self, config_file=None):
+                """
+                Initialize the cop and robber using the config file
+                """
+                if config_file != None: 
+                        cfg = load_config(config_file) #load the config file as a dictionary
+                else:   
+                        print("No Config File. Restart and pass the config file.")
+                        raise
 
-		update_rate = 2
-		self.update_clock(update_rate,self.update)
-
-		while i < max_run_time:
-			self.update(i)
-			i += 1
-
-		logging.warn('Experiment has reached the max run time of {} frames! \
-						\nExperiment ending...'.format(i))
-		# while self.vagabonds['Deckard'].mission_planner.mission_status != 'stopped':
-		#	 self.update(i)
-		#	 i += 1
-			# time.sleep(0.2)
-
-	def update_clock(self,duration,func,*args):
-	    def g_tick():
-	        t = time.time()
-	        count = 0
-	        while True:
-	            count += 1
-	            yield max(t+count*duration - time.time(),0)
-	    g = g_tick()
-	    while True:
-	        time.sleep(g.next())
-	        func(*args)
-
-	def update(self):
-		"""Update all the major aspects of the simulation and record data.
-		"""
-		# logging.debug('Main update frame {}'.format(i))
-		# Update all actors
-		# print('callback!')
-		for robot_name, robot in self.robots.iteritems():
-			robot.update(positions=self.positions)
-			tmpKey = self.positions[robot_name];
-			tmpKey[1] = robot.pose2D._pose;
-
-			self.positions[robot_name] = tmpKey;
-
-			logging.debug('{} update'.format(robot_name))
-
-	def create_actors(self):
-		self.robots = {}
-
-		for robot, kwargs in self.cfg['robots'].iteritems():
-			if self.cfg['robots'][robot]['use']:
-				if self.cfg['robots'][robot]['type_'] == 'vagabond':
-					self.robots[robot] = Vagabond(robot, **kwargs)
-				elif self.cfg['robots'][robot]['type_'] == 'cop':
-					self.robots[robot] = Cop(robot, **kwargs)
-					self.positions[robot] = [self.cfg['robots'][robot]['type_'],(1,1,0)]
-				elif self.cfg['robots'][robot]['type_'] == 'robber':
+                
+		self.robots = {} # robot dictionary
+		for robot, kwargs in cfg['robots'].iteritems():
+			if cfg['robots'][robot]['use']:
+				if cfg['robots'][robot]['type_'] == 'cop':
+					self.robots[robot] = Cop(robot,
+                                                                 initial_belief=self.cop_initial_belief,
+                                                                 map_bounds=self.map_bounds,
+                                                                 delta=self.delta,
+                                                                 **kwargs) 
+				elif cfg['robots'][robot]['type_'] == 'robber':
 					self.robots[robot] = Robber(robot, **kwargs)
-					self.robots[robot].type_ = 'robber'
-					self.positions[robot] = [self.cfg['robots'][robot]['type_'],(3,3,0)]
-				logging.info('{} added to simulation'.format(robot))
-				#self.positions[robot] = [self.cfg['robots'][robot]['type_'],(0,0,0)]
+                                print("Added: " + str(robot) + " to the experiment")
+                                
+                print("COP AND ROBBER INITIALIZED")
 
-		# Create robbers with config params
-
-		# Use Deckard's map as the main map
-		#self.map = self.vagabonds['Deckard'].map
+	def update_cop_robber(self):
+		"""
+                Updates the cop and robber: goal pose and belief (if cop)
+		"""
+                set_trace()
+		for robot_name, robot in self.robots.iteritems():
+                        print("UPDATING: : " + robot_name)
+                        robot.update() # calls Robot.update (in Robot.py)
 
 if __name__ == '__main__':
-	rv = ReliableVagabond()
+	MainTester()

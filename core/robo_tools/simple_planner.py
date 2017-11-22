@@ -64,6 +64,6 @@ class SimpleGoalPlanner(GoalPlanner):
 
 		return goal_pose
 
-	def update(self,positions=None):
+	def update(self, pose=None):
 
-		super(SimpleGoalPlanner,self).update()
+		super(SimpleGoalPlanner,self).update(pose)

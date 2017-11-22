@@ -26,7 +26,7 @@ import os
 
 import PyQt5
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect, QTimer
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
 
 from std_msgs.msg import String
@@ -564,10 +564,12 @@ class MapDisplay(QWidget):
 
         self.name = "Belief Map"
 
-        rospy.Subscriber("/interface_map", Image, self.ros_update)
+#        rospy.Subscriber("/interface_map", Image, self.ros_update)
         self.format = QImage.Format_RGB888
 
         self.initUI()
+        self.map_update()
+        
 
     def initUI(self):
         self.main_layout = QVBoxLayout()
@@ -585,13 +587,14 @@ class MapDisplay(QWidget):
         self.setLayout(self.main_layout)
         self.show()
 
-    def ros_update(self, msg):
+    def map_update(self):
         # load image
-        self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
-        # print(self.image_view.isNull())
-        # set image as pixmap in label
-        if not self.image_view.isNull():
-            self.pic_label.setPixmap(self.image_view)
+        try:
+            self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
+            if not self.image_view.isNull():
+                self.pic_label.setPixmap(self.image_view)
+        finally:
+            QTimer.singleShot(200, self.map_update)
 
 class VideoContainer(QWidget):
     """

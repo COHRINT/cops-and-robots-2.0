@@ -59,6 +59,7 @@ class PolicyTranslatorServer(object):
         rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
         self.queue = Obs_Queue()
 
+        # This in many ways is a black box
         self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
 
         bounds = [-9.6, -3.6, 4, 3.6]

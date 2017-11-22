@@ -23,6 +23,8 @@ __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
 
+from pdb import set_trace
+
 import logging
 import math
 import random
@@ -47,6 +49,11 @@ class MissionPlanner(object):
 
     """
     def __init__(self, robot, mission_status='Moving', target=None):
+
+        print("MISSION PLANNER W/: " + str(robot))
+        print("mission_status: " + str(mission_status))
+        print("target: " + str(target))
+#        set_trace()
         self.robot = robot
         self.target = target
         self.trajectory = self.test_trajectory()
@@ -307,26 +314,34 @@ class GoalPlanner(object):
         return True
 
     def create_ROS_goal_message(self):
-            import tf
-            import rospy
-            from geometry_msgs.msg import PoseStamped
-            self.move_base_goal = PoseStamped()
-            theta = np.rad2deg(self.goal_pose[2])
-            quaternions = tf.transformations.quaternion_from_euler(0, 0, theta)
-            self.move_base_goal.pose.position.x = self.goal_pose[0]
-            self.move_base_goal.pose.position.y = self.goal_pose[1]
-            self.move_base_goal.pose.orientation.x = quaternions[0]
-            self.move_base_goal.pose.orientation.y = quaternions[1]
-            self.move_base_goal.pose.orientation.z = quaternions[2]
-            self.move_base_goal.pose.orientation.w = quaternions[3]
-            self.move_base_goal.header.frame_id = '/map'
-            self.move_base_goal.header.stamp = rospy.Time.now()
-            self.pub.publish(self.move_base_goal)
+        
+        """
+        uses self.goal_pose to create a msg for robot_name/move_base_simple/goal
 
-            print(self.move_base_goal.pose.position)
+        Probably no need for the self.move_base_goal being an obj var
+        Would be simpler to make it local
+        """
+        import tf
+        import rospy
+        from geometry_msgs.msg import PoseStamped
+        self.move_base_goal = PoseStamped()
+        print("Goal pose: " + str(self.goal_pose))
+        theta = np.rad2deg(self.goal_pose[2])
+        quaternions = tf.transformations.quaternion_from_euler(0, 0, theta)
+        self.move_base_goal.pose.position.x = self.goal_pose[0]
+        self.move_base_goal.pose.position.y = self.goal_pose[1]
+        self.move_base_goal.pose.orientation.x = quaternions[0]
+        self.move_base_goal.pose.orientation.y = quaternions[1]
+        self.move_base_goal.pose.orientation.z = quaternions[2]
+        self.move_base_goal.pose.orientation.w = quaternions[3]
+        self.move_base_goal.header.frame_id = '/map'
+        self.move_base_goal.header.stamp = rospy.Time.now()
+        self.pub.publish(self.move_base_goal)
+        
+        print(self.move_base_goal.pose.position)
 
     @abstractmethod
-    def update(self,positions=None):
+    def update(self,pose=None):
         """Checks to see if goal has been reached, assigns new goals,
             and updates goal status
 
@@ -337,87 +352,41 @@ class GoalPlanner(object):
             4. at goal (reached its goal pose)
             5. done (no longer taking any goals)
         """
-        current_status = self.goal_status
+        
+        current_status = self.goal_status # first time around = w/o a goal
         new_status = current_status
-        # if current_status == 'without a goal':
-        #     if self.type == 'stationary':
-        #         new_status = 'done'
-        #     else:
-        #         self.goal_pose = self.find_goal_pose(positions=positions)
-        #         if not self.feasible_pose(self.goal_pose,
-        #                                     self.robot.map_resolution,
-        #                                     self.robot.diameter,
-        #                                     self.robot.map_width,
-        #                                     self.robot.map_height,
-        #                                     self.robot.occupancy_grid,
-        #                                     self.robot.map_resolution):
-        #             # self.goal_pose = None
-        #             pass
-        #         if self.goal_pose is None:
-        #             new_status = 'without a goal'
-        #         else:
-        #             if self.robot.publish_to_ROS is True:
-        #                 self.create_ROS_goal_message()
-        #             else:
-        #                 self.robot.path_planner.path_planner_status = 'planning'
-        #             new_status = 'moving to goal'
-        #
-        # elif current_status == 'moving to goal':
-        #     if self.is_stuck():
-        #         new_status = 'stuck'
-        #     elif self.goal_pose is None:
-        #         new_status = 'without a goal'
-        #     elif self.is_at_goal():
-        #         new_status = 'at goal'
-        #
-        # elif current_status == 'stuck':
-        #     prev_type = self.type
-        #     #self.type = 'simple'
-        #     self.goal_pose = self.find_goal_pose(positions=positions)
-        #     if not self.feasible_pose(self.goal_pose,
-        #                                 self.robot.map_resolution,
-        #                                 self.robot.diameter,
-        #                                 self.robot.map_width,
-        #                                 self.robot.map_height,
-        #                                 self.robot.occupancy_grid,
-        #                                 self.robot.map_resolution):
-        #         self.goal_pose = None
-        #     self.type = prev_type
-        #     if self.robot.publish_to_ROS is True:
-        #         self.create_ROS_goal_message()
-        #     else:
-        #         self.robot.path_planner.path_planner_status = 'planning'
-        #     new_status = 'moving to goal'
-        #
-        # elif current_status == 'at goal':
-        #     new_status = 'without a goal'
-        #
-        # if current_status != new_status:
-        #     logging.info("{}'s goal_status changed from {} to {}."
-        #                  .format(self.robot.name, current_status, new_status))
-        #
-        # self.goal_status = new_status
 
+        print("ENTERING GOAL PLANNER UDPATE")
+        print("current_status: " + str(current_status))
+        print("prev_type: " + str(self.type))
+        print("old_pose: " + str(self.goal_pose))
+        print("pose: " + str(pose))
 
-        prev_type = self.type
-        #self.type = 'simple'
-        old_pose = self.goal_pose
-        self.goal_pose = self.find_goal_pose(positions=positions)
-        if not self.feasible_pose(self.goal_pose,
-                                    self.robot.map_resolution,
-                                    self.robot.diameter,
-                                    self.robot.map_width,
-                                    self.robot.map_height,
-                                    self.robot.occupancy_grid,
-                                    self.robot.map_resolution):
-            self.goal_pose = None
-        self.type = prev_type
+ #       prev_type = self.type # stationary, pomdp etc
+        old_pose = self.goal_pose # 1st time = None
+        self.goal_pose = self.find_goal_pose(positions=pose)
+        print("self.goal_pose: " +str(self.goal_pose))
+
+        # Why do we have these checks? It's other code's prob if they're bad
+        # if not self.feasible_pose(self.goal_pose,
+        #                             self.robot.map_resolution,
+        #                             self.robot.diameter,
+        #                             self.robot.map_width,
+        #                             self.robot.map_height,
+        #                             self.robot.occupancy_grid,
+        #                             self.robot.map_resolution):
+        #     self.goal_pose = None
+
+        set_trace()
+        #        self.type = prev_type
+            
         if self.robot.publish_to_ROS is True and self.is_new_pose(old_pose,self.goal_pose) is True:
             self.create_ROS_goal_message()
+        set_trace()
 
     def is_new_pose(self,old_pose,new_pose):
         if old_pose is not None and new_pose is not None:
-            if new_pose[0] != old_pose[0] and new_pose[1] != old_pose[1]:
+            if int(new_pose[0]) != int(old_pose[0]) and int(new_pose[1]) != int(old_pose[1]):
                 return True
             else:
                 return False
@@ -705,6 +674,8 @@ class Controller(object):
         """
         current_status = self.controller_status
         new_status = current_status
+
+        
 
         if self.controller_status == 'updating path':
             # Create a new chain object to iterate through

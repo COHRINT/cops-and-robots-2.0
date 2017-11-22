@@ -52,9 +52,16 @@ class Pose(object):
                  pose_source='python',
                  filename_for_recording=None):
 
+        print("ENTERING POSE")
+        print("pose_source: " + str(pose_source))
+        print("_pose: " + str(pose))
+        print("filename: " + str(filename_for_recording))
+        
         self.robot = robot
         self.pose_source = pose_source
         self._pose = pose
+
+        # We don't use this filename for recoding stuff... 
         self.filename_for_recording = filename_for_recording
 
         if pose_source != 'python':
@@ -81,10 +88,14 @@ class Pose(object):
         # print(self.pose)
 
     def tf_update(self):
+        """ Makes the pose "_pose" inside of the object
+        using the odom and base_footprint topic """
+        
         import rospy
         import tf
         ref = "/" + self.robot.name.lower() + "/odom"
         child = "/" + self.robot.name.lower() + "/base_footprint"
+        print("Attempting to lookup the transform for: " + self.robot.name.lower())
         (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
         x = trans[0]
         y = trans[1]

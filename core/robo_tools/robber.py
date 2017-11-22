@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#import logging
+import pdb
 
 __author__ = ["Ian Loefgren", "Sierra Williams"]
 __copyright__ = "Copyright 2017, COHRINT"
@@ -32,15 +32,25 @@ class Robber(Robot):
     path_planner_defaults = {'type_': 'direct'}
 
     def __init__(self,
-                 name,
-                 pose=None,
-                 pose_source='python',
-                 map_cfg={},
-                 mission_planner_cfg={},
-                 goal_planner_cfg={},
-                 path_planner_cfg={},
+                 name, # Pris/zhora
+                 pose=None, # ..
+                 pose_source='python', # tf
+                 map_cfg={},# ..
+                 mission_planner_cfg={}, # .. 
+                 goal_planner_cfg={}, #stationary or random
+                 path_planner_cfg={}, # ..
                  **kwargs):
         print(kwargs)
+        print("CREATING A ROBBER!")
+
+        print("Inside the robber class")
+        print("Mission planner:")
+        print(mission_planner_cfg)
+        print("Goal planner:")
+        print(goal_planner_cfg)
+        print("Path planner:")
+        print(path_planner_cfg)
+
         # Use class defaults for kwargs not included
         mp_cfg = Robber.mission_planner_defaults.copy()
         mp_cfg.update(mission_planner_cfg)
@@ -48,6 +58,16 @@ class Robber(Robot):
         gp_cfg.update(goal_planner_cfg)
         pp_cfg = Robber.path_planner_defaults.copy()
         pp_cfg.update(path_planner_cfg)
+
+        print("mp_cfg")
+        print(mp_cfg) # mp_cfg is empty
+        print("gp_cfg") 
+        print(gp_cfg) # type_ stationary, use_target_as_goal: True
+        print("pp_cfg")
+        print(pp_cfg) # type_: direct
+
+#        pdb.set_trace()
+        
         super(Robber, self).__init__(name,
                                      pose=pose,
                                      pose_source=pose_source,
@@ -58,14 +78,12 @@ class Robber(Robot):
                                      color_str='red',
                                      **kwargs)
 
+        print("RETURN ROBBER.PY")
+
         self.found_robber = {}
+        print("mp_cfg: " + str(mp_cfg))
         self.mission_planner = RobberMissionPlanner(self, **mp_cfg)
         self.belief = None
-
-    def update(self,i=0,positions=None):
-
-        super(Robber,self).update(i,positions=positions)
-
 
 class RobberMissionPlanner(MissionPlanner):
     # """The Cop subclass of the generic MissionPlanner
