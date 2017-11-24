@@ -24,6 +24,7 @@ from core.helpers.config import load_config
 from core.robo_tools.cop import Cop
 from core.robo_tools.robber import Robber
 from core.robo_tools.gaussianMixtures import GM
+from caught.msg import Caught
 
 class MainTester(object):
 	"""
@@ -36,8 +37,10 @@ class MainTester(object):
         3) update_actors() : calls the robot.update() method of each robot
         
 	"""
+        running_experiment = True
+        
         map_bounds = [-9.6, -3.6, 4, 3.6]
-        num_robots = 2 # Maximum number of robots our experiment is designed for
+        max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
         cop_initial_belief = GM([[-6,2.5],[1,0],[-4,-2]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
@@ -48,14 +51,20 @@ class MainTester(object):
                 print("Starting Cops and Robots")
                 
 		rospy.init_node("Python_Node")
+                rospy.Subscriber('/caught_confirm', Caught, self.end_experiment)
+
+                # caught_confirm topic
                 
 		# Create robots
 		self.init_cop_robber(config_file)
 
                 # Main Loop
                 print("Entering Main Loop")
-                while True:
+                r = rospy.Rate(1) # 10 Hz
+                while self.running_experiment is True and not rospy.is_shutdown():
                         self.update_cop_robber()
+                        r.sleep()
+                print("Experiment Finished")
                         
 
 	def init_cop_robber(self, config_file=None):
@@ -70,16 +79,36 @@ class MainTester(object):
 
                 
 		self.robots = {} # robot dictionary
+                num_robots  = 0
 		for robot, kwargs in cfg['robots'].iteritems():
+
+                        
 			if cfg['robots'][robot]['use']:
+
+                                # check for bad config, too many robots selected
+                                num_robots += 1
+                                if num_robots > self.max_num_robots:
+                                        print("Bad config file, More robots selected than allowed")
+                                        print("Check config/config.yaml or run gui.py and reconfigure")
+                                        raise
+
+                                # goal_planner string
+                                goal_planner = cfg['robots'][robot]['goal_planner_cfg']['type_']
+
+                                # Check cop or robber 
+                                # Initialize a cop
 				if cfg['robots'][robot]['type_'] == 'cop':
-					self.robots[robot] = Cop(robot,
-                                                                 initial_belief=self.cop_initial_belief,
-                                                                 map_bounds=self.map_bounds,
-                                                                 delta=self.delta,
-                                                                 **kwargs) 
+					self.robots[robot] = Cop(self.cop_initial_belief,
+                                                                 self.delta,
+                                                                 self.map_bounds,
+                                                                 robot,
+                                                                 goal_planner)
+                                        
+                                # Initialize a robber
 				elif cfg['robots'][robot]['type_'] == 'robber':
-					self.robots[robot] = Robber(robot, **kwargs)
+					self.robots[robot] = Robber(robot, goal_planner)
+
+                                        
                                 print("Added: " + str(robot) + " to the experiment")
                                 
                 print("COP AND ROBBER INITIALIZED")
@@ -88,10 +117,16 @@ class MainTester(object):
 		"""
                 Updates the cop and robber: goal pose and belief (if cop)
 		"""
-                set_trace()
+#                set_trace()
 		for robot_name, robot in self.robots.iteritems():
                         print("UPDATING: : " + robot_name)
                         robot.update() # calls Robot.update (in Robot.py)
+                        
+        def end_experiment(self, msg):
+                if msg.confirm is True:
+                        self.running_experiment = False
+                        print(msg.robber + " caught")
+                        # send robots to starting positions
 
 if __name__ == '__main__':
 	MainTester()

@@ -2,157 +2,75 @@
 """Provides pose ...
 
 """
-__author__ = "Matthew Aitken"
-__copyright__ = "Copyright 2015, Cohrint"
+__author__ = "LT" 
+__copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Matthew Aitken", "Nick Sweet", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.0.0"
-__maintainer__ = "Ian Loefgren"
-__email__ = "ian.loefgren@colorado.edu"
+__version__ = "2.0.0"
+__maintainer__ = "Luke Barbier"
+__email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
 
-import logging
 import numpy as np
-
+import rospy
+from geometry_msgs.msg import TransformStamped
+import tf
 
 class Pose(object):
     """
-    Instance Parameters
-    -------------------
-    pose_source: {'ROS_TOPIC_NAME', 'python'}
-        Specify a ROS odom topic, or python
-
-    Instance Attributes
-    -------------------
-    pose: list of float
-        _pose is used internally, especially with ROS
-        pose is to be used externally
-    filename_for_recording: str
-
-    Instance Methods
-    ----------------
-    callback()
-    record_pose()
-
-    Global Defaults
-    ----------------
-    pose_source_default: {'ROS_TOPIC_NAME','python'}
-
-    Class Attributes
-    ----------
-
-    Class Methods
-    -------------
-
-
-    If the pose_source is not python, a new node will be created to listen
-    to a topic named /pose_source.
+    Contains:
+    1) an update callback to the vicon topic, update_pose_callback()
+    2) self.pose = [x,y,degrees] floats
     """
-    def __init__(self, robot, pose=[0, 0, 0],
-                 pose_source='python',
-                 filename_for_recording=None):
-
+    precision = 2 # number of decimal places to round to
+    pose = [0,0,0] # random initial pose to be overriden in the update method
+    
+    received = False # update the pose once before we continue
+    
+    def __init__(self, robot_name=None):
+        
         print("ENTERING POSE")
-        print("pose_source: " + str(pose_source))
-        print("_pose: " + str(pose))
-        print("filename: " + str(filename_for_recording))
+        if robot_name is None:
+            print("No robot name given to the Pose Object")
+            print("Check the instantiation of Pose()")
+            raise
+        else:
+            bf_topic = "/" + robot_name.lower() + "/base_footprint"
         
-        self.robot = robot
-        self.pose_source = pose_source
-        self._pose = pose
+        # Transform Listener in order to perform transforms
+        self.listener = tf.TransformListener()
 
-        # We don't use this filename for recoding stuff... 
-        self.filename_for_recording = filename_for_recording
+        rospy.Subscriber(bf_topic, TransformStamped, self.update_pose_callback)
 
-        if pose_source != 'python':
-            # Lazy imports
-            import rospy
-            from nav_msgs.msg import Odometry
-            import tf
-
-            if pose_source == 'tf':
-                self.listener = tf.TransformListener()
-            else:
-                rospy.Subscriber(self.pose_source, Odometry, self.callback)
-
-    def callback(self, msg):
-        import tf
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
-        (_, _, theta) = tf.transformations.euler_from_quaternion(
-            [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
-             msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
-        self._pose = [x, y, np.rad2deg(theta)]
-        # logging.info(self.pose)
-        # print('Robot Pose')
-        # print(self.pose)
-
-    def tf_update(self):
-        """ Makes the pose "_pose" inside of the object
-        using the odom and base_footprint topic """
+        print("Waiting for /" + robot_name +"/base_footprint to become available")
+        while self.received is False: # update the pose once before continuing
+            pass
         
-        import rospy
-        import tf
-        ref = "/" + self.robot.name.lower() + "/odom"
-        child = "/" + self.robot.name.lower() + "/base_footprint"
-        print("Attempting to lookup the transform for: " + self.robot.name.lower())
-        (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
-        x = trans[0]
-        y = trans[1]
-        (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
-        self._pose = [x, y, np.rad2deg(theta)]
-        # print self._pose
+    def update_pose_callback(self, msg):
+        """
+        Updates the pose using the transform topic from vicon
+        """
+        self.received = True
 
-    @property
-    def x(self):
-        return self._pose[0]
+        # Receive the msg
+        x = msg.transform.translation.x
+        y = msg.transform.translation.y
 
-    @x.setter
-    def x(self, x):
-        self._pose[0] = x
-        if self.pose_source != 'python':
-            print('You should not set the x during ROS simulation.')
+        xr = msg.transform.rotation.x
+        yr = msg.transform.rotation.y
+        zr = msg.transform.rotation.z
+        wr = msg.transform.rotation.w
+        quat = [xr, yr, zr, wr]
+        (_, _, theta) = tf.transformations.euler_from_quaternion(quat)
 
-    @property
-    def y(self):
-        return self._pose[1]
-
-    @y.setter
-    def y(self, y):
-        self._pose[1] = y
-        if self.pose_source != 'python':
-            print('You should not set the y during ROS simulation')
-
-    @property
-    def theta(self):
-        return self._pose[2]
-
-    @theta.setter
-    def theta(self, theta):
-        self._pose[2] = theta
-        if self.pose_source != 'python':
-            print('You should not set the theta during ROS simulation')
-
-    @property
-    def pose(self):
-        return self._pose
-
-    @pose.setter
-    def pose(self, pose):
-        self._pose = pose
-        if self.pose_source != 'python':
-            print('You should not set the pose during ROS simulation')
+        # Round the positions
+        x = round(x, self.precision)
+        y = round(y, self.precision)
+        t = round(theta, self.precision)
+        self.pose = [x, y, t]
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    deckard = Pose([0, 0, 0], pose_source='odom')
-
-"""
-Python use cases:
-read pose
-update pose
-
-ROS use cases:
-read pose
-update pose MUST FAIL (look into try/except)
-"""
+    pose = Pose('zhora')
+    while True:
+        pass
+    

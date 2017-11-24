@@ -28,20 +28,15 @@ from policy_translator.msg import *
 
 class PomdpGoalPlanner(GoalPlanner):
 
-	def __init__(self, robot, type_='stationary', view_distance=0.3,
-					use_target_as_goal=True, goal_pose_topic=None, **kwargs):
+	def __init__(self, robot_pose=None, robot_name=None):
 
 		bounds = [-9.6, -3.6, 4, 3.6]
 		self.delta = 0.1
 		self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
-		super(PomdpGoalPlanner, self).__init__(robot=robot,
-												type_=type_,
-												view_distance=view_distance,
-												use_target_as_goal=use_target_as_goal,
-												goal_pose_topic=goal_pose_topic)
+		super(PomdpGoalPlanner, self).__init__(robot_pose, robot_name)
 
-	def find_goal_pose(self,positions=None):
+	def get_goal_pose(self,pose=None):
 		"""Find goal pose from POMDP policy translator server
 
 		Parameters
@@ -93,7 +88,3 @@ class PomdpGoalPlanner(GoalPlanner):
 		print("NEW GOAL POSE: {}".format(goal_pose))
 
 		return goal_pose
-
-	def update(self,pose=None):
-
-		super(PomdpGoalPlanner,self).update(pose)

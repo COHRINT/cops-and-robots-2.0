@@ -1,24 +1,23 @@
 <!-- Core Tools Interface -->
 <!--
   Author: Ian Loefgren
-  Last Modified: 7/3/2017
+  Last Modified: 11/22/2017
+       LT added dynamic recognition of cop video through launch argument
 
   The ROS launch file for the Core Tools observation interface, including a user
   interface, and image processing node.
 -->
 
 <launch>
+  <arg name="cop" />
 
   <!-- Interface -->
-  <node name="obs_interface" pkg="observation_interface"
-    type="interface.py" output="screen" />
+  <node name="obs_interface" pkg="observation_interface" type="interface.py" output="screen">
+    <param name="cop_name" value="$(arg cop)" />
+  </node>
 
 
   <node name="cop_republish" pkg="image_transport" type="republish"
     args="theora in:=/$(arg cop)/image_color raw out:=/$(arg cop)/image_color_decomp" />
-
-  <!-- Cop Video Raw Image Processing -->
-  <!-- <node name="image_processing" pkg="image_proc" type="image_proc"
-    ns="/$(arg cop)/" /> -->
 
 </launch>

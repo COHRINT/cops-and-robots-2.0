@@ -16,14 +16,11 @@ __status__ = "Stable"
 from core.robo_tools.planner import GoalPlanner
 
 class StationaryGoalPlanner(GoalPlanner):
-
-	def __init__(self, robot, type_='stationary', view_distance=0.3, use_target_as_goal=True,goal_pose_topic=None,**kwargs):
-
-		super(StationaryGoalPlanner, self).__init__(robot=robot, type_=type_, view_distance=view_distance, use_target_as_goal=use_target_as_goal, goal_pose_topic=goal_pose_topic)
-
-	def find_goal_pose(self,positions=None):
+        # Uses GoalPlanner's init function
+        
+	def get_goal_pose(self,pose=[0,0,0]):
 		"""
-                Simply returns the original position
+                Simply returns the original position, default = [0,0,0]
 
                 Inputs
                 -------
@@ -31,17 +28,7 @@ class StationaryGoalPlanner(GoalPlanner):
 
 		Returns
 		-------
-		array_like
-			A pose as [x,y,theta] in [m,m,degrees].
+		pose  [x,y,theta] in [m,m,degrees].
+		
 		"""
-                
-		return positions
-
-	def update(self,pose=None):
-                """
-                Parameters
-                ---------
-                positions [x,y, degrees] floats
-                """
-
-		super(StationaryGoalPlanner, self).update(pose)
+		return pose
