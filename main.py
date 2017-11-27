@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Cops and Robots launchig file. Contains the update loop in the __init__ function
+Cops and Robots launchig file. Contains the main update loop in the __init__ function
 '''
 
 __author__ = ["LT"]
@@ -119,7 +119,7 @@ class MainTester(object):
 		"""
 #                set_trace()
 		for robot_name, robot in self.robots.iteritems():
-                        print("UPDATING: : " + robot_name)
+#                        print("UPDATING: : " + robot_name)
                         robot.update() # calls Robot.update (in Robot.py)
                         
         def end_experiment(self, msg):

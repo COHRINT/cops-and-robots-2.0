@@ -29,8 +29,7 @@ class GoalPlanner(object):
 
     Publishes goals to the rostopic: /robot_name/move_base_simple/goal
     """
-    reached_pose_proximity = 0.1 # distance until a pose is reached
-    # TODO there should be someway to send a robot somewhere and not have the spinning problem?
+    reached_pose_proximity = 0.2 # distance until a pose is reached
     
     __metaclass__ = ABCMeta
 
@@ -56,15 +55,24 @@ class GoalPlanner(object):
         # Make a publisher for Goals to be communicated on updating
         goal_pose_topic = '/' + robot_name.lower() + '/move_base_simple/goal'
         self.pub = rospy.Publisher(goal_pose_topic, PoseStamped, queue_size=10)
-        self.prev_goal_pose = None
+        self.prev_goal_pose = robot_pose
+        self.prev_pose = robot_pose
 
     def reached_pose(self, pose, goal_pose):
         if len(pose) != 3 or len(goal_pose) != 3:
             print("Improper parameters to reached_pose()")
             raise
-        
-        x = abs(pose[0]) - abs(goal_pose[0])
-        y = abs(pose[1]) - abs(goal_pose[1])
+        # Check if the robot is stopped
+        if self.prev_pose != pose:
+            print("Not Stopped")
+            return False
+
+#        print(goal_pose)
+        # Check if we've reached the pose also
+        x = abs(pose[0] - goal_pose[0])
+        print("X val: " + str(x))
+        y = abs(pose[1] - goal_pose[1])
+        print("Y val: " + str(y))
         if x < self.reached_pose_proximity and y < self.reached_pose_proximity:
             return True
         else:
@@ -92,14 +100,13 @@ class GoalPlanner(object):
         positions [x,y, degrees] floats
         """
         
-        print("ENTERING GOAL PLANNER UDPATE")
-        
+#        print("ENTERING GOAL PLANNER UDPATE")
+
         old_goal_pose = self.prev_goal_pose # 1st time = None
             
         new_goal_pose = self.get_goal_pose(pose)
 
-        print("pose: " + str(pose))
-        print("new goal_pose: " +str(new_goal_pose))
+        print("goal_pose: " +str(new_goal_pose))
 
         # Check if it's actually a new pose before we publish
         if self.is_new_pose(old_goal_pose, new_goal_pose) is True:
@@ -107,6 +114,7 @@ class GoalPlanner(object):
 
         # record the new goal pose for the next time around
         self.prev_goal_pose = new_goal_pose
+        self.prev_pose = pose
         
 #        set_trace()
 
@@ -121,14 +129,14 @@ class GoalPlanner(object):
         """
         
         if old_pose is not None and new_pose is not None:
-            if int(new_pose[0]) != int(old_pose[0]) and int(new_pose[1]) != int(old_pose[1]):
-                print("New pose")
+            if new_pose[0] != old_pose[0] or new_pose[1] != old_pose[1]:
+#                print("New Goal pose")
                 return True
             else:
-                print("Same pose")
+#                print("Same Goal pose")
                 return False
         else:
-            print("New pose")
+#            print("New pose")
             return True
         
 
@@ -139,8 +147,8 @@ class GoalPlanner(object):
         ---------
         goal_pose : [x,y, orientation] in [m,m,radians]
         """
-        print("New goal")
-        rospy.sleep(1)
+        print("New goal msg being created.")
+#        rospy.sleep(1)
         
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")

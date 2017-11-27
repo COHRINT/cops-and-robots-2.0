@@ -37,14 +37,13 @@ class Robot(object):
     1) __init__()
     2) update()
     """
-    update = True
 
     def __init__(self, name, goal_planner_type='stationary'):
         
-        print("ENTERING ROBOT.PY")
+#        print("ENTERING ROBOT.PY")
 
         # Stop attribute
-        rospy.Subscriber('/'+name.lower()+'/stop', Bool, self.stop_callback)
+#        rospy.Subscriber('/'+name.lower()+'/stop', Bool, self.stop_callback)
         
         # Object attributes
         self.name = name.lower()
@@ -81,10 +80,6 @@ class Robot(object):
         else:
             print("No goal planner selected. Check instantation of robot.py")
             raise
-        
-    def stop_callback(self, msg):
-        self.update = False
-        self.goal_planner.stop(self.Pose.pose)
 
     def update(self): 
         """
@@ -92,8 +87,6 @@ class Robot(object):
 
         Note: self.Pose.pose is being updated in the background by a callback to /robot_name/base_footprint
         """
-        if self.update == False: # used for stopping 
-            return
         
         print(self.name + " pose: " + str(self.Pose.pose))
         
