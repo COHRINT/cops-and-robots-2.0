@@ -22,7 +22,7 @@ robots:
     use: false
   Roy:
     goal_planner_cfg:
-      type_: simple
+      type_: stationary
     pose_source: tf
     type_: cop
     use: false

@@ -148,7 +148,7 @@ class GoalPlanner(object):
         goal_pose : [x,y, orientation] in [m,m,radians]
         """
         print("New goal msg being created.")
-#        rospy.sleep(1)
+        rospy.sleep(1)
         
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")
