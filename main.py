@@ -25,6 +25,7 @@ from core.robo_tools.cop import Cop
 from core.robo_tools.robber import Robber
 from core.robo_tools.gaussianMixtures import GM
 from caught.msg import Caught
+from std_msgs.msg import Bool
 
 class MainTester(object):
 	"""
@@ -55,6 +56,7 @@ class MainTester(object):
                 
 		rospy.init_node("Python_Node")
                 rospy.Subscriber('/caught_confirm', Caught, self.end_experiment)
+                self.pub = rospy.Publisher('/stop_experiment', Bool, queue_size=10)
 
                 # caught_confirm topic
                 
@@ -129,6 +131,8 @@ class MainTester(object):
                 if msg.confirm is True:
                         self.running_experiment = False
                         print(msg.robber + " caught")
+                        out_msg = Bool(True)
+                        self.pub(out_msg)
                         # send robots to starting positions
 
 if __name__ == '__main__':
