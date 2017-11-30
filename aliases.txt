@@ -1,0 +1,22 @@
+Useful aliases for running the CnR experiment
+Append to ~/.bashrc file
+*File routes need to be configured per computer*
+
+# Have ROS sourced first
+source /opt/ros/kinetic/setup.bash
+source ~/catkin_ws/devel/setup.bash
+
+alias cnr2='source /home/cohrint/.virtualenvs/cnr2/bin/activate'
+alias c='cd ~/catkin_ws/src/cops-and-robots-2.0'
+alias roy='ssh odroid@roy'
+alias zhora='ssh odroid@zhora'
+alias deck='ssh odroid@deckard'
+alias pris='ssh odroid@pris'
+
+alias pol='roslaunch policy_translator policy_translator.launch'
+alias vsys='roslaunch ~/catkin_ws/src/cops-and-robots-2.0/launch/vicon_sys.launch'
+alias gui='cnr2;cd ~/catkin_ws/src/cops-and-robots-2.0;python gui.py'
+alias obsd='roslaunch observation_interface interface.launch cop:=deckard'
+alias obsr='roslaunch observation_interface interface.launch cop:=roy'
+alias obsp='roslaunch observation_interface interface.launch cop:=pris'
+alias obsz='roslaunch observation_interface interface.launch cop:=zhora'
