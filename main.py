@@ -47,7 +47,7 @@ class MainTester(object):
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
-        cop_initial_belief = GM([[-6,2.5],[1,0],[-4,-2]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
+        cop_initial_belief = GM([[-6,2.5],[1,0],[-3,-2.5]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
         delta = 0.1
 
 	def __init__(self, config_file='config/config.yaml'):

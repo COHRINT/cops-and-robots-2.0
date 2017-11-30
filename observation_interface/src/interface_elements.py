@@ -11,7 +11,7 @@ __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1" # Image topic subscription over ros
 __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
@@ -30,8 +30,12 @@ from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect, QTi
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
 
 from std_msgs.msg import String
-from sensor_msgs.msg import Image, CompressedImage
 from observation_interface.msg import *
+
+# For viewing the image topic
+import cv2
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 
 # various style sheets for widgets
 
@@ -566,14 +570,15 @@ class MapDisplay(QWidget):
 
     def __init__(self):
         super(QWidget,self).__init__()
+        print("Initializing map")
 
         self.name = "Belief Map"
 
-#        rospy.Subscriber("/interface_map", Image, self.ros_update)
+        rospy.Subscriber("/interface_map", Image, self.map_update)
+        self.bridge = CvBridge()
         self.format = QImage.Format_RGB888
 
         self.initUI()
-        self.map_update()
         
 
     def initUI(self):
@@ -592,14 +597,14 @@ class MapDisplay(QWidget):
         self.setLayout(self.main_layout)
         self.show()
 
-    def map_update(self):
-        # load image
-        try:
-            self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
-            if not self.image_view.isNull():
-                self.pic_label.setPixmap(self.image_view)
-        finally:
-            QTimer.singleShot(200, self.map_update)
+    def map_update(self, map_msg): # callback for the policy translator publisher
+        # load image from the topic 
+        image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
+        height, width, channel = image.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(image.data, width, height, bytesPerLine, QImage.Format_RGB888)
+        pixMap = QPixmap.fromImage(qImg)
+        self.pic_label.setPixmap(pixMap)
 
 class VideoContainer(QWidget):
     """
