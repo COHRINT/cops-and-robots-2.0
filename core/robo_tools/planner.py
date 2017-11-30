@@ -22,14 +22,12 @@ from geometry_msgs.msg import PoseStamped
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-
-
 class GoalPlanner(object):
     """The GoalPlanner Super Class generates goal poses for a robot.
 
     Publishes goals to the rostopic: /robot_name/move_base_simple/goal
     """
-    reached_pose_proximity = 0.2 # distance until a pose is reached
+    reached_pose_proximity = 0.5 # distance until a pose is reached
     
     __metaclass__ = ABCMeta
 
@@ -67,15 +65,11 @@ class GoalPlanner(object):
             raise
         # Check if the robot is stopped
         if self.prev_pose != pose:
-#            print("Not Stopped")
             return False
 
-#        print(goal_pose)
         # Check if we've reached the pose also
         x = abs(pose[0] - goal_pose[0])
-#        print("X val: " + str(x))
         y = abs(pose[1] - goal_pose[1])
-#        print("Y val: " + str(y))
         if x < self.reached_pose_proximity and y < self.reached_pose_proximity:
             return True
         else:

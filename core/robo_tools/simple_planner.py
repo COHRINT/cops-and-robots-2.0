@@ -19,15 +19,23 @@ import random
 from core.robo_tools.planner import GoalPlanner
 #from planner import GoalPlanner # if running as the main file (for tests)
 
+# Whether to run through the run_list of poses or pick randomly among the pose_list
+RUN_THROUGH = False
+
+
 class SimpleGoalPlanner(GoalPlanner):
 
-        pose_list = [[-8,1,0], [-4,2.5,0], [0, -2.25,0], [1,2,0],[-1.25, 2.5,0], [3, -1.0, 0], [-8.5,-1,0], [-6,2,0]]
+        pose_list = [[-8,1,0], [0, -2.25,0], [1,2,0],[-1.25, 2.5,0], [3, -1.0, 0], [-8.5,-1,0], [-6,2,0]]
+        run_list = [[-4, 0,0], [-4,1.25,0], [-5.25, -2,0]]
         
         def __init__(self, robot_name=None, robot_pose=None):
                 random.seed()
-#                self.goal_pose = self.pose_list[0]
-#                self.goal_num = 1
-                self.goal_pose = self.pose_list[random.randint(0, len(self.pose_list)-1)]
+
+                if RUN_THROUGH :
+                        self.goal_pose = self.run_list[0]
+                        self.goal_num = 1
+                else:
+                        self.goal_pose = self.pose_list[random.randint(0, len(self.pose_list)-1)]                        
                 
                 super(SimpleGoalPlanner, self).__init__(robot_name, robot_pose)
         
@@ -40,7 +48,11 @@ class SimpleGoalPlanner(GoalPlanner):
 		"""
 
                 if self.reached_pose(pose, self.goal_pose):
-                        self.goal_pose = self.pose_list[random.randint(0, len(self.pose_list)-1)]
+                        if RUN_THROUGH:
+                                self.goal_pose = self.run_list[self.goal_num]
+                                self.goal_num = (self.goal_num + 1) % len(self.run_list)
+                        else:
+                                self.goal_pose = self.pose_list[random.randint(0, len(self.pose_list)-1)]
 #                        self.goal_pose = self.pose_list[self.goal_num]
 #                        self.goal_num += 1
 
