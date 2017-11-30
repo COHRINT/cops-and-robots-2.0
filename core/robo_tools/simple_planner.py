@@ -21,7 +21,7 @@ from core.robo_tools.planner import GoalPlanner
 
 class SimpleGoalPlanner(GoalPlanner):
 
-        pose_list = [[-8.5,1,0], [-4,2.5,0], [0, -2.25,0], [1,2,0],[-1.25, 2.5,0], [3, -1.0, 0], [-8.5,-1,0], [-6,2,0]]
+        pose_list = [[-8,1,0], [-4,2.5,0], [0, -2.25,0], [1,2,0],[-1.25, 2.5,0], [3, -1.0, 0], [-8.5,-1,0], [-6,2,0]]
         
         def __init__(self, robot_name=None, robot_pose=None):
                 random.seed()

@@ -37,7 +37,7 @@ class Cop(Robot):
                  name, 
                  goal_planner_type='pomdp'):
 
-       set_trace()
+#       set_trace()
         
        # Perform Pomdp initializations, self.init__ variables are deleted in robot.py, eliminating multiple references to one object, good practice for debugging purposes
        self.init_belief = initial_belief

@@ -64,6 +64,7 @@ class ObservationInterface(QMainWindow):
 
     def __init__(self):
 
+       
         rospy.init_node('obs_interface')
         self.app_name = 'Cops and Robots 1.5'
 
@@ -123,6 +124,7 @@ class ObservationInterface(QMainWindow):
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
         self.human_push = HumanPush()
+        print("MAP display")
         self.belief_map = MapDisplay()
 
         self.main_layout.addWidget(self.robot_pull,5,3,2,3,Qt.AlignTop)
