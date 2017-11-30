@@ -433,13 +433,18 @@ class HumanPush(QWidget):
         self.tabs.addTab(self.position_area_tab,'Position (Area)')
         self.tabs.addTab(self.movement_tab,'Movement')
 
+        # add statement 'I know a robber is...' next to tabs
+        self.statment_preface = QLabel('I know a robber is...')
+        self.main_layout.addWidget(self.statment_preface)
+
         # add tabs to main layout
         self.main_layout.addWidget(self.tabs)
 
         self.widget_list = []
         # make Position Objects codebook
-        object_boxes = [certainties,targets,positivities,object_relations,
-                            objects]
+        # object_boxes = [certainties,targets,positivities,object_relations,
+        #                     objects]
+        object_boxes = [object_relations,objects]
         object_layout, object_widget_list = self.make_codebook(object_boxes,
                                                 self.position_objects_tab.layout)
         self.position_objects_tab.setLayout(object_layout)
@@ -505,7 +510,7 @@ class HumanPush(QWidget):
         """
         # get index of selected tab
         idx = self.tabs.currentIndex()
-        answer = ''
+        answer = 'I know Roy is '
 
         # get selected text from all boxes in selected tab
         for codebook in self.widget_list[idx]:
