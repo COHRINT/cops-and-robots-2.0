@@ -12,6 +12,8 @@ __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
 
+from pdb import set_trace
+
 import random
 import logging
 import math
@@ -28,13 +30,15 @@ from policy_translator.msg import *
 
 class PomdpGoalPlanner(GoalPlanner):
 
-	def __init__(self, robot_pose=None, robot_name=None):
+	def __init__(self, belief, bounds, delta, robot_name=None, robot_pose=None):
 
-		bounds = [-9.6, -3.6, 4, 3.6]
-		self.delta = 0.1
+                self.belief = belief
+                self.delta = delta
+                
 		self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
-		super(PomdpGoalPlanner, self).__init__(robot_pose, robot_name)
+		super(PomdpGoalPlanner, self).__init__(robot_name, robot_pose)
+#                set_trace()
 
 	def get_goal_pose(self,pose=None):
 		"""Find goal pose from POMDP policy translator server
@@ -47,7 +51,7 @@ class PomdpGoalPlanner(GoalPlanner):
 			Goal pose in the form [x,y,theta] as [m,m,degrees]
 		"""
 		discrete_flag = True
-		if type(self.robot.belief) is np.ndarray:
+		if type(self.belief) is np.ndarray:
 			discrete_flag = True
 
 		msg = None
@@ -55,14 +59,14 @@ class PomdpGoalPlanner(GoalPlanner):
 			msg = DiscretePolicyTranslatorRequest()
 		else:
 			msg = PolicyTranslatorRequest()
-		msg.name = self.robot.name
+		msg.name = self.robot_name
 		res = None
 
 		if discrete_flag:
-			msg.belief = discrete_dehydrate(self.robot.belief)
+			msg.belief = discrete_dehydrate(self.belief)
 		else:
-			if self.robot.belief is not None:
-				(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.robot.belief)
+			if self.belief is not None:
+				(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.belief)
 			else:
 				msg.weights = []
 				msg.means = []
@@ -77,14 +81,19 @@ class PomdpGoalPlanner(GoalPlanner):
 			print "Service call failed: %s"%e
 
 		if discrete_flag:
-			self.robot.belief = discrete_rehydrate(res.response.belief_updated,self.shapes)
+			self.belief = discrete_rehydrate(res.response.belief_updated,self.shapes)
 		else:
-			self.robot.belief = rehydrate_msg(res.response.weights_updated,
+			self.belief = rehydrate_msg(res.response.weights_updated,
 											res.response.means_updated,
 											res.response.variances_updated)
 
-		goal_pose = res.response.goal_pose
+		goal_pose = list(res.response.goal_pose)
 
 		print("NEW GOAL POSE: {}".format(goal_pose))
-
+                
+                # Round the given goal pose
+                for i in range(len(goal_pose)):
+                        goal_pose[i] = round(goal_pose[i], 2)
+#                print("Rounded goal pose: {}".format(goal_pose))
+                
 		return goal_pose

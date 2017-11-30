@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-#import logging
 from pdb import set_trace
 
 __author__ = ["LT"]
@@ -38,12 +37,15 @@ class Cop(Robot):
                  name, 
                  goal_planner_type='pomdp'):
 
-#       set_trace()
+       set_trace()
         
-       # Perform Pomdp initializations
-       self.belief = initial_belief
-       self.belief.normalizeWeights()
-       self.belief = self.belief.discretize2D(low=[map_bounds[0], map_bounds[1]],high=[map_bounds[2], map_bounds[3]],delta=delta)
+       # Perform Pomdp initializations, self.init__ variables are deleted in robot.py, eliminating multiple references to one object, good practice for debugging purposes
+       self.init_belief = initial_belief
+       self.init_map_bounds = map_bounds
+       self.init_delta = delta
+       self.init_belief.normalizeWeights()
+       self.init_belief = self.init_belief.discretize2D(low=[self.init_map_bounds[0], self.init_map_bounds[1]],high=[self.init_map_bounds[2], self.init_map_bounds[3]],delta=self.init_delta)
 
        super(Cop, self).__init__(name, goal_planner_type)
+
 

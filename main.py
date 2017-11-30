@@ -8,7 +8,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren","Sierra Williams","Matt Aiken","Nick Sweet"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "2.0"
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -33,11 +33,14 @@ class MainTester(object):
 	Methods
 	----------
 	1) __init__() : launches the experiment and contains the main loop
-        2) create_actors() : creates each robot as either a cop or robber
-        3) update_actors() : calls the robot.update() method of each robot
+        2) init_cop_robber() : creates each robot as either a cop or robber
+        3) update_cop_robber() : calls the robot.update() method of each robot
+        4) end_experiment() : callback to the /caught_confirm topic and influences the self.running_experiment variable
         
 	"""
         running_experiment = True
+
+        experiment_runspeed_hz = 1
         
         map_bounds = [-9.6, -3.6, 4, 3.6]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
@@ -60,7 +63,7 @@ class MainTester(object):
 
                 # Main Loop
                 print("Entering Main Loop")
-                r = rospy.Rate(1) # 10 Hz
+                r = rospy.Rate(self.experiment_runspeed_hz) # 1 Hz
                 while self.running_experiment is True and not rospy.is_shutdown():
                         self.update_cop_robber()
                         r.sleep()

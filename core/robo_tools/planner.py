@@ -52,9 +52,12 @@ class GoalPlanner(object):
             print("Check the instantiation line of GoalPlanner")
             raise
 
+        self.robot_name = robot_name.lower()
         # Make a publisher for Goals to be communicated on updating
-        goal_pose_topic = '/' + robot_name.lower() + '/move_base_simple/goal'
+        goal_pose_topic = '/' + self.robot_name + '/move_base_simple/goal'
         self.pub = rospy.Publisher(goal_pose_topic, PoseStamped, queue_size=10)
+
+        # Used to determine whether to create a new rosmsg in the GoalPlanner.update() method
         self.prev_goal_pose = robot_pose
         self.prev_pose = robot_pose
 
@@ -64,15 +67,15 @@ class GoalPlanner(object):
             raise
         # Check if the robot is stopped
         if self.prev_pose != pose:
-            print("Not Stopped")
+#            print("Not Stopped")
             return False
 
 #        print(goal_pose)
         # Check if we've reached the pose also
         x = abs(pose[0] - goal_pose[0])
-        print("X val: " + str(x))
+#        print("X val: " + str(x))
         y = abs(pose[1] - goal_pose[1])
-        print("Y val: " + str(y))
+#        print("Y val: " + str(y))
         if x < self.reached_pose_proximity and y < self.reached_pose_proximity:
             return True
         else:
@@ -90,7 +93,7 @@ class GoalPlanner(object):
         goal_pose : list [x,y,theta] in [m,m,degrees].
 
         """
-        return
+        pass
         
     def update(self,pose=None):
         """

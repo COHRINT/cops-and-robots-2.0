@@ -57,8 +57,21 @@ class Robot(object):
         elif goal_planner_type == 'simple':
             from simple_planner import SimpleGoalPlanner
             self.goal_planner = SimpleGoalPlanner(self.name, self.Pose.pose)
-
-        elif goal_planner_type == 'trajectory':
+            
+        elif goal_planner_type == 'pomdp':
+            from pomdp_planner import PomdpGoalPlanner
+            self.goal_planner = PomdpGoalPlanner(self.init_belief, self.init_map_bounds, self.init_delta, self.name, self.Pose.pose)
+            # These variables are now in the goal planner, let's not store the references in two places for debugging purposes
+            del self.init_belief 
+            del self.init_map_bounds
+            del self.init_delta
+            
+        elif goal_planner_type == 'audio': # Jeremy's Audio Planner. Intergration with this goal planner class has not been set up correctly yet
+            from audio_planner import AudioGoalPlanner
+            self.goal_planner = AudioGoalPlanner()
+            
+# Other planners not used. Integration with this goal planner framework still needed
+        elif goal_planner_type == 'trajectory': 
             from trajectory_planner import TrajectoryGoalPlanner
             self.goal_planner = TrajectoryGoalPlanner()
 
@@ -69,14 +82,7 @@ class Robot(object):
         elif goal_planner_type == 'MAP':
             from probability_planner import PorbabilityGoalPlanner
             self.goal_planner = ProbabilityGoalPlanner()
-
-        elif goal_planner_type == 'pomdp':
-            from pomdp_planner import PomdpGoalPlanner
-            self.goal_planner = PomdpGoalPlanner(self.name, self.Pose.pose)
-
-        elif goal_planner_type == 'audio':
-            from audio_planner import AudioGoalPlanner
-            self.goal_planner = AudioGoalPlanner()
+            
         else:
             print("No goal planner selected. Check instantation of robot.py")
             raise
