@@ -23,6 +23,8 @@ __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Stable"
 
+from pdb import set_trace
+
 import rospy
 import rospkg
 import roslib
@@ -56,10 +58,10 @@ class Caught_Robber(object):
 
         # Identify Cops' image topics to subscribe to
         # All topics have same callback "self.caught_callback"
-        copList = rospy.get_param('~cops', ['pris'])
+        copList = rospy.get_param('~cops', ['deckard'])
         rospy.logdebug("CopList: " + str(copList))
         for cop in copList:
-            video_feed = "/" + cop + '/camera/rgb/image_color'
+            video_feed = "/" + cop + '/image_color'
             rospy.Subscriber(video_feed, Image ,self.caught_callback)
             rospy.loginfo("Caught subscribed to: "+ video_feed)
 
@@ -123,10 +125,12 @@ class Caught_Robber(object):
                 r_min = self.robber_info[rob]['r']['MIN']
                 g_min = self.robber_info[rob]['g']['MIN']
                 b_min = self.robber_info[rob]['b']['MIN']
+                r_min, b_min = b_min, r_min # UVC camera sends the values backwards
 
                 r_max = self.robber_info[rob]['r']['MAX']
                 g_max = self.robber_info[rob]['g']['MAX']
                 b_max = self.robber_info[rob]['b']['MAX']
+                r_max, b_max = b_max, r_max # UVC camera sends the values backwards
 
                 # Make lower and upper lists in BGR format
                 lower = [b_min, g_min, r_min] # BGR
@@ -147,18 +151,18 @@ class Caught_Robber(object):
                 rospy.logdebug("Max Contour: " + str(area))
 
                 # Check publish caught msg
-                if area > self.caught_val:
-                    self.counter += 1
-                    if (self.counter >= self.caught_count):
-                        self.publishing = True
-                        msg = Caught()
-                        msg.robber = rob
-                        msg.confirm = True
-                        self.pub.publish(msg)
-                        self.counter = 0 # restart
-                        rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
-                else:
-                    self.counter = 0
+                # if area > self.caught_val:
+                #     self.counter += 1
+                #     if (self.counter >= self.caught_count):
+                #         self.publishing = True
+                #         msg = Caught()
+                #         msg.robber = rob
+                #         msg.confirm = True
+                #         self.pub.publish(msg)
+                #         self.counter = 0 # restart
+                #         rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
+                # else:
+                #     self.counter = 0
 
                 if self.show_mask:
                     # cv2.imshow("image", cv_image) #For un affected image view

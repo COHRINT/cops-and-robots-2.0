@@ -3,7 +3,7 @@ See wiki for instructions on running caught robber node on Odroid - LT-->
 
 <launch>
   <arg name="catch_dist" default="0.7" />
-  <arg name="cop_name" default="pris" />
+  <arg name="cop_name" default="deckard" />
   <arg name="num_cops" default="1" />
   <!-- Testing -->
   <arg name="num_robbers" default="1" />
@@ -17,7 +17,7 @@ See wiki for instructions on running caught robber node on Odroid - LT-->
 <node name="caught_robber" pkg="caught" type="caught_robber_comp.py" output="screen">
   <param name="catch_dist" value="$(arg catch_dist)" />
   <param name="show_mask" value="$(arg show_mask)" />
-  <rosparam param="cops">["pris"] </rosparam> <!-- additional cops to be added in list -->
+  <rosparam param="cops">["deckard"] </rosparam> <!-- additional cops to be added in list -->
 </node>
 
 
