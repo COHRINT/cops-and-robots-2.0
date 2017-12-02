@@ -41,7 +41,7 @@ class MainTester(object):
 	"""
         running_experiment = True
 
-        experiment_runspeed_hz = 1
+        experiment_runspeed_hz = 10
         
         map_bounds = [-9.6, -3.6, 4, 3.6]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
@@ -132,7 +132,7 @@ class MainTester(object):
                         self.running_experiment = False
                         print(msg.robber + " caught")
                         out_msg = Bool(True)
-                        self.pub(out_msg)
+                        self.pub.publish(out_msg)
                         # send robots to starting positions
 
 if __name__ == '__main__':

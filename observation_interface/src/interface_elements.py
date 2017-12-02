@@ -515,7 +515,6 @@ class HumanPush(QWidget):
         # get index of selected tab
         idx = self.tabs.currentIndex()
         answer = 'I know Roy is'
-        print('help!!!!!')
 
         # get selected text from all boxes in selected tab
         for codebook in self.widget_list[idx]:
