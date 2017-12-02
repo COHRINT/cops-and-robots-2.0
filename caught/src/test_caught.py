@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-""" Simple interface to test caught_robber.py """
+""" Simple interface to test caught_robber.py 
+
+Simply acts as a callback to the caught topic """
 
 
 __author__ = "LT"

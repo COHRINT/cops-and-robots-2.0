@@ -145,24 +145,29 @@ class Caught_Robber(object):
                 image, cont, hier = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
                 output = cv2.bitwise_and(cv_image, cv_image, mask = mask)
 
+                # Check for no contours
+                if not cont:
+                    rospy.loginfo("No Contours")
+                    return
+                
                 # Find the largest contour
                 c = max(cont, key=cv2.contourArea)
                 area = cv2.contourArea(c)
-                rospy.logdebug("Max Contour: " + str(area))
+                rospy.loginfo("Max Contour: " + str(area))
 
                 # Check publish caught msg
-                # if area > self.caught_val:
-                #     self.counter += 1
-                #     if (self.counter >= self.caught_count):
-                #         self.publishing = True
-                #         msg = Caught()
-                #         msg.robber = rob
-                #         msg.confirm = True
-                #         self.pub.publish(msg)
-                #         self.counter = 0 # restart
-                #         rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
-                # else:
-                #     self.counter = 0
+                if area > self.caught_val:
+                    self.counter += 1
+                    if (self.counter >= self.caught_count):
+                        self.publishing = True
+                        msg = Caught()
+                        msg.robber = rob
+                        msg.confirm = True
+                        self.pub.publish(msg)
+                        self.counter = 0 # restart
+                        rospy.loginfo("Caught Node publishing catch of: " + rob.capitalize())
+                else:
+                    self.counter = 0
 
                 if self.show_mask:
                     # cv2.imshow("image", cv_image) #For un affected image view
