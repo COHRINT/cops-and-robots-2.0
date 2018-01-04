@@ -50,42 +50,25 @@ class PomdpGoalPlanner(GoalPlanner):
 		goal_pose [array]
 			Goal pose in the form [x,y,theta] as [m,m,degrees]
 		"""
-		discrete_flag = True
-		if type(self.belief) is np.ndarray:
-			discrete_flag = True
-
-		msg = None
-		if discrete_flag:
-			msg = DiscretePolicyTranslatorRequest()
-		else:
-			msg = PolicyTranslatorRequest()
+		msg = PolicyTranslatorRequest()
 		msg.name = self.robot_name
-		res = None
-
-		if discrete_flag:
-			msg.belief = discrete_dehydrate(self.belief)
+           	if self.belief is not None:
+			(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.belief)
 		else:
-			if self.belief is not None:
-				(msg.weights,msg.means,msg.variances) = dehydrate_msg(self.belief)
-			else:
-				msg.weights = []
-				msg.means = []
-				msg.variances = []
+			msg.weights = []
+			msg.means = []
+			msg.variances = []
+		res = None
 
                 print("Waiting for the POMDP Policy Service")
 		rospy.wait_for_service('translator')
 		try:
-			pt = rospy.ServiceProxy('translator',discrete_policy_translator_service)
+			pt = rospy.ServiceProxy('translator',policy_translator_service)
 			res = pt(msg)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
-
-		if discrete_flag:
-			self.belief = discrete_rehydrate(res.response.belief_updated,self.shapes)
-		else:
-			self.belief = rehydrate_msg(res.response.weights_updated,
-											res.response.means_updated,
-											res.response.variances_updated)
+		
+		self.belief = rehydrate_msg(res.response.weights_updated, res.response.means_updated, res.response.variances_updated)
 
 		goal_pose = list(res.response.goal_pose)
 
