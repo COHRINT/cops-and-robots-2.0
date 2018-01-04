@@ -44,7 +44,6 @@ class Cop(Robot):
        self.init_map_bounds = map_bounds
        self.init_delta = delta
        self.init_belief.normalizeWeights()
-       self.init_belief = self.init_belief.discretize2D(low=[self.init_map_bounds[0], self.init_map_bounds[1]],high=[self.init_map_bounds[2], self.init_map_bounds[3]],delta=self.init_delta)
 
        super(Cop, self).__init__(name, goal_planner_type)
 

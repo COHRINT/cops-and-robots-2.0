@@ -48,13 +48,13 @@ class MainTester(object):
 
         # Related to Cop's belief 
         cop_initial_belief = GM()
-        self.belief.addNewG([-6,3,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
-        self.belief.addNewG([-7,2,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
-        self.belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
-        self.belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
-        self.belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study
-        self.belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room
-        self.belief.normalizeWeights()
+        cop_initial_belief.addNewG([-6,3,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        cop_initial_belief.addNewG([-7,2,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
+        cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
+        cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study
+        cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room
+        cop_initial_belief.normalizeWeights()
         
         delta = 0.1
 
