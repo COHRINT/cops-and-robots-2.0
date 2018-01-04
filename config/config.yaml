@@ -10,25 +10,25 @@ main:
 robots:
   Deckard:
     goal_planner_cfg:
+      type_: stationary
+    pose_source: tf
+    type_: cop
+    use: false
+  Pris:
+    goal_planner_cfg:
       type_: simple
+    pose_source: tf
+    type_: robber
+    use: true
+  Roy:
+    goal_planner_cfg:
+      type_: pomdp
     pose_source: tf
     type_: cop
     use: true
-  Pris:
-    goal_planner_cfg:
-      type_: stationary
-    pose_source: tf
-    type_: cop
-    use: false
-  Roy:
-    goal_planner_cfg:
-      type_: stationary
-    pose_source: tf
-    type_: cop
-    use: false
   Zhora:
     goal_planner_cfg:
-      type_: stationary
+      type_: pomdp
     pose_source: tf
     type_: cop
     use: false
