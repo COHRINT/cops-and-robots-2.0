@@ -39,7 +39,7 @@ class Cop(Robot):
 
 #       set_trace()
         
-       # Perform Pomdp initializations, self.init__ variables are deleted in robot.py, eliminating multiple references to one object, good practice for debugging purposes
+       # Perform Pomdp initializations
        self.init_belief = initial_belief
        self.init_map_bounds = map_bounds
        self.init_delta = delta
