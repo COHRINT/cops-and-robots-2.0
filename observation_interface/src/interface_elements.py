@@ -387,7 +387,9 @@ object_relations = ["behind","in front of","left of","right of","near"]
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster","Deckard"]
+            "the fridge","the mars poster"] 
+            # removed Deckard from objects as no voi questions exist for Deckard. 
+            # See voi.py in policy_translator package
 
 area_relations = ["inside","near","outside"]
 
@@ -435,10 +437,10 @@ class HumanPush(QWidget):
         self.movement_tab.layout = QHBoxLayout()
         self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
         self.tabs.addTab(self.position_area_tab,'Position (Area)')
-        self.tabs.addTab(self.movement_tab,'Movement')
+        # self.tabs.addTab(self.movement_tab,'Movement')
 
         # add statement 'I know a robber is...' next to tabs
-        self.statment_preface = QLabel('I know a robber is...')
+        self.statment_preface = QLabel('I know a robber...')
         self.main_layout.addWidget(self.statment_preface)
 
         # add tabs to main layout
@@ -448,26 +450,27 @@ class HumanPush(QWidget):
         # make Position Objects codebook
         # object_boxes = [certainties,targets,positivities,object_relations,
         #                     objects]
-        object_boxes = [object_relations,objects]
+        object_boxes = [positivities,object_relations,objects]
         object_layout, object_widget_list = self.make_codebook(object_boxes,
                                                 self.position_objects_tab.layout)
         self.position_objects_tab.setLayout(object_layout)
         self.widget_list.append(object_widget_list)
 
         # make Position Area codebook
-        area_boxes = [certainties,targets,positivities,area_relations,areas]
+        # area_boxes = [certainties,targets,positivities,area_relations,areas]
+        area_boxes = [positivities,area_relations,areas]
         area_layout, area_widget_list = self.make_codebook(area_boxes,
                                             self.position_area_tab.layout)
         self.position_area_tab.setLayout(area_layout)
         self.widget_list.append(area_widget_list)
 
         # make Movement codebook
-        movement_boxes = [certainties,targets,positivities,movement_types,
-                            movement_qualities]
-        movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
-                                                    self.movement_tab.layout)
-        self.movement_tab.setLayout(movement_layout)
-        self.widget_list.append(movement_widget_list)
+        # movement_boxes = [certainties,targets,positivities,movement_types,
+        #                     movement_qualities]
+        # movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
+        #                                             self.movement_tab.layout)
+        # self.movement_tab.setLayout(movement_layout)
+        # self.widget_list.append(movement_widget_list)
 
         # add the question parts to the codebooks
         # self.add_list_items()

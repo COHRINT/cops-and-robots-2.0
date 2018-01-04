@@ -66,7 +66,7 @@ class ObservationInterface(QMainWindow):
 
        
         rospy.init_node('obs_interface')
-        self.app_name = 'Cops and Robots 1.5'
+        self.app_name = 'Cops and Robots 1.6'
 
         super(QMainWindow,self).__init__()
         self.main_widget = QWidget()
