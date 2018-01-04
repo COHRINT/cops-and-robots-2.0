@@ -8,7 +8,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren","Sierra Williams","Matt Aiken","Nick Sweet"]
 __license__ = "GPL"
-__version__ = "2.0"
+__version__ = "2.1" # for CnR 2.0
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -47,7 +47,15 @@ class MainTester(object):
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
-        cop_initial_belief = GM([[-6,2.5],[1,0],[-3,0]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
+        cop_initial_belief = GM()
+        self.belief.addNewG([-6,3,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        self.belief.addNewG([-7,2,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        self.belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
+        self.belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
+        self.belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study
+        self.belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room
+        self.belief.normalizeWeights()
+        
         delta = 0.1
 
 	def __init__(self, config_file='config/config.yaml'):

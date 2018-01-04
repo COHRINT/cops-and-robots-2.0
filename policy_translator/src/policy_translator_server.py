@@ -8,16 +8,14 @@ a goal pose, which includes a belief, and responds with a new goal pose and an
 updated belief.
 '''
 
-__author__ = "Ian Loefgren"
+__author__ = "Ian Loefgren, Luke Barbier"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "2.1"
 __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
-
-from pdb import set_trace
 
 from policy_translator.srv import *
 from policy_translator.msg import *
@@ -31,53 +29,39 @@ import numpy as np
 import math
 import os
 
-import voi # obs_mapping in callbacks
+# import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
 from PolicyTranslator import PolicyTranslator
-from MAPTranslator import MAPTranslator
-from belief_handling import rehydrate_msg, dehydrate_msg, discrete_rehydrate, discrete_dehydrate
+from POMDPTranslator import POMDPTranslator
+from belief_handling import rehydrate_msg, dehydrate_msg
 
 # Observation Queue #TODO delete in CnR 2.0
 from obs_queue import Obs_Queue
 
-# For publishing the belief image over ROS
-import cv2
-from sensor_msgs.msg import CompressedImage, Image
-from cv_bridge import CvBridge, CvBridgeError
-
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
-        if check == 'MAP': # Allow for use of different translators
-            print("Running MAP Translator!")
-            self.pt = MAPTranslator()
-            self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
-        else:
-            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-            self.pt = PolicyTranslator(args)
-            self.trans = "POL"
+        self.pt = POMDPTranslator()
 
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
-        s = rospy.Service('translator',discrete_policy_translator_service,self.handle_policy_translator)
+        s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
 
         # Observations -> likelihood queue
         rospy.Subscriber("/human_push", String, self.human_push_callback)
         rospy.Subscriber("/answered", Answer, self.robot_pull_callback)
+        self.q_pub = rospy.Publisher("/robot_questions",Question,queue_size=10)
         self.queue = Obs_Queue()
 
-        # This in many ways is a black box
-        self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
+        # self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
 
         bounds = [-9.6, -3.6, 4, 3.6]
         self.delta = 0.1
         self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
-        print('Policy translator service ready.')
+        self.call_count = 0
 
-        # Initialize cv image pub objects
-        self.bridge = CvBridge()
-        self.image_pub = rospy.Publisher("/interface_map", Image, queue_size=10)
+        print('Policy translator service ready.')
 
         rospy.spin()
 
@@ -88,59 +72,27 @@ class PolicyTranslatorServer(object):
         '''
         name = req.request.name
 
-        if self.trans == "MAP":
-            belief = self.translator_wrapper(req.request.name,self.queue.flush(),
-                                                flat_belief=req.request.belief)
-        else:      # run the observation observance
-            if not req.request.weights:
-                obs = None
-            else:
-                obs_msg = ObservationRequest()
-                obs = self.obs_server_client(obs_msg)
-
-
-                belief = self.translator_wrapper(req.request.name,req.request.weights,
-                                    req.request.means,req.request.variances,obs)
-
-        if self.trans != "MAP":
-            weights_updated = belief[0]
-            means_updated = belief[1]
-            variances_updated = belief[2]
-            goal_pose = belief[3]
-
-            res = self.create_message(req.request.name,
-                                goal_pose,
-                                weights_updated=weights_updated,
-                                means_updated=means_updated,
-                                variances_updated=variances_updated)
-
+        if not req.request.weights:
+            obs = None
         else:
-            goal_pose = belief[1]
-            res = self.create_message(req.request.name,
-                                        goal_pose,
-                                        flat_belief=belief[0])
+            obs = self.queue.flush()
 
-        # Publish the saved image to a rosptopic
-        print("Reading image")
-        try:
-            cv_image = cv2.imread(os.path.dirname(__file__) + "/../tmp/tmpBelief.png")
-            imageMsg = self.bridge.cv2_to_imgmsg(cv_image, "bgr8")
-            self.image_pub.publish(imageMsg)
-        except CvBridgeError as e:
-            print(e)
+            belief = self.translator_wrapper(req.request.name,obs,req.request.weights,
+                                req.request.means,req.request.variances)
+
+
+        weights_updated = belief[0]
+        means_updated = belief[1]
+        variances_updated = belief[2]
+        goal_pose = belief[3]
+
+        res = self.create_message(req.request.name,
+                            goal_pose,
+                            weights=weights_updated,
+                            means=means_updated,
+                            variances=variances_updated)
+
         return res
-
-    def obs_server_client(self,msg):
-        '''
-        Request an observation from the observation server.
-        '''
-        rospy.wait_for_service('observation_interface')
-        try:
-            proxy = rospy.ServiceProxy('observation_interface',observation_server)
-            res = proxy(msg)
-            return res.response.observation
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
 
     def tf_update(self,name):
         '''
@@ -157,68 +109,64 @@ class PolicyTranslatorServer(object):
         pose = [x, y, np.rad2deg(theta)]
         return pose
 
-    def translator_wrapper(self,name,obs,weights=None,means=None,variances=None,flat_belief=None):
+    def translator_wrapper(self,name,obs,weights=None,means=None,variances=None):
         '''
         Rehydrate the belief then get the position of the calling robot, update the
         belief and get a new goal pose. Then dehydrate the updated belief.
         '''
+        goal_pose = None
         copPoses = []
 
-        if self.trans == "MAP":
-            belief = discrete_rehydrate(flat_belief,self.shapes)
-        else:
-            belief = rehydrate_msg(weights,means,variances)
+        belief = rehydrate_msg(weights,means,variances)
 
         position = self.tf_update(name)
 
         copPoses.append(position)
 
-        # obs = self.queue.flush()
-        print("OBSERVATIONS: {}".format(obs))
+        # if (self.call_count % 4 == 0):
+        (b_updated,goal_pose,questions) = self.pt.getNextPose(belief,obs,copPoses)
+        q_msg = Question()
+        # q_msg.qids = questions[1]
+        q_msg.qids = [0 for x in range(0,len(questions[0]))]
+        q_msg.questions = questions[0]
+        q_msg.weights = [0 for x in range(0,len(questions[0]))]
+        self.q_pub.publish(q_msg)
 
-        (b_updated,goal_pose) = self.pt.getNextPose(belief,obs,copPoses)
+        # else:
+        #     b_updated = self.pt.beliefUpdate(belief,obs,copPoses)
+        #     goal_pose = [position[0],position[1]]
 
-        if b_updated is not None:
-            if self.trans == "MAP":
-                belief = discrete_dehydrate(b_updated)
-            else:
-                (weights,means,variances) = dehydrate_msg(b_updated)
+        self.call_count += 1
 
         orientation = math.atan2(goal_pose[1]-position[1],goal_pose[0]-position[0])
-        goal_pose.append(orientation)
+        goal_pose[2] = orientation
 
-        if self.trans == "MAP":
-            belief = [belief,goal_pose]
-        else:
-            belief = [weights,means,variances,goal_pose]
+        if b_updated is not None:
+            (weights,means,variances) = dehydrate_msg(b_updated)
+
+        belief = [weights,means,variances,goal_pose]
         return belief
 
-    def create_message(self,name,goal_pose,weights=None,means=None,variances=None,flat_belief=None):
+    def create_message(self,name,goal_pose,weights=None,means=None,variances=None):
         '''
         Create a response message containing the new dehydrated belief and the
         new goal pose.
         '''
         msg = None
-        if self.trans == "MAP":
-            msg = DiscretePolicyTranslatorResponse()
-            msg.name = name
-            msg.belief_updated = flat_belief
-            msg.goal_pose = goal_pose
-        else:
-            msg = PolicyTranslatorResponse()
-            msg.name = name
-            msg.weights_updated = weights
-            msg.means_updated = means
-            msg.variances_updated = variances
-            msg.goal_pose = goal_pose
+        msg = PolicyTranslatorResponse()
+        msg.name = name
+        msg.weights_updated = weights
+        msg.means_updated = means
+        msg.variances_updated = variances
+        msg.goal_pose = goal_pose
         return msg
-
 
     def human_push_callback(self, human_push):
         """
-        -Maps "human push" observations to a likelihood index and pos_neg value
-        -Adds the mapped observation to the observation queue (self.queue)
-            using the likelihood's index and a value of the likelihood being true or untrue (True or False)
+        -Maps "human push" observations to a sofmax model and class, with a
+            positive/negative value
+        -Adds the mapped observation's model, class, and sign to the observation
+            queue (self.queue)
 
         ----------
         Parameters
@@ -227,30 +175,24 @@ class PolicyTranslatorServer(object):
         """
         # strip the space from message
         question = human_push.data.lstrip()
-        (lkhd_question, ans) = voi.obs_mapping[question]
+        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        self.queue.add(room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 
-        try:
-            # lhs = np.load('likelihoods.npy')
-            item = np.where(self.likelihoods['question']==lkhd_question)
-            index = item[0][0]
-            self.queue.add(index, ans)
-            print("Question added: {}".format(self.likelihoods[index][0]))
-        except IOError as ioerr:
-            print(ioerr)
-
-
     def robot_pull_callback(self, data):
-        """"
-        -Maps "human response / robot pull" observations to likelihood index and pos_neg value
-        -Adds the mapped observation to the observation queue (self.queue)
-            using the likelihood's index and a value of the likelihood being true or untrue (True or False)
+        """
+        -Maps "robot pull" question responses to a sofmax model and class, with a
+            positive/negative value
+        -Adds the mapped observation's model, class, and sign to the observation
+            queue (self.queue)
 
         Parameters
         ----------
         data : Answer.msg , Custom Message
         """
-        self.queue.add(data.qid, data.ans)
+        question = [data.question,data.ans]
+        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        self.queue.add(room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
 def Test_Callbacks():
