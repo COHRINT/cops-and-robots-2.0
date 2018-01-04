@@ -115,9 +115,9 @@ class Map_Object(object):
 		Color of obj
 	centroid_pos : list
 		Centroid location [x, y] [m]
-	x_ax_len: float
+	x_len: float
 		x axis length of obj [m] (before orientation adjustment)
-	min_ax_len: float
+	y_len: float
 		y axis length of obj [m] (before orientation adjustment)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis

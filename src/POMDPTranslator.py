@@ -449,8 +449,8 @@ class POMDPTranslator(object):
 		m = self.map2;
 		for obj in m.objects:
 		    cent = m.objects[obj].centroid;
-		    x = m.objects[obj].length;
-		    y = m.objects[obj].width;
+		    x = m.objects[obj].y_len;
+		    y = m.objects[obj].x_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
 		    if(m.objects[obj].shape == 'oval'):
@@ -484,8 +484,8 @@ class POMDPTranslator(object):
 
 	def findLLCorner(self, obj):
 		""" Returns a 2x1 tuple of x and y coordinate of lower left corner """
-		length = obj.length
-		width = obj.width
+		length = obj.y_len
+		width = obj.x_len
 
 		theta1 = obj.orient*math.pi/180;
 		h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
