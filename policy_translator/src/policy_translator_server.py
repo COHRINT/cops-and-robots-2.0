@@ -31,25 +31,19 @@ import os
 
 import voi # obs_mapping in callbacks
 from gaussianMixtures import GM
-from PolicyTranslator import PolicyTranslator
+from POMDPTranslator import POMDPTranslator
 from MAPTranslator import MAPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg, discrete_rehydrate, discrete_dehydrate
 
-# Observation Queue #TODO delete in CnR 2.0
+# Observation Queue 
 from obs_queue import Obs_Queue
 
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
-        if check == 'MAP': # Allow for use of different translators
-            print("Running MAP Translator!")
-            self.pt = MAPTranslator()
-            self.trans = "MAP"      # Variable used in wrapper to bypass observation interface
-        else:
-            args = ['PolicyTranslator.py','-n','D2Diffs','-r','True','-a','1','-s','False','-g','True'];
-            self.pt = PolicyTranslator(args)
-            self.trans = "POL"
 
+        self.pt = POMDPTranslator()
+        
         rospy.init_node('policy_translator_server')
         self.listener = tf.TransformListener()
         s = rospy.Service('translator',discrete_policy_translator_service,self.handle_policy_translator)
