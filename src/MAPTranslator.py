@@ -158,7 +158,10 @@ class MAPTranslator(object):
                 if(res[1] == True):
                     like = self.likelihoods[res[0]][1] * alpha;
                 else:
-                    like = 1-(self.likelihoods[res[0]][1] * alpha);
+                    #like = 1-(self.likelihoods[res[0]][1] * alpha);
+                    likeMinus = np.ones(shape = self.likelihoods[res[0]][1].shape);
+                    like = likeMinus - (self.likelihoods[res[0]][1] * alpha);
+                
                 #print(self.likelihoods[res[0]][0],res[1])
                 posterior = np.multiply(post,like);
                 post = self.normalize(posterior);
@@ -192,7 +195,11 @@ class MAPTranslator(object):
 
                 viewLike = viewLike.flatten();
                 posterior = np.multiply(post,viewLike);
-                posterior += 0.000000001
+                posteriorAdd = np.ones(posterior.shape) * 0.000001;
+                posterior = posterior + posteriorAdd
+                print(np.amax(posterior))
+                
+#                posterior += 0.000000001
                 post = self.normalize(posterior);
                 #levels = [i/250 + 1 for i in range(0,250)]
 
@@ -230,7 +237,7 @@ class MAPTranslator(object):
         ax = fig.add_subplot(111)
 
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-        ax.contourf(x_space,y_space,belief,cmap="viridis");
+        ax.contourf(x_space,y_space,belief,cmap="viridis",vmin=0,vmax=0.0004);
         m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
