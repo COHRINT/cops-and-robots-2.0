@@ -168,8 +168,9 @@ class POMDPTranslator(object):
 			print i
 			print questsFull[i][0]
 			print questsFull[i][1]
-                        set_trace()
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
+
+                        
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -412,48 +413,14 @@ class POMDPTranslator(object):
 		x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
 		bcut = self.cutGMTo2D(belief,dims=[2,3]);
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
-		ax.contourf(x_space,y_space,bel,cmap="viridis");
-	
-
-		# allBels = [];
-		# allBounds = [];
-		# for room in self.map2.rooms:
-		# 	tmp = GM();
-		# 	tmpw = 0;
-		# 	allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
-		# 	for g in belief:
-		# 		m = [g.mean[2],g.mean[3]];
-		# 		if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
-		# 			tmp.addG(deepcopy(g));
-		# 	allBels.append(tmp);
-		
-		# x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-		
-		# pos = np.dstack((x_space, y_space));
-		# c = np.zeros(shape=(pos.shape[0],pos.shape[1]));
-		# print(c.shape);
-		# #for each space
-		# xran = np.arange(self.bounds[0],self.bounds[2],self.delta).tolist();
-		# yran = np.arange(self.bounds[1],self.bounds[3],self.delta).tolist();
-		
-		# for i in range(0,len(xran)):
-		# 	for j in range(0,len(yran)):
-		# 		#for each room
-		# 		for k in range(0,len(allBels)):
-		# 			if(xran[i]>=allBounds[k][0] and xran[i]<=allBounds[k][2] and yran[j]>=allBounds[k][1] and yran[j] <= allBounds[k][3]):
-		# 				bcut = self.cutGMTo2D(allBels[k],dims=[2,3]);
-		# 				for g in bcut:
-		# 					mean = [xran[i],yran[j]];
-		# 					c[i][j] += mvn.pdf(mean,g.mean,g.var)*g.weight;
-		
-		# ax.contourf(x_space,y_space,c,cmap='viridis');
-
+		ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.0004);
+                #ax.contourf(x_space,y_space,bel,cmap="viridis");
 
 		m = self.map2;
 		for obj in m.objects:
 		    cent = m.objects[obj].centroid;
-		    x = m.objects[obj].y_len;
-		    y = m.objects[obj].x_len;
+		    x = m.objects[obj].length;
+		    y = m.objects[obj].width;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
 		    if(m.objects[obj].shape == 'oval'):
@@ -487,12 +454,14 @@ class POMDPTranslator(object):
 
 	def findLLCorner(self, obj):
 		""" Returns a 2x1 tuple of x and y coordinate of lower left corner """
-		length = obj.y_len
-		width = obj.x_len
+                # LOL the x and y dimensions are defined to be length and width in map_maker...
+                # Below they are used oppositely
+		length = obj.length
+		width = obj.width
 
 		theta1 = obj.orient*math.pi/180;
-		h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
-		theta2 = math.asin((width/2)/h);
+		h = math.sqrt((length/2)*(length/2) + (width/2)*(width/2));
+		theta2 = math.asin((length/2)/h);
 
 		s1 = h*math.sin(theta1+theta2);
 		s2 = h*math.cos(theta1+theta2);

@@ -38,6 +38,11 @@ from belief_handling import rehydrate_msg, dehydrate_msg
 # Observation Queue 
 from obs_queue import Obs_Queue
 
+# For publishing the belief image over ROS
+import cv2
+from sensor_msgs.msg import CompressedImage, Image
+from cv_bridge import CvBridge, CvBridgeError
+
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
@@ -62,6 +67,10 @@ class PolicyTranslatorServer(object):
         self.call_count = 0
 
         print('Policy translator service ready.')
+
+        # Initialize cv image pub objects
+        self.bridge = CvBridge()
+        self.image_pub = rospy.Publisher("/interface_map", Image, queue_size=10)
 
         rospy.spin()
 
@@ -131,6 +140,15 @@ class PolicyTranslatorServer(object):
         q_msg.questions = questions[0]
         q_msg.weights = [0 for x in range(0,len(questions[0]))]
         self.q_pub.publish(q_msg)
+
+        # Publish the saved image to a rosptopic
+        print("Reading image")
+        try:
+            cv_image = cv2.imread(os.path.dirname(__file__) + "/../tmp/tmpBelief.png")
+            imageMsg = self.bridge.cv2_to_imgmsg(cv_image, "bgr8")
+            self.image_pub.publish(imageMsg)
+        except CvBridgeError as e:
+            print(e)
 
         # else:
         #     b_updated = self.pt.beliefUpdate(belief,obs,copPoses)
