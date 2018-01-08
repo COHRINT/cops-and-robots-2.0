@@ -413,8 +413,10 @@ class POMDPTranslator(object):
 		x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
 		bcut = self.cutGMTo2D(belief,dims=[2,3]);
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
-		ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.0004);
-                #ax.contourf(x_space,y_space,bel,cmap="viridis");
+                print(np.amax(bel))
+		#ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.0004);
+                
+                ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.022);
 
 		m = self.map2;
 		for obj in m.objects:
@@ -426,7 +428,8 @@ class POMDPTranslator(object):
 		    if(m.objects[obj].shape == 'oval'):
 		        tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		    else:
-		        tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
+                        tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 		    ax.add_patch(tmp)
 
 		bearing = -90;

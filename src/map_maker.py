@@ -87,8 +87,8 @@ class Map(object):
                     map_obj = Map_Object(cfg[item]['name'],
                                         cfg[item]['color'],
                                         [cfg[item]['centroid_x'], cfg[item]['centroid_y']],
-                                        cfg[item]['length'],
-                                        cfg[item]['width'],
+                                        cfg[item]['x_len'],
+                                        cfg[item]['y_len'],
                                         cfg[item]['orientation'],
                                         cfg[item]['shape']
                                         )
