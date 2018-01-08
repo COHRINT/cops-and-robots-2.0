@@ -150,7 +150,7 @@ class POMDPTranslator(object):
 			h.append([weightsHigh[i],questsHigh[i]])
 		for i in range(0,len(questsLow)):
 			h.append([weightsLow[i],questsLow[i]])
-		print('H: {}'.format(h))
+		# print('H: {}'.format(h))
 		h = sorted(h,key = self.getKey,reverse=True);
 		questsFull = [];
 		weightsFull = [];
@@ -416,7 +416,7 @@ class POMDPTranslator(object):
                 print(np.amax(bel))
 		#ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.0004);
                 
-                ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.022);
+		ax.contourf(x_space,y_space,bel,cmap="viridis");
 
 		m = self.map2;
 		for obj in m.objects:
