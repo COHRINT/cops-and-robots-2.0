@@ -14,6 +14,7 @@ __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
 
+from pdb import set_trace
 
 from gaussianMixtures import Gaussian, GM
 from map_maker import Map
@@ -29,7 +30,7 @@ import matplotlib.pyplot as plt
 import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
-#from obs_q_map import gen_questions
+from obs_q_map import gen_questions
 
 
 class POMDPTranslator(object):
@@ -40,16 +41,17 @@ class POMDPTranslator(object):
 		self.bounds = [-9.6, -3.6, 4, 3.6]
 		self.delta = 0.1;
 		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
-		#self.lowerPolicy = np.load(os.path.dirname(__file__) + '/../policies/D4QuestSoftmaxAlphas1.npy')
+
 		roomNames = ['Hallway','Billiard','Study','Library','Dining','Kitchen'];
 		self.lowerPolicys = [];
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		#self.question_list = gen_questions('map2.yaml')
-		#print self.question_list
+		self.question_list = gen_questions('map2.yaml')
+		print self.question_list
+                # set_trace()
 
-		# TODO: You switched the study and library?????? And the billiard and dining?0
+		# TODO: Find the correct mappings to the rooms
 		self.rooms_map = {5:'hallway',4:'billiard room',0:'study',2:'library',1:'dining room',3:'kitchen'}
 		self.rooms_map_inv = {'hallway':5,'billiard room':4,'study':0,'library':2,'dining room':1,'kitchen':3}
 
@@ -166,6 +168,7 @@ class POMDPTranslator(object):
 			print i
 			print questsFull[i][0]
 			print questsFull[i][1]
+                        set_trace()
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
 		#6. return new belief and goal pose

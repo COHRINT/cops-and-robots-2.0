@@ -16,4 +16,4 @@ class Robber(Robot):
     For futre
     """
     robot_type = 'robber'
-    # see super class Robot.py for other methods
+    # see super class in robot.py for other methods
