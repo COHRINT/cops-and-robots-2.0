@@ -383,7 +383,7 @@ certainties = ["I know"]
 
 positivities = ["is", "is not"]
 
-object_relations = ["behind","in front of","left of","right of","near"]
+object_relations = ["behind","in front of","left of","right of"] # removed 'near'
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
@@ -391,7 +391,7 @@ objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             # removed Deckard from objects as no voi questions exist for Deckard. 
             # See voi.py in policy_translator package
 
-area_relations = ["inside","near","outside"]
+area_relations = ["inside","outside"] # removed 'near'
 
 areas = ["the study","the billiard room","the hallway","the dining room",
             "the kitchen","the library"]
