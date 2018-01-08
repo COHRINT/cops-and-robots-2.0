@@ -11,7 +11,7 @@ __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1" # Image topic subscription over ros
 __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
@@ -26,13 +26,16 @@ import os
 
 import PyQt5
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QSize, QByteArray, QRect, QTimer
 from PyQt5.QtGui import QFont, QPixmap, QImage, QPainter, QColor
-from PyQt5.QtMultimedia import *
 
 from std_msgs.msg import String
-from sensor_msgs.msg import Image, CompressedImage
 from observation_interface.msg import *
+
+# For viewing the image topic
+import cv2
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 
 # various style sheets for widgets
 
@@ -384,7 +387,9 @@ object_relations = ["behind","in front of","left of","right of","near"]
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster","Deckard"]
+            "the fridge","the mars poster"] 
+            # removed Deckard from objects as no voi questions exist for Deckard. 
+            # See voi.py in policy_translator package
 
 area_relations = ["inside","near","outside"]
 
@@ -432,34 +437,40 @@ class HumanPush(QWidget):
         self.movement_tab.layout = QHBoxLayout()
         self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
         self.tabs.addTab(self.position_area_tab,'Position (Area)')
-        self.tabs.addTab(self.movement_tab,'Movement')
+        # self.tabs.addTab(self.movement_tab,'Movement')
+
+        # add statement 'I know a robber is...' next to tabs
+        self.statment_preface = QLabel('I know a robber...')
+        self.main_layout.addWidget(self.statment_preface)
 
         # add tabs to main layout
         self.main_layout.addWidget(self.tabs)
 
         self.widget_list = []
         # make Position Objects codebook
-        object_boxes = [certainties,targets,positivities,object_relations,
-                            objects]
+        # object_boxes = [certainties,targets,positivities,object_relations,
+        #                     objects]
+        object_boxes = [positivities,object_relations,objects]
         object_layout, object_widget_list = self.make_codebook(object_boxes,
                                                 self.position_objects_tab.layout)
         self.position_objects_tab.setLayout(object_layout)
         self.widget_list.append(object_widget_list)
 
         # make Position Area codebook
-        area_boxes = [certainties,targets,positivities,area_relations,areas]
+        # area_boxes = [certainties,targets,positivities,area_relations,areas]
+        area_boxes = [positivities,area_relations,areas]
         area_layout, area_widget_list = self.make_codebook(area_boxes,
                                             self.position_area_tab.layout)
         self.position_area_tab.setLayout(area_layout)
         self.widget_list.append(area_widget_list)
 
         # make Movement codebook
-        movement_boxes = [certainties,targets,positivities,movement_types,
-                            movement_qualities]
-        movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
-                                                    self.movement_tab.layout)
-        self.movement_tab.setLayout(movement_layout)
-        self.widget_list.append(movement_widget_list)
+        # movement_boxes = [certainties,targets,positivities,movement_types,
+        #                     movement_qualities]
+        # movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
+        #                                             self.movement_tab.layout)
+        # self.movement_tab.setLayout(movement_layout)
+        # self.widget_list.append(movement_widget_list)
 
         # add the question parts to the codebooks
         # self.add_list_items()
@@ -506,7 +517,7 @@ class HumanPush(QWidget):
         """
         # get index of selected tab
         idx = self.tabs.currentIndex()
-        answer = ''
+        answer = 'I know Roy is'
 
         # get selected text from all boxes in selected tab
         for codebook in self.widget_list[idx]:
@@ -562,13 +573,16 @@ class MapDisplay(QWidget):
 
     def __init__(self):
         super(QWidget,self).__init__()
+        print("Initializing map")
 
         self.name = "Belief Map"
 
-        rospy.Subscriber("/interface_map", Image, self.ros_update)
+        rospy.Subscriber("/interface_map", Image, self.map_update)
+        self.bridge = CvBridge()
         self.format = QImage.Format_RGB888
 
         self.initUI()
+        
 
     def initUI(self):
         self.main_layout = QVBoxLayout()
@@ -586,13 +600,14 @@ class MapDisplay(QWidget):
         self.setLayout(self.main_layout)
         self.show()
 
-    def ros_update(self, msg):
-        # load image
-        self.image_view.load(os.path.abspath(os.path.dirname(__file__) + '/../../policy_translator/tmp/tmpBelief.png'))
-        # set image as pixmap in label
-        if not self.image_view.isNull():
-            print(self.image_view.isNull())
-            self.pic_label.setPixmap(self.image_view)
+    def map_update(self, map_msg): # callback for the policy translator publisher
+        # load image from the topic 
+        image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
+        height, width, channel = image.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(image.data, width, height, bytesPerLine, QImage.Format_RGB888)
+        pixMap = QPixmap.fromImage(qImg)
+        self.pic_label.setPixmap(pixMap)
 
 class VideoContainer(QWidget):
     """
@@ -623,22 +638,6 @@ class VideoContainer(QWidget):
 
         self.setLayout(self.main_layout)
 
-    def ros_update(self,msg):
-        """
-        Callback function to display a ROS image topic with streaming video data.
-        """
-        # process received message
-        image_data = msg.data
-        image_height = msg.height
-        image_width = msg.width
-        bytes_per_line = msg.step
-
-        # create QImage with received image data and metadata
-        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-        if not self.image.isNull():
-            self.canvas.image = self.image
-        self.canvas.update()
-
 class VideoCanvas(QWidget):
     """
     Widget on which video frames can be painted by overiding paintEvent
@@ -655,18 +654,45 @@ class VideoCanvas(QWidget):
 
 class CopVideo(VideoContainer):
     """
-    Subclasses VideoDisplay to display the cop's camera feed. Currently displays
-    video in reversed blue-red color, as QImage does not have a BGR888 format.
+    Subclasses VideoDisplay to display the cop's camera feed. Performs some
+    intermediate processing to convert from BRG to RGB.
     """
     def __init__(self,cop_name='pris'):
         super(VideoContainer,self).__init__()
         self.name = "Cop Video"
-        self.topic_name = '/' + cop_name + '/camera/rgb/image_color'
+        # self.topic_name = '/' + cop_name + '/camera/rgb/image_color'
+        self.topic_name = '/' + cop_name + '/image_color_decomp'
         self.size = (500,350)
         self.img = 'placeholder.png'
         self.format = QImage.Format_RGB888
         self.initUI()
         rospy.Subscriber(self.topic_name, Image,self.ros_update)
+
+    def ros_update(self,msg):
+        """
+        Callback function to display a ROS image topic with streaming video data.
+        """
+        # process received message
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
+
+        # convert image from little endian BGR to big endian RGB
+        length = int(len(image_data)/2)
+        # # unpack data into array
+        unpacked_data = array.array('H',image_data)
+        # # swap bytes (to swap B and R)
+        unpacked_data.byteswap() # causes strange vertical line artifacts
+        unpacked_data.reverse() #<>NOTE: reversing the entire list of bytes causes the image to be displayed upside down, but also removes artifacts for some reason
+        # # repack with opposite endian format
+        image_data = struct.pack('<'+str(length)+'H',*unpacked_data)
+
+        # create QImage with received image data and metadata
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+        if not self.image.isNull():
+            self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
+        self.canvas.update()
 
 class SecurityCamera(VideoContainer):
     """
@@ -682,3 +708,19 @@ class SecurityCamera(VideoContainer):
         self.initUI()
         self.format = QImage.Format_RGB888
         rospy.Subscriber(self.topic_name, Image, self.ros_update)
+
+    def ros_update(self,msg):
+        """
+        Callback function to display a ROS image topic with streaming video data.
+        """
+        # process received message
+        image_data = msg.data
+        image_height = msg.height
+        image_width = msg.width
+        bytes_per_line = msg.step
+
+        # create QImage with received image data and metadata
+        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
+        if not self.image.isNull():
+            self.canvas.image = self.image
+        self.canvas.update()

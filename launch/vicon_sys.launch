@@ -8,7 +8,9 @@
     <node pkg="tf" type="static_transform_publisher" 
         name="pris_identity" args="0 0 0 0 0 0 /map /pris/odom 30"/> 
     <node pkg="tf" type="static_transform_publisher" 
-        name="zhora_identity" args="0 0 0 0 0 0 /map /zhora/odom 30"/> 
+        name="zhora_identity" args="0 0 0 0 0 0 /map /zhora/odom 30"/>
+    <node pkg="tf" type="static_transform_publisher"
+	name="wall_identity" args="0 0 0 0 0 0 /map /small_wall/odom 30"/> 
 
 	<!-- Run vicon_bridge -->
    <node pkg="vicon_bridge" type="vicon_bridge" name="vicon_bridge" output="screen">

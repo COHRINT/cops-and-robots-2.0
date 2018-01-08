@@ -7,6 +7,8 @@ import os 			# path capabilities
 	Map includes:
 		1) General info: name, bounds.max_x_y, bounds.min_x_y, origin
 		2) Object hash: 'self.objects', each member is a Map_Object
+		3) Rooms : self.rooms['room_name']['lower_l OR upper_r']
+			access the room's lower left coordinate and upper right coord
 	Map_Object includes:
 		name, color, centroid[x, y], major axis, minor axis,
 		orientation from the object's major axis to the map's positive x axis
@@ -48,9 +50,20 @@ class Map(object):
 
 			# Get map's general info
 			self.name = cfg['info']['name']
-			#self.bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
-			#self.bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
+			#self.map_bounds.max_x_y = [cfg['info']['bounds']['max_x'], cfg['info']['bounds']['max_y']]
+			#self.map_bounds.min_x_y = [cfg['info']['bounds']['min_x'], cfg['info']['bounds']['min_y']]
 			self.origin = [cfg['info']['origin']['x_coord'], cfg['info']['origin']['y_coord']]
+
+			# Add room boundaries to the map
+			self.rooms = {}
+			lower_l = list()
+			upper_r = list()
+			for room in cfg['info']['rooms']:
+				lower_l = (cfg['info']['rooms'][room]['min_x'], cfg['info']['rooms'][room]['min_y'])
+				upper_r = (cfg['info']['rooms'][room]['max_x'], cfg['info']['rooms'][room]['max_y'])
+				self.rooms[room] = {}
+				self.rooms[room]['lower_l'] = lower_l
+				self.rooms[room]['upper_r'] = upper_r
 
 			# Store map's objects in self.objects hash
 			self.objects = {}
@@ -102,9 +115,9 @@ class Map_Object(object):
 		Color of obj
 	centroid_pos : list
 		Centroid location [x, y] [m]
-	x_ax_len: float
+	x_len: float
 		x axis length of obj [m] (before orientation adjustment)
-	min_ax_len: float
+	y_len: float
 		y axis length of obj [m] (before orientation adjustment)
 	orient : float
 		Radians between obj's major axis and the map's pos-x axis
@@ -139,11 +152,13 @@ class Map_Object(object):
 			self.shape = 'rectangle'
 
 def test_map_obj():
-	map = Map('map2.yaml')
+	map1 = Map('map2.yaml')
 
-	if hasattr(map, 'name'): # check if init was successful
-		print map.name
-		print map.objects['dining_table'].color
+	if hasattr(map1, 'name'): # check if init was successful
+		print map1.name
+		print map1.objects['dining table'].color
+		print map1.rooms['dining room']['lower_l']
+		print map1.rooms['kitchen']['upper_r']
 	else:
 		print 'fail'
 

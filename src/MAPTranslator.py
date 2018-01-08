@@ -3,11 +3,12 @@ from __future__ import division
 """ DISCRETIZED MAP TRANSLATOR
 -Handles a belief consisting of a 2D numpy array
 -interfaces with the policy_translator_server
-""""
+"""
 
 from gaussianMixtures import Gaussian, GM
 
-import random                   # testing getNextPose
+import random
+import matplotlib                 # testing getNextPose
 import matplotlib.pyplot as plt # testing getNextPose
 import sys
 import numpy as np
@@ -17,8 +18,10 @@ from map_maker import Map
 from matplotlib import patches
 import matplotlib.tri as tri;
 import math
-import matplotlib
 from voi import Questioner
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 __author__ = ["LT", "Luke Burks"]
 __copyright__ = "Copyright 2017, Cohrint"
@@ -202,6 +205,7 @@ class MAPTranslator(object):
             self.makeBeliefMap(post,pose)
 
         print("BELIEF MIN: {}".format(np.amin(belief)))
+        print("BELIEF MAX: {}".format(np.amax(belief)))
 
         return post;
 
@@ -221,11 +225,12 @@ class MAPTranslator(object):
 
         """
         print("MAKING NEW BELIEF MAP!")
-        plt.clf()
-        figure = plt.figure()
-        plt.clf()
+        fig = Figure()
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
+
         x_space,y_space = np.mgrid[self.bounds[0]:self.bounds[2]:self.delta,self.bounds[1]:self.bounds[3]:self.delta];
-        plt.contourf(x_space,y_space,belief,cmap="viridis");
+        ax.contourf(x_space,y_space,belief,cmap="viridis");
         m = Map('map2.yaml');
         for obj in m.objects:
             cent = m.objects[obj].centroid;
@@ -233,15 +238,11 @@ class MAPTranslator(object):
             y = m.objects[obj].y_len;
             theta = m.objects[obj].orient;
             col = m.objects[obj].color
-            # print(obj);
-            # print(col);
-            # print(theta);
-            # print("");
             if(m.objects[obj].shape == 'oval'):
                 tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
             else:
                 tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-            plt.gca().add_patch(tmp);
+            ax.add_patch(tmp)
 
         bearing = -90;
         l = 1;
@@ -249,17 +250,14 @@ class MAPTranslator(object):
 
         levels = [i/250 + 1 for i in range(0,250)]
 
-        tpl = plt.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
+        tpl = ax.tricontourf(triang,[2,1,1],cmap="inferno",alpha=0.5,levels=levels);
 
         cop = patches.Circle((copPose[0],copPose[1]),radius=0.2,fc = 'white',ec='black');
-        plt.gca().add_patch(cop);
+        ax.add_patch(cop)
 
-        plt.axis('scaled');
-        # plt.axis('off')
-        # plt.axis('tight')
-        plt.savefig(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0);
-        plt.close()
-        # plt.show();
+        ax.axis('scaled')
+        print('about to save plot')
+        canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
 
 
 def testGetNextPose(rndm=False):

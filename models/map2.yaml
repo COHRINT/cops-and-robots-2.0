@@ -15,6 +15,37 @@ info:
   origin:
     x_coord: 0.0
     y_coord: 0.0
+  rooms:
+    study:
+      min_x: -7.0
+      min_y: -3.33
+      max_x: -2.0
+      max_y: -1.0
+    hallway:
+      min_x: -9.5
+      min_y: -1.0
+      max_x: 4.0
+      max_y: 1.4
+    library:
+      min_x: -2.0
+      min_y: -3.33
+      max_x: 4.0
+      max_y: -1.0
+    billiard room:
+      min_x: 0
+      min_y: 1.4
+      max_x: 4
+      max_y: 3.68
+    dining room:
+      min_x: -9.5
+      min_y: -3.33
+      max_x: -7.0
+      max_y: -1.0
+    kitchen:
+      min_x: -9.5
+      min_y: 1.4
+      max_x: 0.0
+      max_y: 3.68
 
 bookcase:
   name: bookcase
@@ -49,8 +80,8 @@ chair:
   orientation: 270.0
   shape: rectangle
 
-filing_cabinet:
-  name: filing_cabinet
+filing cabinet:
+  name: filing cabinet
   color: black
   centroid_x: -3.7988
   centroid_y: -0.8912
@@ -60,8 +91,8 @@ filing_cabinet:
   orientation: 270.0
   shape: rectangle
 
-dining_table:
-  name: dining_table
+dining table:
+  name: dining table
   color: brown
   centroid_x: -7.57
   centroid_y: -2.54
@@ -71,8 +102,8 @@ dining_table:
   orientation: 90.0
   shape: rectangle
 
-mars_poster:
-  name: mars_poster
+mars poster:
+  name: mars poster
   color: bisque
   centroid_x: -4.38
   centroid_y: 3.475
@@ -82,8 +113,8 @@ mars_poster:
   orientation: 0.0
   shape: rectangle
 
-cassini_poster:
-  name: cassini_poster
+cassini poster:
+  name: cassini poster
   color: black
   centroid_x: 1.38
   centroid_y: 3.475
@@ -104,8 +135,8 @@ fridge:
   orientation: 315.0
   shape: rectangle
 
-checkers_table:
-  name: checkers_table
+checkers table:
+  name: checkers table
   color: sandybrown
   centroid_x: 2.04
   centroid_y: 2.66

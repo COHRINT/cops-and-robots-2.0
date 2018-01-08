@@ -1,0 +1,38 @@
+# Max and Min RBG values for each robber
+# To have Caught Node search for another robber
+#   simply add it to this yaml file
+# author = "LT"
+
+roy:
+  r:
+    MIN: 0
+    MAX: 60
+  g:
+    MIN: 60
+    MAX: 110
+  b:
+    MIN: 140
+    MAX: 180
+
+# zhora:
+#   r:
+#     MIN: 30
+#     MAX: 110
+#   g:
+#     MIN: 120
+#     MAX: 220
+#   b:
+#     MIN: 70
+#     MAX: 200
+
+# for testing purposes
+# yellow_battery:
+#   r:
+#     min: 160
+#     max: 255
+#   g:
+#     min: 160
+#     max: 255
+#   b:
+#     min: 20
+#     max: 150
