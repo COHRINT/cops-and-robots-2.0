@@ -26,7 +26,8 @@ class Cop(Robot):
     delta : float
     map_bounds : 4 element list of the edges
          [left, bottom, right, top]
-    name, goal_planner see robot.py
+    name : string
+    goal_planner : string (see robot.py for list of options)
     """
     robot_type = 'cop'
     

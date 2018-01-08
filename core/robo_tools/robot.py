@@ -40,8 +40,6 @@ class Robot(object):
 
     def __init__(self, name, goal_planner_type='stationary'):
         
-#        print("ENTERING ROBOT.PY")
-
         # Stop attribute
 #        rospy.Subscriber('/'+name.lower()+'/stop', Bool, self.stop_callback)
         
@@ -66,11 +64,11 @@ class Robot(object):
             del self.init_map_bounds
             del self.init_delta
             
-        elif goal_planner_type == 'audio': # Jeremy's Audio Planner. Intergration with this goal planner class has not been set up correctly yet
+        elif goal_planner_type == 'audio': # Jeremy's Audio Planner. Intergration with this goal planner class has not been set up yet
             from audio_planner import AudioGoalPlanner
             self.goal_planner = AudioGoalPlanner()
             
-# Other planners not used. Integration with this goal planner framework still needed
+# Other planners not used. No integration thus far done
         elif goal_planner_type == 'trajectory': 
             from trajectory_planner import TrajectoryGoalPlanner
             self.goal_planner = TrajectoryGoalPlanner()
