@@ -22,10 +22,10 @@ robots:
     use: false
   Roy:
     goal_planner_cfg:
-      type_: simple
+      type_: pomdp
     pose_source: tf
     type_: cop
-    use: true
+    use: false
   Zhora:
     goal_planner_cfg:
       type_: stationary

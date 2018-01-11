@@ -41,19 +41,19 @@ class MainTester(object):
 	"""
         running_experiment = True
 
-        experiment_runspeed_hz = 10
+        experiment_runspeed_hz = 5
         
         map_bounds = [-9.6, -3.6, 4, 3.6]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
-        cop_initial_belief = GM()
-        cop_initial_belief.addNewG([-6,3,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
-        cop_initial_belief.addNewG([-7,2,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        cop_initial_belief = GM() # cop x, cop y, rob x, rob y, then follow the rooms
+        cop_initial_belief.addNewG([0,0,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        cop_initial_belief.addNewG([0,0,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
         cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
         cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
-        cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study
-        cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room
+        cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],100) # study 
+        cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room 
         cop_initial_belief.normalizeWeights()
         
         delta = 0.1

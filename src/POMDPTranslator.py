@@ -52,8 +52,16 @@ class POMDPTranslator(object):
                 # set_trace()
 
 		# TODO: Find the correct mappings to the rooms
-		self.rooms_map = {5:'hallway',4:'billiard room',0:'study',2:'library',1:'dining room',3:'kitchen'}
-		self.rooms_map_inv = {'hallway':5,'billiard room':4,'study':0,'library':2,'dining room':1,'kitchen':3}
+
+                hall = 5
+                bill = 4
+                libb = 2
+                dinn = 3
+                kitt = 1
+                stud = 0
+                
+		self.rooms_map = {hall:'hallway',bill:'billiard room',stud:'study',libb:'library',dinn:'dining room',kitt:'kitchen'}
+		self.rooms_map_inv = {'hallway':hall,'billiard room':bill,'study':stud,'library':libb,'dining room':dinn,'kitchen':kitt}
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 		print('GETTING NEW POSE')
@@ -75,7 +83,7 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-		# print(room);
+		print("Room: " + str(room));
 		# print(questsHigh);
 		# print(weightsHigh);
 		questHighConversion = [5,4,0,2,3,1]
@@ -253,7 +261,7 @@ class POMDPTranslator(object):
 		for i in range(0,len(questWeights)):
 			questWeights[i] = questWeights[i]/suma;
 
-		print('ACTION: {}'.format(a[0][1][0]))
+		print('LOWER ACTION: {}'.format(a[0][1][0]))
 		return [a[0][1][0],quests,questWeights];
 
 	def dotProduct(self,a,b):

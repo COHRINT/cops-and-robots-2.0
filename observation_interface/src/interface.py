@@ -37,6 +37,7 @@ from interface_elements import *
 
 from observation_interface.srv import *
 from observation_interface.msg import *
+#from Caught.msg import *
 
 title_style = "\
                     QLabel {    \

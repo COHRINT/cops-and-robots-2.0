@@ -107,7 +107,7 @@ filing cabinet:
 dining table:
   name: dining table
   color: brown
-  centroid_x: -7.57
+  centroid_x: -7.57 # 7.57 old
   centroid_y: -2.54
   x_len: 1.17
   y_len: 0.69
