@@ -1,6 +1,6 @@
 from __future__ import division;
 from sys import path
-path.append('/home/luke/Documents/POMDP/src');
+path.append('../../src');
 
 from gaussianMixtures import Gaussian
 from gaussianMixtures import GM
@@ -60,8 +60,9 @@ plt.plot(x2,c2,linewidth=5,color='g');
 plt.plot(x3,c3,linewidth=5,color='y');
 
 plt.axhline(y=0, xmin=0, xmax=5, linewidth=2, color = 'k')
-plt.title('Alpha Functions'); 
-plt.xlabel('Position'); 
+plt.title('Alpha Functions',fontsize=30); 
+plt.xlabel('Position',fontsize = 20); 
+plt.ylabel('Value',fontsize=20); 
 plt.legend(['Move Right','Stay','Move Left']);
 plt.show(); 
 
@@ -77,52 +78,68 @@ belief.addG(Gaussian(5,3,0.5));
 
 plt.plot(x,c,linewidth=5,color='b');
 plt.axhline(y=0, xmin=0, xmax=5, linewidth=2, color = 'k')
-plt.title('Belief'); 
-plt.xlabel('Position'); 
+plt.title('Belief',fontsize = 30); 
+plt.xlabel('Position',fontsize=20); 
+plt.ylabel('Probability Density',fontsize=20);
 plt.show(); 
-
-
-fig = plt.figure(); 
- 
-a = GM(1,0.5,0.2); 
-b = GM(4,0.5,0.1); 
-c = GM(2.5,0.5,0.1); 
-
-d = GM(); 
-d.addGM(a); 
-d.addGM(b); 
-d.addGM(c); 
-
-[x1,c1] = a.plot(low=0,high=5,vis=False); 
-[x2,c2] = b.plot(low=0,high=5,vis=False); 
-[x3,c3] = c.plot(low=0,high=5,vis=False); 
-[x4,c4] = d.plot(low=0,high=5,vis=False); 
-
-plt.plot(x1,c1,c='r',linewidth=5); 
-plt.plot(x2,c2,c='g',linewidth=5); 
-plt.plot(x3,c3,c='y',linewidth=5); 
-plt.plot(x4,c4,c='b',linewidth=5); 
-plt.title('Gaussian Mixture Components'); 
-plt.xlim([0,5]); 
-plt.xlabel('Position'); 
-plt.legend(['Mixand 1','Mixand 2','Mixand 3','Mixture'])
-plt.show(); 
-
-
-
 
 fig, ax = plt.subplots()
 
-rects = ax.bar(np.arange(3),[59,57,19],yerr=[39.6,54,55])
-for rect in rects:
-	height = rect.get_height()
-	ax.text(rect.get_x() + rect.get_width()/3., 1.05*height,
-	        '%d' % int(height),
-	        ha='center', va='bottom')
+vals = []; 
+vals.append(continuousDot(belief,alpha1));
+vals.append(continuousDot(belief,alpha3));
+vals.append(continuousDot(belief,alpha2));
+colors = ['r','g','y']; 
 
+rects = ax.bar(np.arange(3),vals,color=colors)
+ax.plot((-1,3),(0,0),'k-',linewidth=2);
 ax.set_xticks(np.arange(3)); 
-ax.set_xticklabels(('GM-POMDP','VB-POMDP','Greedy'));
-ax.set_ylabel('Average Reward'); 
-ax.set_title('Average Final Rewards for Colinear Robots')
-
+ax.set_xticklabels(('Move Right','Stay','Move Right'),fontsize=20);
+ax.set_ylabel('Value',fontsize = 20); 
+ax.set_title('Dot Product of Alphas with Belief',fontsize=30)
 plt.show(); 
+
+# fig = plt.figure(); 
+ 
+# a = GM(1,0.5,0.2); 
+# b = GM(4,0.5,0.1); 
+# c = GM(2.5,0.5,0.1); 
+
+# d = GM(); 
+# d.addGM(a); 
+# d.addGM(b); 
+# d.addGM(c); 
+
+# [x1,c1] = a.plot(low=0,high=5,vis=False); 
+# [x2,c2] = b.plot(low=0,high=5,vis=False); 
+# [x3,c3] = c.plot(low=0,high=5,vis=False); 
+# [x4,c4] = d.plot(low=0,high=5,vis=False); 
+
+# plt.plot(x1,c1,c='r',linewidth=5); 
+# plt.plot(x2,c2,c='g',linewidth=5); 
+# plt.plot(x3,c3,c='y',linewidth=5); 
+# plt.plot(x4,c4,c='b',linewidth=5); 
+# plt.title('Gaussian Mixture Components'); 
+# plt.xlim([0,5]); 
+# plt.xlabel('Position'); 
+# plt.legend(['Mixand 1','Mixand 2','Mixand 3','Mixture'])
+# plt.show(); 
+
+
+
+
+# fig, ax = plt.subplots()
+
+# rects = ax.bar(np.arange(3),[59,57,19],yerr=[39.6,54,55])
+# for rect in rects:
+# 	height = rect.get_height()
+# 	ax.text(rect.get_x() + rect.get_width()/3., 1.05*height,
+# 	        '%d' % int(height),
+# 	        ha='center', va='bottom')
+
+# ax.set_xticks(np.arange(3)); 
+# ax.set_xticklabels(('GM-POMDP','VB-POMDP','Greedy'));
+# ax.set_ylabel('Average Reward'); 
+# ax.set_title('Average Final Rewards for Colinear Robots')
+
+# plt.show(); 

@@ -50,7 +50,7 @@ import matplotlib.image as mgimg
 
 class PolicyGenerator:
 
-	def __init__(self,argv,alphaNum,roomName):
+	def __init__(self,argv):
 	
 
 		#Initialize exit flag
@@ -102,16 +102,16 @@ class PolicyGenerator:
 		  		self.useSoft = False; 
 
 		if(problemName == ''):
-			#print('Input Problem Name'); 
-			#problemName = raw_input(); 
-			problemName = 'D4QuestSoftmax'; 
+			print('Input Problem Name'); 
+			problemName = raw_input(); 
+			#problemName = 'D4QuestSoftmax'; 
 
 
 		#belLoad = '../beliefs/' + problemName + 'Beliefs' + belNum + '.npy'; 
-		belLoad = 'D4QuestBeliefs1.npy'; 
-		#self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
+		#belLoad = 'D4QuestBeliefs1.npy'; 
+		self.alSave = '../policies/' + problemName + 'Alphas' + self.alphaNum + '.npy'; 
 		#self.alSave = problemName + 'Alphas' + self.alphaNum + '.npy'; 
-		self.alSave = roomName+'Alphas_' + str(alphaNum) + '.npy'
+		#self.alSave = roomName+'Alphas_' + str(alphaNum) + '.npy'
 		#modelPath = '../models/'+ problemName + 'Model'; 
 		modelPath = problemName + 'Model'; 
 		modelName = problemName+'Model'; 
@@ -147,16 +147,29 @@ class PolicyGenerator:
 		self.r = allMod.r; 
 		self.discount = allMod.discount; 
 	
+		self.bounds = allMod.bounds; 
+
+
+		cutFactor = 3;
+		self.B = []; 
+		var = np.identity(4).tolist(); 
+		for x1 in range(int(np.floor(self.bounds[0][0]/cutFactor))-1,int(np.ceil(self.bounds[0][1]/cutFactor))+1):
+			for y1 in range(int(np.floor(self.bounds[1][0]/cutFactor))-1,int(np.ceil(self.bounds[1][1]/cutFactor))+1):
+				for x2 in range(int(np.floor(self.bounds[2][0]/cutFactor))-1,int(np.ceil(self.bounds[2][1]/cutFactor))+1):
+					for y2 in range(int(np.floor(self.bounds[3][0]/cutFactor))-1,int(np.ceil(self.bounds[3][1]/cutFactor))+1):
+						tmp = GM(); 
+						tmp.addG(Gaussian(np.array([x1*cutFactor,y1*cutFactor,x2*cutFactor,y2*cutFactor]),var,1));			
+						self.B.append(tmp);
 
 		#Loading Beliefs
-		if(belLoad is None):
-			print("No belief file"); 
-			sys.exit();
-		try:
-			self.B = np.load(belLoad).tolist(); 
-		except:
-			print('Belief file not found'); 
-			raise; 
+		# if(belLoad is None):
+		# 	print("No belief file"); 
+		# 	sys.exit();
+		# try:
+		# 	self.B = np.load(belLoad).tolist(); 
+		# except:
+		# 	print('Belief file not found'); 
+		# 	raise; 
 
 
 			
@@ -166,7 +179,7 @@ class PolicyGenerator:
 			self.Gamma[i].action = [i,2]; 
 			for g in self.Gamma[i].Gs:
 				#g.weight = g.weight/(1-self.discount);
-				g.weight = -100000; 
+				g.weight = 0.000001; 
 			self.Gamma[i] = self.Gamma[i].kmeansCondensationN(k=self.finalMix);  
 			
 
@@ -179,6 +192,7 @@ class PolicyGenerator:
 
 		startTime = 0; 
 		iterationTimes = []; 
+		print("Solving with {} initial beliefs".format(len(self.B))); 
 		for counter in range(0,self.iterations):
 			
 			if(counter==0):
@@ -197,7 +211,7 @@ class PolicyGenerator:
 			bestAlphas = [GM()]*len(self.B); 
 			Value = [0]*len(self.B); 
 
-			print(len(self.B)); 
+			 
 
 			for b in self.B:
 				bestAlphas[self.B.index(b)] = self.Gamma[np.argmax([self.continuousDot(self.Gamma[j],b) for j in range(0,len(self.Gamma))])];
@@ -207,11 +221,12 @@ class PolicyGenerator:
 
 			BTilde = copy.deepcopy(self.B); 
 			
-			if(self.useSoft):
-				self.preComputeAlsSoftmax(); 
-			else:
-				#self.preComputeAls();
-				self.preComputeAlsSoftmaxFactored();  
+			# if(self.useSoft):
+			# 	self.preComputeAlsSoftmax(); 
+			# else:
+			# 	#self.preComputeAls();
+			# 	self.preComputeAlsSoftmaxFactored();  
+			self.preComputeAlsSoftmaxFactored();  
 
 			while(len(BTilde) > 0):
 
@@ -240,10 +255,9 @@ class PolicyGenerator:
 					bestAlphas[index] = al; 
 
 				#remove from Btilde all b for which this alpha is better than its current
-				#TODO: WHY IS THIS COMMENTED!!!!!!!!??????
-				#for bprime in BTilde:
-					#if(self.continuousDot(al,bprime) >= Value[self.findB(bprime)]):
-						#BTilde.remove(bprime); 
+				for bprime in BTilde:
+					if(self.continuousDot(al,bprime) >= Value[self.findB(bprime)]):
+						BTilde.remove(bprime); 
 
 
 
@@ -391,7 +405,7 @@ class PolicyGenerator:
 								#else:
 									#alObs.addGM(self.pz.runVBND(G[j],aq+1));
 								alObs.addGM(self.pz.runVBND(G[j],aq+1));
-						else:
+						elif(self.pz2.size > 0):
 							if(oq == 0):
 								for h in range(1,5):
 									if(h!=aq-4+1):
@@ -508,7 +522,7 @@ class PolicyGenerator:
 
 		if(isinstance(a,list)):
 			a = a[0];
-
+		#print(a); 
 		a.clean(); 
 		b.clean(); 
 
@@ -539,68 +553,28 @@ def cutGMTo2D(mix,dims = [2,3]):
 
 if __name__ == "__main__":
 
-	'''
-	roomName = 'Kitchen'; 
-	runNumber = 0; 
 
-	allB = []; 
-	tmp = GM();
-	if(runNumber==0):
-		#tmp.addG(Gaussian([3,.2,-9,.2],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-7,-2.15,-9.5,-2.15],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-1.1,-1,-6.1,-1],np.identity(4)*0.1,1)); 
-		#tmp.addG(Gaussian([3,-2,-1,-2],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([3.9,2,1.1,2],np.identity(4)*0.01,1)); 
-		tmp.addG(Gaussian([-1,2,-9,2],np.identity(4)*0.01,1));
-	elif(runNumber==1):
-		#tmp.addG(Gaussian([-9,.2,3,.2],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([-9.5,-2.15,-7,-2.15],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-7,-2,-2,-2],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-1,-2,3,-2],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([1.1,2,3.9,2],np.identity(4)*0.01,1)); 
-		tmp.addG(Gaussian([-9,2,-1,2],np.identity(4)*0.01,1)); 
-	elif(runNumber==2):
-		#tmp.addG(Gaussian([-2,-.8,-2,1.2],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([-8.25,-3,-8.25,-1],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-4.5,-3,-4.5,-1],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([1,-3,1,-1],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([2,1.5,2,3.7],np.identity(4)*0.01,1));
-		tmp.addG(Gaussian([-4.1,.1,-4.1,3],np.identity(4)*0.01,1));  
-	elif(runNumber==3):
-		#tmp.addG(Gaussian([-2,1.2,-2,-.8],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([-7,-1,-7,-3.33],np.identity(4)*0.01,1)); 
-		#tmp.addG(Gaussian([-4.5,-1,-4.5,-3],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([1,-1,1,-3],np.identity(4)*0.01,1));
-		#tmp.addG(Gaussian([2,3.7,2,1.5],np.identity(4)*0.01,1));
-		tmp.addG(Gaussian([-3.9,3,-4.2,.1],np.identity(4)*0.01,1));    
-	allB.append(tmp); 
-	f = open('D4QuestBeliefs1.npy','w');
-	np.save(f,allB);
-	f.close(); 
-
-
-	a = PolicyGenerator(sys.argv,runNumber,roomName); 
+	a = PolicyGenerator(sys.argv); 
 	a.solve();
-	'''
-	
 	
 
-	
-	gamma = np.load('KitchenAlphasFull.npy'); 
 
-	fig,axarr = plt.subplots(len(gamma));
-	#minim = -100
-	#maxim = 100 
 
-	#levels = np.linspace(minim,maxim);  
-	for i in range(0,len(gamma)):
-		gamma[i].display(); 
-		gammaPrime = cutGMTo2D(gamma[i],dims=[0,1]); 
-		x,y,c = gammaPrime.plot2D(low=[0,1.4],high=[4,3.6],vis=False); 
-		axarr[i].contourf(x,y,c); 
-		axarr[i].set_title(str(gamma[i].action)); 
-	plt.show(); 
+	# gamma = np.load('../policies/D4QuestHallwaySoftmaxAlphas0.npy'); 
+
+	# fig,axarr = plt.subplots(len(gamma));
+	# #minim = -100
+	# #maxim = 100 
+
+	# #levels = np.linspace(minim,maxim);  
+	# for i in range(0,len(gamma)):
+	# 	gamma[i].display(); 
+	# 	gammaPrime = cutGMTo2D(gamma[i],dims=[0,1]); 
+	# 	x,y,c = gammaPrime.plot2D(low=[-9.5,-1],high=[4,1.4],vis=False); 
+	# 	axarr[i].contourf(x,y,c); 
+	# 	axarr[i].set_title(str(gamma[i].action)); 
+	# plt.show(); 
 	
-	
+
 
 	

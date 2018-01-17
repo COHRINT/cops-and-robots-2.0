@@ -62,7 +62,9 @@ class Softmax:
 			self.alpha = 3;
 			self.zeta_c = [0]*len(self.weights); 
 			for i in range(0,len(self.weights)):
-				self.zeta_c[i] = random()*10;  
+				self.zeta_c[i] = random()*10;
+		else:
+			self.size=0; 
 
 	def nullspace(self,A,atol=1e-13,rtol=0):
 		'''

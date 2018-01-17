@@ -164,7 +164,7 @@ class ModelSpec:
 	
 				minim = np.amin(c); 
 				maxim = np.amax(c); 
-
+				print(maxim); 
 				#print(minim,maxim); 
 				levels = np.linspace(minim,maxim); 
 				plt.contourf(x,y,c,levels = levels,vmin = minim,vmax = maxim,cmap = 'viridis');

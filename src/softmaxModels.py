@@ -670,7 +670,7 @@ class Softmax:
 			colors = ['b','g','r','c','m','y','k','w','b','g']; 
 			for i in range(0,len(model)):
 				ax.plot_surface(x,y,model[i],color = colors[i]); 
-			
+			plt.title('Softmax Classes')
 			plt.show(); 
 		else:
 			return x,y,dom;
@@ -791,7 +791,7 @@ def test2DSoftmax():
 	
 	#Colinear Problem
 	weight = [[-1.3926,1.3926],[-0.6963,0.6963],[0,0]];
-	bias = [0,.1741,0]; 
+	bias = [0,.4741,0]; 
 	low = [0,0]; 
 	high = [5,5]; 
 
@@ -806,7 +806,7 @@ def test2DSoftmax():
 	detect = 0; 
 	
 	res = 100; 
-	steep = 2; 
+	steep = 1.5; 
 	for i in range(0,len(weight)):
 		for j in range(0,len(weight[i])):
 			weight[i][j] = weight[i][j]*steep; 
@@ -814,9 +814,10 @@ def test2DSoftmax():
 
 	#Define Likelihood Model
 	a = Softmax(weight,bias);
-	[x1,y1,dom] = a.plot2D(low=low,high=high,res=res,vis=False); 
+	[x1,y1,dom] = a.plot2D(low=low,high=high,delta = 0.1,vis=False); 
 
-	a.plot2D(low=low,high=high,res=res,vis=True); 
+	a.plot2D(low=low,high=high,delta = 0.1,vis=True); 
+
 
 	#Define a prior
 	prior = GM(); 
@@ -855,6 +856,14 @@ def test2DSoftmax():
 	fig.suptitle('2D Fusion of a Gaussian Prior with a Softmax Likelihood')
 	plt.show(); 
 
+
+	# plt.figure(); 
+	# plt.contourf(x2,y2,c2,cmap='viridis'); 
+	# plt.figure(); 
+	# plt.contourf(x1,y1,dom,cmap='viridis'); 
+	# plt.figure(); 
+	# plt.contourf(x3,y3,c3,cmap='viridis'); 
+	# plt.show();
 
 def testRectangleModel():
 	pz = Softmax(); 
@@ -1073,7 +1082,7 @@ def testLogisticRegression():
 
 if __name__ == "__main__":
 
-	#test1DSoftmax(); 
+	test1DSoftmax(); 
 	#test2DSoftmax(); 
 	#test4DSoftmax();
 	#testRectangleModel();  
@@ -1083,7 +1092,7 @@ if __name__ == "__main__":
 	#testOrientRecModel(); 
 	#testTriView(); 
 	#testMakeNear(); 
-	testLogisticRegression(); 
+	#testLogisticRegression(); 
 
 	
 

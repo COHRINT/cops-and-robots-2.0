@@ -16,8 +16,8 @@ if __name__ == "__main__":
 	#Initialize some random gaussians to try merging
 	testGM = GM();  
 
-	numInit = 100; 
-	numFinal = 10; 
+	numFinal = 5
+	numInit = 10*41; 
 
 	for i in range(0,numInit//2):
 		tmpMean = [random()*2+3,random()*2+3]; 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 	testGM.normalizeWeights(); 
 	firstCondenseTime = time.clock() - firstCondenseTime; 
 
-	print("The time to condense without k-means: " + str(firstCondenseTime) + " seconds"); 
+	print("The time to condense without k-means: {0:.2f} seconds".format(firstCondenseTime)); 
 
 	firstCondenseTimestr = str(firstCondenseTime)[0:5];
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 	
 
 	secondCondenseTime = time.clock(); 
-	testGM2 = testGM2.kmeansCondensationN(k=5,kDown=2);
+	testGM2 = testGM2.kmeansCondensationN(k=5);
 	testGM2.normalizeWeights();  
 	secondCondenseTime = time.clock() - secondCondenseTime; 
 	secondCondenseTimestr = str(secondCondenseTime)[0:5];
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 	fig = plt.figure()
 	ax1 = fig.add_subplot(131)
 	con1 = ax1.contourf(x1,y1,c1, cmap=plt.get_cmap('viridis'));
-	ax1.set_title('Original Mixture'); 
+	ax1.set_title('Original Mixture',fontsize=15); 
 	plt.colorbar(con1); 
 
 	minNum = 100000; 
@@ -115,16 +115,16 @@ if __name__ == "__main__":
 
 	ax2 = fig.add_subplot(132)
 	con2 = ax2.contourf(x2,y2,c2, cmap=plt.get_cmap('viridis'));
-	ax2.set_title('Runnalls only: ' + firstCondenseTimestr + ' seconds');
-	ax2.set_xlabel("Error with Runnalls only: " + str(isd1)); 
+	ax2.set_title('Runnalls: {0:.2f} seconds'.format(firstCondenseTime),fontsize=15);
+	ax2.set_xlabel("ISD with Runnalls only: {0:.3f}".format(isd1));  
 	#ax2.set_xlabel("Error with Runnalls only: " + isd1str); 
 	plt.colorbar(con2,boundaries = np.linspace(minNum,0.0001,maxNum)); 
 
 
 	ax3 = fig.add_subplot(133)
 	con3 = ax3.contourf(x3,y3,c3, cmap=plt.get_cmap('viridis'));
-	ax3.set_title('Kmeans+Runnalls: ' + secondCondenseTimestr + ' seconds');
-	ax3.set_xlabel("Error with Kmeans+Runnalls: " + str(isd2)); 
+	ax3.set_title('Clustering: {0:.2f} seconds'.format(secondCondenseTime),fontsize=15);
+	ax3.set_xlabel("ISD with Clustering: {0:.3f}".format(isd2)) 
 	#ax3.set_xlabel("Error with Kmeans+Runnalls: " + isd2str); 
 	plt.colorbar(con3,boundaries = np.linspace(minNum,0.0001,maxNum)); 
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 	plt.colorbar(con6); 
 	'''
 
-	fig.suptitle("Condensation comparison with #Initial = " + str(numInit) + " and #Final = " +str(numFinal)); 
+	fig.suptitle("#Initial = " + str(numInit) + ", #Final = " +str(numFinal),fontsize=30); 
 
 	plt.show();
 
