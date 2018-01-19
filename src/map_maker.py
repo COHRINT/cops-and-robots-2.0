@@ -24,6 +24,8 @@ __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
+from pdb import set_trace
+
 import yaml
 import os 			# path capabilities
 from collections import OrderedDict
@@ -51,6 +53,7 @@ class Map(object):
 
         # load yaml file as a dictionary
         cfg = self._find_yaml(yaml_file)
+
         # cfg = yaml.load(open('../models/' + yaml_file, 'r'));
 
         if cfg is not None:
@@ -104,7 +107,7 @@ class Map(object):
         try:
             # navigate to yaml_dir
             cfg_file = os.path.dirname(__file__) \
-                + '/../' + yaml_dir + '/' + yaml_file
+                + '../' + yaml_dir + '/' + yaml_file
             # return dictionary of yaml file
             with open(cfg_file, 'r') as file:
                  return yaml.load(file)
@@ -190,6 +193,7 @@ class Map(object):
         ax.get_yaxis().set_visible(False)
         print('about to save plot')
         print('fig size: {}'.format(fig.get_size_inches()))
+        set_trace()
         canvas.print_figure(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),bbox_inches=None,pad_inches=0)
         # fig.savefig(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),dpi=dpi,bbox_inches=None,pad_inches=0)
 
@@ -309,6 +313,7 @@ def test_occ_grid_gen():
     map_= Map('map2.yaml')
     res = 0.01
     map_.make_occupancy_grid(res)
+    set_trace()
     map_.make_occupancy_yaml(res)
 
 if __name__ == "__main__":

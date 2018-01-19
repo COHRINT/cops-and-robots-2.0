@@ -1,0 +1,9 @@
+scipy.stats
+sklearn
+vicon_bridge
+	special file edit
+xterm
+
+
+Common Errors:
+canTransform - restart vicon_sys
