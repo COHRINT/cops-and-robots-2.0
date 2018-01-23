@@ -1,0 +1,3 @@
+The most recent policies in cops-and-robots-2.0/policy_translator/policies used to be called D4Quest{room}SoftmaxAlphas0.npy.
+
+The policies in old/ are from the previous run of CnR 2.0 and may contain directional up/down errors
