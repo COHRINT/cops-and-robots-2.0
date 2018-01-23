@@ -163,6 +163,7 @@ class ParameterWindow(QWidget):
                         self.cfg['robots']['Zhora']['use']]
 
         print(use_robots)
+        print("HERE!!!")
 
         p = subprocess.Popen(["launch/run.sh",str(int(use_robots[0])), \
                                         str(int(use_robots[1])), \

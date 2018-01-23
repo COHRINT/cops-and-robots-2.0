@@ -8,7 +8,9 @@
     <node pkg="tf" type="static_transform_publisher" 
         name="pris_identity" args="0 0 0 0 0 0 /map /pris/odom 30"/> 
     <node pkg="tf" type="static_transform_publisher" 
-        name="zhora_identity" args="0 0 0 0 0 0 /map /zhora/odom 30"/> 
+        name="zhora_identity" args="0 0 0 0 0 0 /map /zhora/odom 30"/>
+    <node pkg="tf" type="static_transform_publisher"
+	name="wall_identity" args="0 0 0 0 0 0 /map /small_wall/odom 30"/> 
 
 	<!-- Run vicon_bridge -->
    <node pkg="vicon_bridge" type="vicon_bridge" name="vicon_bridge" output="screen">
@@ -35,14 +37,14 @@
     <node name="deckard" pkg="image_transport" type="republish" ns="theora" args="theora in:=/deckard/theora raw out:=/deckard/image" />
 
     <!-- Run vicon vicon_odom node to provide odometry data -->
-    <!-- REMOVED FOR NOW
+    <!--    
     <node pkg="vicon_odom" type="vicon_odom" name="deckard" output="screen">
         <param name="vicon_fps" value="100.0"/>
         <param name="max_accel" value="5.0"/>
         <param name="child_frame_id" value="/base_footprint" type="str"/>
         <param name="frame_id" value="/odom" type="str"/> 
-        <remap from="/vicon" to="/vicon/$(arg model)/$(arg model)"/>
+        <remap from="/vicon" to="/roy/base_footprint)"/>
         <remap from="/odom" to="/odom"/>
     </node>
-    -->
+    -->    
 </launch>

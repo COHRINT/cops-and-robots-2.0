@@ -1,6 +1,7 @@
 # -general map info is included in the info array
 # -all other associative arrays are objects on the map
-# -orientation [radians] is between obj's major axis and map's pos-x axis
+# -x len is along the direction that the object faces before orientation
+# -orientation [radians]
 # -all other measurements are [m]
 # NOTE: the color 'sage' does not interface with QT...
 # -author = 'LT'
@@ -15,6 +16,49 @@ info:
   origin:
     x_coord: 0.0
     y_coord: 0.0
+  rooms:
+    study:
+      min_x: -7.0
+      min_y: -3.33
+      max_x: -2.0
+      max_y: -1.0
+      objects:
+        ['desk','filing cabinet']
+    hallway:
+      min_x: -9.5
+      min_y: -1.0
+      max_x: 4.0
+      max_y: 1.4
+      objects:
+        ['fern']
+    library:
+      min_x: -2.0
+      min_y: -3.33
+      max_x: 4.0
+      max_y: -1.0
+      objects:
+        ['bookcase','chair']
+    billiard room:
+      min_x: 0.0
+      min_y: 1.4
+      max_x: 4.0
+      max_y: 3.68
+      objects:
+        ['checkers table','cassini poster']
+    dining room:
+      min_x: -9.5
+      min_y: -3.33
+      max_x: -7.0
+      max_y: -1.0
+      objects:
+        ['dining table']
+    kitchen:
+      min_x: -9.5
+      min_y: 1.4
+      max_x: 0.0
+      max_y: 3.68
+      objects:
+        ['fridge','mars poster']
 
 bookcase:
   name: bookcase
@@ -49,8 +93,8 @@ chair:
   orientation: 270.0
   shape: rectangle
 
-filing_cabinet:
-  name: filing_cabinet
+filing cabinet:
+  name: filing cabinet
   color: black
   centroid_x: -3.7988
   centroid_y: -0.8912
@@ -60,10 +104,10 @@ filing_cabinet:
   orientation: 270.0
   shape: rectangle
 
-dining_table:
-  name: dining_table
+dining table:
+  name: dining table
   color: brown
-  centroid_x: -7.57
+  centroid_x: -7.57 # 7.57 old
   centroid_y: -2.54
   x_len: 1.17
   y_len: 0.69
@@ -71,8 +115,8 @@ dining_table:
   orientation: 90.0
   shape: rectangle
 
-mars_poster:
-  name: mars_poster
+mars poster:
+  name: mars poster
   color: bisque
   centroid_x: -4.38
   centroid_y: 3.475
@@ -82,8 +126,8 @@ mars_poster:
   orientation: 0.0
   shape: rectangle
 
-cassini_poster:
-  name: cassini_poster
+cassini poster:
+  name: cassini poster
   color: black
   centroid_x: 1.38
   centroid_y: 3.475
@@ -104,8 +148,8 @@ fridge:
   orientation: 315.0
   shape: rectangle
 
-checkers_table:
-  name: checkers_table
+checkers table:
+  name: checkers table
   color: sandybrown
   centroid_x: 2.04
   centroid_y: 2.66

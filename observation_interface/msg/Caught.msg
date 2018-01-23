@@ -1,0 +1,2 @@
+string robber
+bool confirm

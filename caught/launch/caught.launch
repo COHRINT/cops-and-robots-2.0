@@ -1,0 +1,40 @@
+<!-- Launch file for running the caught robber node on a computer.
+See wiki for instructions on running caught robber node on Odroid - LT-->
+
+<launch>
+  <arg name="catch_dist" default="0.7" />
+  <arg name="cop_name" default="deckard" />
+  <arg name="num_cops" default="1" />
+  <!-- Testing -->
+  <arg name="num_robbers" default="1" />
+  <arg name="test_caught" default="False" />
+  <!-- Additional Functionality -->
+  <arg name="image_proc" default="False" />
+  <arg name="show_mask" default="False" />
+  <arg name="image_view" default="False" />
+
+
+<node name="caught_robber" pkg="caught" type="caught_robber_comp.py" output="screen">
+  <param name="catch_dist" value="$(arg catch_dist)" />
+  <param name="show_mask" value="$(arg show_mask)" />
+  <rosparam param="cops">["deckard"] </rosparam> <!-- additional cops to be added in list -->
+</node>
+
+
+<node name="test_caught" pkg="caught"
+  type="test_caught.py" output="screen" if="$(arg test_caught)" >
+  <param name="num_robbers" value="$(arg num_robbers)" />
+</node>
+
+<!-- if cops's 3dsensor.launch "rgb_processing" argument is false
+For each cop: -->
+<node name="image_proc" pkg="image_proc"
+  type="image_proc" ns="/$(arg cop_name)/camera/rgb" if="$(arg image_proc)" />
+
+<!-- To view cop's image feed
+For each cop: -->
+<node name="image_view" pkg="image_view" type="image_view" if="$(arg image_view)">
+  <remap from="image" to="/$(arg cop_name)/image_color"/>
+</node>
+
+</launch>
