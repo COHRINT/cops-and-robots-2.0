@@ -53,12 +53,12 @@ class POMDPTranslator(object):
 
 		# TODO: Find the correct mappings to the rooms
 
-                hall = 5
-                bill = 4
-                libb = 2
-                dinn = 3
-                kitt = 1
-                stud = 0
+		hall = 5
+		bill = 4
+		libb = 2
+		dinn = 3
+		kitt = 1
+		stud = 0
                 
 		self.rooms_map = {hall:'hallway',bill:'billiard room',stud:'study',libb:'library',dinn:'dining room',kitt:'kitchen'}
 		self.rooms_map_inv = {'hallway':hall,'billiard room':bill,'study':stud,'library':libb,'dining room':dinn,'kitchen':kitt}
@@ -320,18 +320,21 @@ class POMDPTranslator(object):
 
 
 		viewCone = Softmax();
-		viewCone.buildTriView(pose,length=1,steepness=7);
+		viewCone.buildTriView(pose,length=1,steepness=2);
 		for i in range(0,len(viewCone.weights)):
 			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+		
+		#Only update room that cop is in with view cone update
+		#Make sure to renormalize that room
 		newerBelief = GM();
 		for i in range(1,5):
 			tmpBel = viewCone.runVBND(allBels[copBounds],i);
 			newerBelief.addGM(tmpBel);
 		allBels[copBounds] = newerBelief;
 
-		#for i in range(0,len(allBels)):
-			#allBels[i].normalizeWeights();
-		allBels[copBounds].normalizeWeights();
+		for i in range(0,len(allBels)):
+			allBels[i].normalizeWeights();
+		#allBels[copBounds].normalizeWeights();
 
 		print('allBels LENGTH: {}'.format(allBels))
 
