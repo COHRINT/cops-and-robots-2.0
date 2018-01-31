@@ -26,6 +26,8 @@ __status__ = "Development"
 
 from pdb import set_trace
 
+import png
+import math
 import yaml
 import os 			# path capabilities
 from collections import OrderedDict
@@ -78,7 +80,7 @@ class Map(object):
                 width = upper_r[1] - lower_l[1]
                 cent = [lower_l[0] + length/2,lower_l[1]+width/2]
                 self.rooms[room]['softmax'] = Softmax()
-                self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=3)
+                self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=10)
                 for i in range(0,len(self.rooms[room]['softmax'].weights)):
                     self.rooms[room]['softmax'].weights[i] = [0,0,self.rooms[room]['softmax'].weights[i][0],self.rooms[room]['softmax'].weights[i][1]];
                 self.rooms[room]['objects'] = cfg['info']['rooms'][room]['objects']
@@ -107,7 +109,7 @@ class Map(object):
         try:
             # navigate to yaml_dir
             cfg_file = os.path.dirname(__file__) \
-                + '/../' + yaml_dir + '/' + yaml_file
+                + '../' + yaml_dir + '/' + yaml_file
             # return dictionary of yaml file
             with open(cfg_file, 'r') as file:
                  return yaml.load(file)
@@ -159,11 +161,11 @@ class Map(object):
         # add patches for all objects in yaml file
         for obj in self.objects:
             cent = self.objects[obj].centroid;
-            x = self.objects[obj].length;
-            y = self.objects[obj].width;
+            x = self.objects[obj].x_len;
+            y = self.objects[obj].y_len;
             theta = self.objects[obj].orient;
             col = self.objects[obj].color
-            if(self.objects[obj].shape == 'oval'):
+            if(self.objects[obj].shape == 'oval2'):
                 tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc='black',ec='black');
             else:
                 # skip plotting posters as they aren't actually protruding into the space
@@ -193,23 +195,141 @@ class Map(object):
         ax.get_yaxis().set_visible(False)
         print('about to save plot')
         print('fig size: {}'.format(fig.get_size_inches()))
-        set_trace()
-        canvas.print_figure(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),bbox_inches=None,pad_inches=0)
+#        set_trace()
+        canvas.print_figure(os.path.dirname(__file__) + '%s_occupancy.png'%self.name.lower(),bbox_inches=None,pad_inches=0)
         # fig.savefig(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),dpi=dpi,bbox_inches=None,pad_inches=0)
 
-    def make_occupancy_yaml(self,res,occ_thresh=0.2,free_thresh=0.65):
-        yaml_content = {'image': self.name.lower()+'_occupancy.png',
+    
+
+class Occupancy_Grid(object):
+    # Initializing the object creates and saves a greyscale png of the map in the current directory
+    # also will create the proper yaml
+
+    #NOTE we can only turn 90 degrees with the current form of setup
+
+    # TODO make this modular
+    
+    def __init__(self, _map, res):
+        self._map = _map
+        
+        # TODO pull 1000 and 500 from the map bounds
+        self.x_pix = 1000
+        self.y_pix = 500
+        # main rows file to organize pixels
+        self.rows = []
+        
+        self.white_out()
+        self.load_objs()
+
+        self.save_image()
+        self.make_occupancy_yaml(_map.name,_map.bounds,res)
+
+    def white_out(self):
+        white = 255
+        for i in range(self.y_pix):
+            cols = []
+            for i in range(self.x_pix):
+                cols.append(white)
+            self.rows.append(cols)
+
+    def load_objs(self):
+        objects = self._map.objects
+        for obj in objects:
+            print(objects[obj].name)
+            cent = objects[obj].centroid
+            x_len = objects[obj].x_len
+            y_len = objects[obj].y_len
+            orient = objects[obj].orient
+            self.fill_rectangle(cent,x_len,y_len,orient)
+
+    def fill_rectangle(self, cent,x_len, y_len,orient):
+        # wall x_len = 10m, y_len = 1m centroid = [0,2] no orientation
+        # start at centroid, jump left and move right filling in pixels by rows
+        cent_indices = self.centroid2rowIndex(cent)
+#        print("cent indices: " + str(cent_indices))
+        if orient == 90:
+            x_len, y_len = y_len,x_len
+            
+        ul_x = int(cent_indices[0][0] - (math.ceil(x_len*50) -1))
+        ul_y = int(cent_indices[0][1] - (math.ceil(y_len*50) -1))
+        ul_index = [ul_x, ul_y]
+        lr_x = int(cent_indices[3][0] + (math.ceil(x_len*50) -1))
+        lr_y = int(cent_indices[3][1] + (math.ceil(y_len*50) -1))
+        lr_index = [lr_x,lr_y]
+
+        # outer loop = rows
+        # inner loop = columns
+        try:
+            for i in range(ul_y,lr_y+1): # loop through rows
+                for j in range(ul_x,lr_x+1):
+                    self.rows[i][j] = 0
+                    #print(str(i)+","+str(j))
+        except IndexError:
+            print("Index Error")
+            print("i: "+str(i))
+            print("j: "+str(j))
+
+    def centroid2rowIndex(self,centroid):
+        # returns list of 4 tuples surrounding the centroid location
+        # [0,2] -> [ [499,49] [500,49]
+        #            [499,50] [500,50]]
+        # [0,0] -> [ [499, 249] [500,249] # 2m -> 200cm
+        #            [499, 250] [500,250]
+        # [2,0] -> [ [699, 249] [700,249]
+        #            [699, 250] [700, 250]
+        # returns -1 in a location if that location is out of bounds
+
+        # start at [0,0]
+        #cents = [[499,249],[500,249],[499,250],[500,250]]
+        x = round(centroid[0],2) # -1
+        y = round(centroid[1],2) # 2
+
+        # check x input
+        if -5 <= x <= 5 and -2.5 <= y <= 2.5:
+            pass
+        else:
+            print("Bad y or x value")
+            print("X: " + str(x) + " Y: " + str(y))
+            set_trace()
+        
+        
+        cent_x = int(499 + (x*100)) # resolution here
+        cent_y = int(249 - (y*100)) # y's go up for lower values
+        cent_x2 = cent_x + 1
+        cent_y2 = cent_y + 1
+
+        off_map_value = -1
+        if cent_x < 0 or cent_x > 999:
+            cent_x = off_map_value
+        if cent_x2 < 0 or cent_x2 > 999:
+            cent_x2 = off_map_value
+        if cent_y < 0 or cent_y > 499:
+            cent_y = off_map_value
+        if cent_y2 < 0 or cent_y2 > 499:
+            cent_y2 = off_map_value
+        return [[cent_x,cent_y],[cent_x2,cent_y],[cent_x,cent_y2],[cent_x2,cent_y2]]
+
+        
+    def save_image(self):
+        w = png.Writer(self.x_pix, self.y_pix, greyscale=True) # first comes png cols then png rows
+        f = open(self._map.name.lower()+'_occupancy.png', 'wb')
+        w.write(f, self.rows)
+        f.close()
+
+    def make_occupancy_yaml(self,map_name, bounds,res,occ_thresh=0.2,free_thresh=0.65):
+        yaml_content = {'image': map_name.lower()+'_occupancy.png',
                         'resolution': res,
-                        'origin': [self.bounds[0],self.bounds[1],0.0],
+                        'origin': [bounds[0],bounds[1],0.0],
                         'occupied_thresh': occ_thresh,
                         'free_thresh': free_thresh,
                         'negate': 0}
         
-        file_name = os.path.dirname(__file__) + '/' + self.name.lower() + '_occupancy.yaml'
+        file_name = os.path.dirname(__file__) + '' + map_name.lower() + '_occupancy.yaml'
 
         with open(file_name,'w') as yaml_file:
             yaml.safe_dump(yaml_content,yaml_file,allow_unicode=False)
 
+        
 class Map_Object(object):
     """
     Objects like chairs, bookcases, etc to be included in the map object
@@ -228,14 +348,14 @@ class Map_Object(object):
         Name of obj
     color: str
         Color of obj
-    centroid : 2x1 list
+    centroid : 2x1 float list
         Centroid location [x, y] [m]
-    length: float
-        x axis length of obj [m] (along direction object is facing)
-    width: float
-        y axis width of obj [m] (normal to direction object is facing)
+    x_len: float
+        x axis length of obj [m] (before rotation)
+    y_len: float
+        y axis width of obj [m] (before rotation)
     orient : float
-        Radians between obj's major axis and the map's pos-x axis
+        Radians of turn from upward direction to the left (rotation on its centroid)
     shape : str
         Values accepted: 'rectangle' or 'oval'
     """
@@ -243,16 +363,18 @@ class Map_Object(object):
                 name='wall',
                 color='darkblue',
                 centroid=[0.0,0.0],
-                length = 0.0,
-                width = 0.0,
+                x_len = 0.0,
+                y_len = 0.0,
                 orient=0.0,
                 shape = 'rectangle'
                 ):
         self.name = name
         self.color = color
         self.centroid = centroid
-        self.length = length
-        self.width = width
+        self.centroid[0] = float(centroid[0])
+        self.centroid[1] = float(centroid[1])
+        self.x_len = x_len
+        self.y_len = y_len
         self.orient = orient
 
         self._pick_shape(shape)
@@ -266,8 +388,7 @@ class Map_Object(object):
         Create and store corresponding likelihood.
         Approximate all shapes as rectangles
         """
-        self.softmax.buildOrientedRecModel(self.centroid,
-            self.orient, self.length, self.width, steepness=3)
+        self.softmax.buildOrientedRecModel(self.centroid,self.orient, self.x_len, self.y_len, steepness=10)
         for i in range(0,len(self.softmax.weights)):
             self.softmax.weights[i] = [0,0,self.softmax.weights[i][0],self.softmax.weights[i][1]];
 
@@ -309,14 +430,17 @@ def test_likelihood():
         print("Failed to initialize Map Object.")
         raise
 
-def test_occ_grid_gen():
-    map_= Map('map2.yaml')
+def test_occ_grid_gen(map_name='mapA.yaml'):
+    _map = Map(map_name)
     res = 0.01
-    map_.make_occupancy_grid(res)
-    set_trace()
-    map_.make_occupancy_yaml(res)
+    occ = Occupancy_Grid(_map,res)
+#    print(occ.fill_rectangle([-2.0,-2.19],1.0,0.62,0))
+#    print(occ.fill_rectangle([0,0],1.0,0.62,90))
+#    occ.save_image()
+#    print(occ.centroid2rowIndex([-1,2]))
 
 if __name__ == "__main__":
     #test_map_obj()
     # test_likelihood()
-    test_occ_grid_gen()
+    #test_occ_grid_gen()
+    test_occ_grid_gen() # this implementation will use python's png

@@ -9,7 +9,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Matthew Aitken", "Nick Sweet", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -103,7 +103,7 @@ class GoalPlanner(object):
             
         new_goal_pose = self.get_goal_pose(pose)
 
-        print("goal_pose: " +str(new_goal_pose))
+        print(self.robot_name + "'s goal: " +str(new_goal_pose))
 
         # Check if it's actually a new pose before we publish
         if self.is_new_pose(old_goal_pose, new_goal_pose) is True:
@@ -144,8 +144,8 @@ class GoalPlanner(object):
         ---------
         goal_pose : [x,y, orientation] in [m,m,radians]
         """
-        print("New goal msg being created.")
-        rospy.sleep(1)
+        print("----------------"+self.robot_name+" new goal----------------")
+        rospy.sleep(1) # sleep so that the msg get's published (doesn't publish if we don't pause here..)
         
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")

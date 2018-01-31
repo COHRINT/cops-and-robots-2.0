@@ -320,7 +320,7 @@ class POMDPTranslator(object):
 
 
 		viewCone = Softmax();
-		viewCone.buildTriView(pose,length=1,steepness=2);
+		viewCone.buildTriView(pose,length=1,steepness=10);
 		for i in range(0,len(viewCone.weights)):
 			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 		
@@ -350,7 +350,7 @@ class POMDPTranslator(object):
 					#apply to all
 					for i in range(0,len(allBels)):
 						if(sign==True):
-							allBels[i] = mod.runVBND(allBels[i],0);
+							allBels[i] = mod.runVBND(allBels[i],0,steepness=10);
 						else:
 							tmp = GM();
 							for j in range(1,mod.size):
@@ -361,7 +361,7 @@ class POMDPTranslator(object):
 					print('ROOM NUM: {}'.format(roomNum))
 					#apply to roomNum-1;
 					if(sign == True):
-						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas);
+						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas,steepness=10);
 					else:
 						tmp = GM();
 						for i in range(1,mod.size):
@@ -379,7 +379,8 @@ class POMDPTranslator(object):
 				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3])-0.01;
 
 		for i in range(0,len(allBels)):
-			allBels[i] = allBels[i].kmeansCondensationN(6)
+                        allBels[i].condense(10);
+#			allBels[i] = allBels[i].kmeansCondensationN(6)
 
 
 		#3. recombine beliefs
@@ -399,8 +400,8 @@ class POMDPTranslator(object):
 
 		#5. add uncertainty for robber position
 		for g in newBelief:
-			g.var[2][2] += 0.5;
-			g.var[3][3] += 0.5;
+			g.var[2][2] += 1
+			g.var[3][3] += 1
 
 		# newBelief.normalizeWeights();
 
@@ -432,8 +433,8 @@ class POMDPTranslator(object):
 		m = self.map2;
 		for obj in m.objects:
 		    cent = m.objects[obj].centroid;
-		    x = m.objects[obj].length;
-		    y = m.objects[obj].width;
+		    x = m.objects[obj].x_len;
+		    y = m.objects[obj].y_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
 		    if(m.objects[obj].shape == 'oval'):

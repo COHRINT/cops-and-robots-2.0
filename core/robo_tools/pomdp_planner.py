@@ -7,7 +7,8 @@ __author__ = ["Ian Loefgren", "Sierra Williams"]
 __copyright__ = "Copyright 2017, COHRINT"
 __credits__ = ["Nick Sweet", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "2.0.1" #Edit 11/21/17 LT
+__version__ = "2.0.2" # Edit 1/25/18 LT [removed print statement]
+#Edit 11/21/17 LT
 __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
@@ -72,7 +73,7 @@ class PomdpGoalPlanner(GoalPlanner):
 
 		goal_pose = list(res.response.goal_pose)
 
-		print("NEW GOAL POSE: {}".format(goal_pose))
+#		print("NEW GOAL POSE: {}".format(goal_pose))
                 
                 # Round the given goal pose
                 for i in range(len(goal_pose)):
