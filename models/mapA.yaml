@@ -1,0 +1,335 @@
+# ******** All objects face upward/toward the wall before orientation ********
+# -x_len is length in x direction before any orientation
+# Objects rotate with their centriod constant
+# -orientation [radians]
+# -all other measurements are [m]
+# -author = 'LT' (1/26/18)
+
+# MapA is a revitilization of the original map of CnR with easier to use coordinates
+
+info:
+  name: MapA
+  bounds:
+    max_x: 5.0
+    max_y: 2.5
+    min_x: -5.0    
+    min_y: -2.5
+  origin:
+    x_coord: 0.0
+    y_coord: 0.0
+  rooms:
+    study:
+      min_x: -3.5
+      min_y: -2.5
+      max_x: 1.0
+      max_y: 0.0
+      objects:
+        ['desk','filing cabinet']
+    hallway:
+      min_x: -5.0
+      min_y: 0.0
+      max_x: 5.0
+      max_y: 1.0
+      objects:
+        ['fern']
+    library:
+      min_x: 1.0
+      min_y: -2.5
+      max_x: 5.0
+      max_y: 0.0
+      objects:
+        ['bookcase','chair']
+    billiard room:
+      min_x: 1.5
+      min_y: 1.0
+      max_x: 5.0
+      max_y: 2.5
+      objects:
+        ['checkers table','cassini poster']
+    dining room:
+      min_x: -5.0
+      min_y: -2.5
+      max_x: -3.5
+      max_y: 0.0
+      objects:
+        ['dining table']
+    kitchen:
+      min_x: -5.0
+      min_y: 1.0
+      max_x: 1.5
+      max_y: 2.5
+      objects:
+        ['fridge','mars poster']
+
+bookcase:
+  name: bookcase
+  color: sandybrown
+  centroid_x: 2.5
+  centroid_y: -0.09 # flush against backside wall
+  x_len: 0.38
+  y_len: 0.18
+  orientation: 180 
+  shape: rectangle
+
+desk:
+  name: desk
+  color: sandybrown
+  centroid_x: -2.0
+  centroid_y: -2.19 # flush against the border of the map
+  x_len: 1.0
+  y_len: 0.62
+  orientation: 0
+  shape: oval
+
+chair:
+  name: chair
+  color: brown
+  centroid_x: 3.5
+  centroid_y: -1.5
+  x_len: .45
+  y_len: .42
+  orientation: 90
+  shape: rectangle
+
+filing cabinet:
+  name: filing cabinet
+  color: black
+  centroid_x: -1.5
+  centroid_y: -.245 # flush against the above wall
+  x_len: 0.37
+  y_len: 0.5
+  orientation: 180
+  shape: rectangle
+
+dining table:
+  name: dining table
+  color: brown
+  centroid_x: -4.165 # flush against the wall to the right
+  centroid_y: -2.15 # flush against the bottom border of the map
+  x_len: 1.18
+  y_len: 0.7
+  orientation: 0
+  shape: rectangle
+
+mars poster:
+  name: mars poster
+  color: bisque
+  centroid_x: -2.0
+  centroid_y: 2.475
+  x_len: 0.84
+  y_len: 0.05
+  orientation: 180
+  shape: rectangle
+
+cassini poster:
+  name: cassini poster
+  color: black
+  centroid_x: 4.0
+  centroid_y: 2.47
+  x_len: 0.56
+  y_len: 0.04
+  orientation: 180
+  shape: rectangle
+
+fridge:
+  name: fridge
+  color: black
+  centroid_x: -3.0
+  centroid_y: 1.205 # flush against the wall behind it 
+  x_len: 0.32
+  y_len: 0.26
+  orientation: 0
+  shape: rectangle
+
+checkers table:
+  name: checkers table
+  color: sandybrown
+  centroid_x: 3.0
+  centroid_y: 1.335 # flush against the wall behind it
+  x_len: 0.52
+  y_len: 0.52
+  orientation: 0.0
+  shape: rectangle
+
+fern:
+  name: fern
+  color: green
+  centroid_x: -0.09
+  centroid_y: 0.84 # flush with the wall behind it
+  x_len: .17
+  y_len: .17
+  orientation: 180 # face downward
+  shape: oval
+
+wall_1:
+  name: wall_1
+  color: sienna
+  centroid_x: -3.5
+  centroid_y: -1.87
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_2:
+  name: wall_2
+  color: sienna
+  centroid_x: -3.5
+  centroid_y: -.625
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_3:
+  name: wall_3
+  color: sienna
+  centroid_x: -2.95
+  centroid_y: 0.08
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_4:
+  name: wall_4
+  color: sienna
+  centroid_x: -1.7
+  centroid_y: 0.08
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_5:
+  name: wall_5
+  color: sienna
+  centroid_x: -3.125
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_6:
+  name: wall_6
+  color: sienna
+  centroid_x: -1.875
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_7:
+  name: wall_7
+  color: sienna
+  centroid_x: -.625
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_8:
+  name: wall_8
+  color: sienna
+  centroid_x: 1.5
+  centroid_y: 1.87 # in real life we'll shift this wall down slightly b/c there won't be a miniwall
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+# See last wall for the miniwall that makes the above and below walls flush (it won't be on the actual physical map
+
+wall_9:
+  name: wall_9
+  color: sienna
+  centroid_x: 2.2
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_10:
+  name: wall_10
+  color: sienna
+  centroid_x: 3.375
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_11:
+  name: wall_11
+  color: sienna
+  centroid_x: 1.0
+  centroid_y: -.625
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_12:
+  name: wall_12
+  color: sienna
+  centroid_x: 1.0
+  centroid_y: -.625
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_13:
+  name: wall_13
+  color: sienna
+  centroid_x: 1.0
+  centroid_y: -.625
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_14:
+  name: wall_14
+  color: sienna
+  centroid_x: 1.55
+  centroid_y: 0.08
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_15:
+  name: wall_15
+  color: sienna
+  centroid_x: 2.8
+  centroid_y: 0.08
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
+
+wall_16: # mini wall to make rooms correct
+  name: wall_16
+  color: sienna
+  centroid_x: 1.5
+  centroid_y: 1.08
+  x_len: .32 # miniwall to make wall above and below flush
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
+
+wall_17: # wall to fill the gap between the dining table and boundry
+  name: wall_17
+  color: brown
+  centroid_x: -4.88
+  centroid_y: -2.15
+  x_len: .24 
+  y_len: 0.7
+  orientation: 0
+  shape: rectangle
+
