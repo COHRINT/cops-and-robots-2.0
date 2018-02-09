@@ -64,6 +64,10 @@ class Robot(object):
             del self.init_map_bounds
             del self.init_delta
             
+	elif goal_planner_type == 'robber_intel':
+            from robber_evasion_planner import robberEvasionGoalPlanner
+            self.goal_planner = robberEvasionGoalPlanner()
+
         elif goal_planner_type == 'audio': # Jeremy's Audio Planner. Intergration with this goal planner class has not been set up yet
             from audio_planner import AudioGoalPlanner
             self.goal_planner = AudioGoalPlanner()
