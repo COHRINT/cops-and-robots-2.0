@@ -13,19 +13,26 @@
         orientation from the object's major axis to the map's positive x axis,
         shape (available shapes: oval and rectangle),
         softmax likelihood
+
+How to make a new occ_grid:
+1) Make the yaml file
+2) python map_maker.py "name-of-map-file" # pass in name of map file
+--------DON'T INCLUDE .yaml----
+3) View the ouput named "name-of-map-file._occupancy.png"
 """
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, COHRINT"
 __credits__ = ["Luke Babier", "Ian Loefgren", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "2.0.0" # Likelihoods added
+__version__ = "2.0.1" # Command line args added for creating occ_grid
 __maintainer__ = "LT"
 __email__ = "luba6098@colorado.edu"
 __status__ = "Development"
 
 from pdb import set_trace
 
+import sys # command line args
 import png
 import math
 import yaml
@@ -105,7 +112,6 @@ class Map(object):
     # Returns 'None' for failure
     def _find_yaml(self, yaml_file):
         yaml_dir = 'models'
-
         try:
             # navigate to yaml_dir
             cfg_file = os.path.dirname(__file__) \
@@ -116,90 +122,6 @@ class Map(object):
         except IOError as ioerr:
             print str(ioerr)
             return None
-
-    def make_occupancy_grid(self,res):
-        """
-        Occupancy grid creation from a yaml file.
-            - Uses the map associated with the instance of the Map class.
-            - Saves occupancy grid as a png with only black and white coloring.
-
-        Inputs
-        -------
-            - res - desired resolution for occupancy grid in [m/px]
-
-        Outputs
-        -------
-            - returns nothing
-            - saves occupancy grid
-        """
-        #<>TODO: refactor into a sperate module?
-        # create matplotlib figure to plot map
-        fig = Figure()
-        canvas = FigureCanvas(fig)
-        # ax = fig.add_subplot(111)
-        ax = fig.add_axes([0,0,1,1])
-
-        # get dpi of figure
-        dpi = float(fig.get_dpi())
-        print("DPI: {}".format(dpi))
-        # calculate required size in pixels of occupancy grid
-        x_size_px = (self.bounds[2]-self.bounds[0]) / res
-        y_size_px = (self.bounds[3]-self.bounds[1]) / res
-        print('x px: {} \t y px: {}'.format(x_size_px,y_size_px))
-        # calculate required size in inches
-        x_size_in = x_size_px / dpi
-        y_size_in = y_size_px / dpi
-        print('x in: {} \t y in: {}'.format(x_size_in,y_size_in))
-        fig.set_size_inches(x_size_in,y_size_in)
-
-        bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-        width, height = bbox.width, bbox.height
-        print('ax height: {} \t width: {}'.format(height*dpi,width*dpi))
-
-        # ax = plt.Axes(fig, [0., 0., 1., 1.])
-
-        # add patches for all objects in yaml file
-        for obj in self.objects:
-            cent = self.objects[obj].centroid;
-            x = self.objects[obj].x_len;
-            y = self.objects[obj].y_len;
-            theta = self.objects[obj].orient;
-            col = self.objects[obj].color
-            if(self.objects[obj].shape == 'oval2'):
-                tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc='black',ec='black');
-            else:
-                # skip plotting posters as they aren't actually protruding into the space
-                if 'poster' in obj:
-                    continue
-                else:
-                    # find the location of the lower left corner of the object for plotting
-                    length = x
-                    width = y
-                    theta1 = theta*math.pi/180;
-                    h = math.sqrt((width/2)*(width/2) + (length/2)*(length/2));
-                    theta2 = math.asin((width/2)/h);
-                    s1 = h*math.sin(theta1+theta2);
-                    s2 = h*math.cos(theta1+theta2)
-                    xL = cent[0]-s2
-                    yL = cent[1]-s1
-
-                    tmp = patches.Rectangle((xL,yL),width = x, height=y,angle=theta,fc='black',ec='black');
-
-            ax.add_patch(tmp)
-
-        # save the matplotlib figure
-        ax.set_xlim(self.bounds[0],self.bounds[2])
-        ax.set_ylim(self.bounds[1],self.bounds[3])
-        ax.axis('image')
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        print('about to save plot')
-        print('fig size: {}'.format(fig.get_size_inches()))
-#        set_trace()
-        canvas.print_figure(os.path.dirname(__file__) + '%s_occupancy.png'%self.name.lower(),bbox_inches=None,pad_inches=0)
-        # fig.savefig(os.path.dirname(__file__) + '/%s_occupancy.png'%self.name.lower(),dpi=dpi,bbox_inches=None,pad_inches=0)
-
-    
 
 class Occupancy_Grid(object):
     # Initializing the object creates and saves a greyscale png of the map in the current directory
@@ -247,7 +169,7 @@ class Occupancy_Grid(object):
         # start at centroid, jump left and move right filling in pixels by rows
         cent_indices = self.centroid2rowIndex(cent)
 #        print("cent indices: " + str(cent_indices))
-        if orient == 90:
+        if orient == 90 or orient == 270:
             x_len, y_len = y_len,x_len
             
         ul_x = int(cent_indices[0][0] - (math.ceil(x_len*50) -1))
@@ -430,7 +352,15 @@ def test_likelihood():
         print("Failed to initialize Map Object.")
         raise
 
-def test_occ_grid_gen(map_name='mapA.yaml'):
+def test_occ_grid_gen():
+    if len(sys.argv) != 2:
+        print("ERROR: Please pass in a map name")
+        print("E.g: $ python map_maker.py mapa")
+        raise
+    map_name = sys.argv[1]
+    if '.yaml' not in map_name:
+        map_name = map_name + '.yaml'
+    print("Map name: " + map_name)
     _map = Map(map_name)
     res = 0.01
     occ = Occupancy_Grid(_map,res)

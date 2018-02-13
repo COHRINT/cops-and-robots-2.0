@@ -22,12 +22,12 @@ info:
       min_x: -3.5
       min_y: -2.5
       max_x: 1.0
-      max_y: 0.0
+      max_y: -0.5
       objects:
         ['desk','filing cabinet']
     hallway:
       min_x: -5.0
-      min_y: 0.0
+      min_y: -0.5
       max_x: 5.0
       max_y: 1.0
       objects:
@@ -36,7 +36,7 @@ info:
       min_x: 1.0
       min_y: -2.5
       max_x: 5.0
-      max_y: 0.0
+      max_y: -0.5
       objects:
         ['bookcase','chair']
     billiard room:
@@ -50,7 +50,7 @@ info:
       min_x: -5.0
       min_y: -2.5
       max_x: -3.5
-      max_y: 0.0
+      max_y: -0.5
       objects:
         ['dining table']
     kitchen:
@@ -64,8 +64,8 @@ info:
 bookcase:
   name: bookcase
   color: sandybrown
-  centroid_x: 2.5
-  centroid_y: -0.09 # flush against backside wall
+  centroid_x: 2.0
+  centroid_y: -0.59 # flush against backside wall
   x_len: 0.38
   y_len: 0.18
   orientation: 180 
@@ -84,8 +84,8 @@ desk:
 chair:
   name: chair
   color: brown
-  centroid_x: 3.5
-  centroid_y: -1.5
+  centroid_x: 3.75
+  centroid_y: -1.75
   x_len: .45
   y_len: .42
   orientation: 90
@@ -95,7 +95,7 @@ filing cabinet:
   name: filing cabinet
   color: black
   centroid_x: -1.5
-  centroid_y: -.245 # flush against the above wall
+  centroid_y: -.745 # flush against the above wall
   x_len: 0.37
   y_len: 0.5
   orientation: 180
@@ -161,11 +161,12 @@ fern:
   orientation: 180 # face downward
   shape: oval
 
+
 wall_1:
   name: wall_1
   color: sienna
   centroid_x: -3.5
-  centroid_y: -1.87
+  centroid_y: -1.125
   x_len: 1.25
   y_len: 0.15
   orientation: 90
@@ -174,18 +175,18 @@ wall_1:
 wall_2:
   name: wall_2
   color: sienna
-  centroid_x: -3.5
-  centroid_y: -.625
+  centroid_x: -2.95
+  centroid_y: -0.48
   x_len: 1.25
   y_len: 0.15
-  orientation: 90
+  orientation: 0
   shape: rectangle
 
 wall_3:
   name: wall_3
   color: sienna
-  centroid_x: -2.95
-  centroid_y: 0.08
+  centroid_x: -1.7
+  centroid_y: -0.48
   x_len: 1.25
   y_len: 0.15
   orientation: 0
@@ -194,8 +195,8 @@ wall_3:
 wall_4:
   name: wall_4
   color: sienna
-  centroid_x: -1.7
-  centroid_y: 0.08
+  centroid_x: -3.125
+  centroid_y: 1.0
   x_len: 1.25
   y_len: 0.15
   orientation: 0
@@ -204,7 +205,7 @@ wall_4:
 wall_5:
   name: wall_5
   color: sienna
-  centroid_x: -3.125
+  centroid_x: -1.875
   centroid_y: 1.0
   x_len: 1.25
   y_len: 0.15
@@ -214,7 +215,7 @@ wall_5:
 wall_6:
   name: wall_6
   color: sienna
-  centroid_x: -1.875
+  centroid_x: -.625
   centroid_y: 1.0
   x_len: 1.25
   y_len: 0.15
@@ -224,16 +225,6 @@ wall_6:
 wall_7:
   name: wall_7
   color: sienna
-  centroid_x: -.625
-  centroid_y: 1.0
-  x_len: 1.25
-  y_len: 0.15
-  orientation: 0
-  shape: rectangle
-
-wall_8:
-  name: wall_8
-  color: sienna
   centroid_x: 1.5
   centroid_y: 1.87 # in real life we'll shift this wall down slightly b/c there won't be a miniwall
   x_len: 1.25
@@ -241,12 +232,22 @@ wall_8:
   orientation: 90
   shape: rectangle
 
-# See last wall for the miniwall that makes the above and below walls flush (it won't be on the actual physical map
+# See wall_13 for the miniwall that makes the above and below walls flush (it won't be on the actual physical map
+
+wall_8:
+  name: wall_8
+  color: sienna
+  centroid_x: 2.2
+  centroid_y: 1.0
+  x_len: 1.25
+  y_len: 0.15
+  orientation: 0
+  shape: rectangle
 
 wall_9:
   name: wall_9
   color: sienna
-  centroid_x: 2.2
+  centroid_x: 3.375
   centroid_y: 1.0
   x_len: 1.25
   y_len: 0.15
@@ -256,65 +257,35 @@ wall_9:
 wall_10:
   name: wall_10
   color: sienna
-  centroid_x: 3.375
-  centroid_y: 1.0
+  centroid_x: 1.0
+  centroid_y: -1.125
   x_len: 1.25
   y_len: 0.15
-  orientation: 0
+  orientation: 90
   shape: rectangle
 
 wall_11:
   name: wall_11
   color: sienna
-  centroid_x: 1.0
-  centroid_y: -.625
+  centroid_x: 1.55
+  centroid_y: -0.48
   x_len: 1.25
   y_len: 0.15
-  orientation: 90
+  orientation: 0
   shape: rectangle
 
 wall_12:
   name: wall_12
   color: sienna
-  centroid_x: 1.0
-  centroid_y: -.625
-  x_len: 1.25
-  y_len: 0.15
-  orientation: 90
-  shape: rectangle
-
-wall_13:
-  name: wall_13
-  color: sienna
-  centroid_x: 1.0
-  centroid_y: -.625
-  x_len: 1.25
-  y_len: 0.15
-  orientation: 90
-  shape: rectangle
-
-wall_14:
-  name: wall_14
-  color: sienna
-  centroid_x: 1.55
-  centroid_y: 0.08
-  x_len: 1.25
-  y_len: 0.15
-  orientation: 0
-  shape: rectangle
-
-wall_15:
-  name: wall_15
-  color: sienna
   centroid_x: 2.8
-  centroid_y: 0.08
+  centroid_y: -0.48
   x_len: 1.25
   y_len: 0.15
   orientation: 0
   shape: rectangle
 
-wall_16: # mini wall to make rooms correct
-  name: wall_16
+wall_13: # mini wall to make rooms correct
+  name: wall_13
   color: sienna
   centroid_x: 1.5
   centroid_y: 1.08
@@ -323,8 +294,8 @@ wall_16: # mini wall to make rooms correct
   orientation: 90
   shape: rectangle
 
-wall_17: # wall to fill the gap between the dining table and boundry
-  name: wall_17
+wall_14: # wall to fill the gap between the dining table and boundry
+  name: wall_14
   color: brown
   centroid_x: -4.88
   centroid_y: -2.15
@@ -333,3 +304,12 @@ wall_17: # wall to fill the gap between the dining table and boundry
   orientation: 0
   shape: rectangle
 
+wall_15: # smaller wall
+  name: wall_15
+  color: sienna
+  centroid_x: -3.5
+  centroid_y: -2.12
+  x_len: 0.75
+  y_len: 0.15
+  orientation: 90
+  shape: rectangle
