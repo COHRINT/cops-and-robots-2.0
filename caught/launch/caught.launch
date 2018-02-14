@@ -17,7 +17,7 @@ See wiki for instructions on running caught robber node on Odroid - LT-->
 <node name="caught_robber" pkg="caught" type="caught_robber_comp.py" output="screen">
   <param name="catch_dist" value="$(arg catch_dist)" />
   <param name="show_mask" value="$(arg show_mask)" />
-  <rosparam param="cops">["deckard"] </rosparam> <!-- additional cops to be added in list -->
+  <param name="cop" value="$(arg cop_name)" />
 </node>
 
 

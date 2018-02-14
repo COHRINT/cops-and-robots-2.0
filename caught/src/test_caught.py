@@ -1,8 +1,12 @@
 #!/usr/bin/env python
-""" Simple interface to test caught_robber.py 
+""" 
+Subscribes to /caught and opens a msg box in the callback
+      Prompting 'Yes' or 'No' whether the robot was caught
+Publishes a boolean to /caught_confirm depending on response from msg box
 
-Simply acts as a callback to the caught topic """
+Dependencies $ pip install pymsgbox
 
+"""
 
 __author__ = "LT"
 __copyright__ = "Copyright 2017, Cohrint"

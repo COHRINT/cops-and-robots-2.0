@@ -38,8 +38,9 @@ class GoalPlanner(object):
         Parameters
         ---------
         robot_pose : simply to initialize self.prev_goal_pose for when update() gets called
+                   [x,y,orient in radians]
         robot_name : name of the robot
-
+                   String
         """
         if robot_name is None:
             print("No robot_name given")
@@ -58,6 +59,9 @@ class GoalPlanner(object):
         # Used to determine whether to create a new rosmsg in the GoalPlanner.update() method
         self.prev_goal_pose = robot_pose
         self.prev_pose = robot_pose
+
+        # used for end of experiment return pose
+        self.original_pose = robot_pose
 
     def reached_pose(self, pose, goal_pose):
         if len(pose) != 3 or len(goal_pose) != 3:
@@ -145,7 +149,7 @@ class GoalPlanner(object):
         goal_pose : [x,y, orientation] in [m,m,radians]
         """
         print("----------------"+self.robot_name+" new goal----------------")
-        rospy.sleep(1) # sleep so that the msg get's published (doesn't publish if we don't pause here..)
+        rospy.sleep(0.5) # sleep so that the msg get's published (doesn't publish if we don't pause here..)
         
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")
@@ -166,5 +170,6 @@ class GoalPlanner(object):
         move_base_goal.header.stamp = rospy.Time.now()
         self.pub.publish(move_base_goal)
         
-    def stop(self, pose=[0,0,0]):
-        create_ROS_goal_message(pose)
+    def return_position(self):
+        print("Returning " + self.robot_name + " to original pose: " +str(self.original_pose))
+        self.create_ROS_goal_message(self.original_pose)

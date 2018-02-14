@@ -58,12 +58,11 @@ class Caught_Robber(object):
 
         # Identify Cops' image topics to subscribe to
         # All topics have same callback "self.caught_callback"
-        copList = rospy.get_param('~cops', ['deckard'])
-        rospy.logdebug("CopList: " + str(copList))
-        for cop in copList:
-            video_feed = "/" + cop + '/image_color'
-            rospy.Subscriber(video_feed, Image ,self.caught_callback)
-            rospy.loginfo("Caught subscribed to: "+ video_feed)
+        cop = rospy.get_param('~cop', 'deckard')
+        rospy.loginfo("Cop Name: " + cop)
+        video_feed = "/" + cop + '/image_color'
+        rospy.Subscriber(video_feed, Image ,self.caught_callback)
+        rospy.loginfo("Caught subscribed to: "+ video_feed)
 
         self.num_robbers = 0
         self.pub = rospy.Publisher('/caught' , Caught, queue_size=10)

@@ -3,27 +3,39 @@
 #   simply add it to this yaml file
 # author = "LT"
 
-roy:
-  r:
-    MIN: 0
-    MAX: 60
-  g:
-    MIN: 60
-    MAX: 110
-  b:
-    MIN: 140
-    MAX: 180
+# roy:
+#   r:
+#     MIN: 0
+#     MAX: 20
+#   g:
+#     MIN: 0
+#     MAX: 30
+#   b:
+#     MIN: 25
+#     MAX: 70
 
 # zhora:
 #   r:
-#     MIN: 30
-#     MAX: 110
+#     MIN: 10
+#     MAX: 20
 #   g:
-#     MIN: 120
-#     MAX: 220
+#     MIN: 20
+#     MAX: 50
 #   b:
-#     MIN: 70
-#     MAX: 200
+#     MIN: 20
+#     MAX: 50
+
+pris:
+  r:
+    MIN: 60
+    MAX: 140
+  g:
+    MIN: 15
+    MAX: 30
+  b:
+    MIN: 5
+    MAX: 30
+
 
 # for testing purposes
 # yellow_battery:

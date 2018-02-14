@@ -41,9 +41,9 @@ class MainTester(object):
 	"""
         running_experiment = True
 
-        experiment_runspeed_hz = .25
+        experiment_runspeed_hz = 4
         
-        map_bounds = [-9.6, -3.6, 4, 3.6]
+        map_bounds = [-5, -2.5, 5, 2.5]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
@@ -64,7 +64,6 @@ class MainTester(object):
                 
 		rospy.init_node("Python_Node")
                 rospy.Subscriber('/caught_confirm', Caught, self.end_experiment)
-                self.pub = rospy.Publisher('/stop_experiment', Bool, queue_size=10)
 
                 # caught_confirm topic
                 
@@ -77,8 +76,11 @@ class MainTester(object):
                 while self.running_experiment is True and not rospy.is_shutdown():
                         self.update_cop_robber()
                         r.sleep()
+                for robot in self.robots:
+                        self.robots[robot].goal_planner.return_position()
+                        rospy.sleep(1)
                 print("Experiment Finished")
-                        
+
 
 	def init_cop_robber(self, config_file=None):
                 """
@@ -138,10 +140,9 @@ class MainTester(object):
         def end_experiment(self, msg):
                 if msg.confirm is True:
                         self.running_experiment = False
-                        print(msg.robber + " caught")
-                        out_msg = Bool(True)
-                        self.pub.publish(out_msg)
-                        # send robots to starting positions
+                        print("*****"+ msg.robber.upper() + " CAUGHT*****")
+                        print("  ENDING EXPERIMENT")
+                self.running_experiment = False
 
 if __name__ == '__main__':
-	MainTester()
+        MainTester()
