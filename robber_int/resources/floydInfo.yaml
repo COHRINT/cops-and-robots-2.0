@@ -1,8 +1,8 @@
 mapSizeX: 0.68
 mapSizeY: 0.36000000000000004
-meanCopCost: 206.05962
-meanObjectValue: 2.727020272146626
+meanCopCost: 173.56063875
+meanObjectValue: 4.8750780762023735
 originX: -9.6
 originY: -3.6
-stdCopCost: 148.51310204559596
-stdObjectValue: 31.423333664955717
+stdCopCost: 144.33277177391832
+stdObjectValue: 33.31558463613157

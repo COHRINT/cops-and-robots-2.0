@@ -278,8 +278,8 @@ def getObjects(mapInfo):
 	for item in objDict:
 		itemName = item['name']
 		if itemName[0:4] != "wall":
-			x_loc = item['centroid_x'] + (item['width']/2 + .6) * math.cos(math.radians(item['orientation']))
-			y_loc = item['centroid_y'] + (item['length']/2 + .6) * math.sin(math.radians(item['orientation']))
+			x_loc = item['centroid_x'] + (item['x_len']/2 + .6) * math.cos(math.radians(item['orientation']))
+			y_loc = item['centroid_y'] + (item['y_len']/2 + .6) * math.sin(math.radians(item['orientation']))
 			quat = tf.transformations.quaternion_from_euler(0, 0, item['orientation']-180)
 			itemLoc = geo_msgs.PoseStamped(std_msgs.Header(), geo_msgs.Pose(geo_msgs.Point(x_loc, y_loc, 0), geo_msgs.Quaternion(quat[0],quat[1],quat[2],quat[3])))
 			objLocations[itemName] = itemLoc
