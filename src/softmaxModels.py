@@ -10,6 +10,8 @@ File: softmaxModels.py
 Allows for the creation, and use of Softmax functions
 
 
+Version 1.3.0: Added Discretization function
+
 ***********************************************************
 '''
 
@@ -17,7 +19,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -742,6 +744,25 @@ class Softmax:
 				self.zeta_c[i] = random()*10;  
 
 
+	def discretize2D(self,softClass,low = [0,0],high = [5,5],delta=0.1):
+		x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
+		pos = np.dstack((x, y))  
+		resx = int((high[0]-low[0])//delta)+1;
+		resy = int((high[1]-low[1])//delta)+1; 
+
+		likelihood = [[0 for i in range(0,resy)] for j in range(0,resx)];
+		
+		for m in softClass:
+			for i in range(0,resx):
+				xx = (i*(high[0]-low[0])/resx + low[0]);
+				for j in range(0,resy):
+					yy = (j*(high[1]-low[1])/resy + low[1])
+					dem = 0; 
+					for k in range(0,len(self.weights)):
+						dem+=np.exp(self.weights[k][0]*xx + self.weights[k][1]*yy + self.bias[k]);
+					likelihood[i][j] += np.exp(self.weights[m][0]*xx + self.weights[m][1]*yy + self.bias[m])/dem;
+
+		return likelihood;
 
 
 
@@ -1070,6 +1091,31 @@ def testLogisticRegression():
 	plt.show(); 
 
 
+def testDiscritization():
+	centroid = [0,0]; 
+	orientation = 35; 
+	steep = 10; 
+	length = 3; 
+	width = 2; 
+
+	softClass = [1];
+
+
+
+	pz = Softmax(); 
+	pz.buildOrientedRecModel(centroid,orientation,length,width,steepness=steep); 
+	[x,y,c] = pz.plot2D(low=[-5,-5],high=[5,5],vis=False); 
+	
+	fig,axarr = plt.subplots(2); 
+	axarr[0].contourf(x,y,c); 
+
+
+
+	c=pz.discretize2D(softClass,low=[-5,-5],high=[5,5]); 
+
+	axarr[1].contourf(x,y,c);
+	plt.show();
+
 
 if __name__ == "__main__":
 
@@ -1083,7 +1129,8 @@ if __name__ == "__main__":
 	#testOrientRecModel(); 
 	#testTriView(); 
 	#testMakeNear(); 
-	testLogisticRegression(); 
+	#testLogisticRegression(); 
+	testDiscritization(); 
 
 	
 
