@@ -1098,7 +1098,9 @@ def testDiscritization():
 	length = 3; 
 	width = 2; 
 
-	softClass = [1]; #not right
+	softClass = [1];
+
+
 
 	pz = Softmax(); 
 	pz.buildOrientedRecModel(centroid,orientation,length,width,steepness=steep); 
