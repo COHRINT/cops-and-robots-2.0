@@ -90,7 +90,7 @@ class robberEvasion():
 
 		# Evasion Parameters
 		reevaluationTime = 3 # Time to wait before reevaluating the path robber is following
-		dangerWeight = 1.2 # Amount of danger before robber should choose a new path
+		dangerWeight = .75 # Amount of danger before robber should choose a new path
 		self.copDangerVsObjValueWeight = 0.5
 
 
@@ -122,7 +122,7 @@ class robberEvasion():
 				print ("New Cost: " + str(newCost))
 
 				# Check if path is too dangerous
-				if (newCost > curCost*dangerWeight):
+				if (newCost < curCost*dangerWeight):
 					pathFailure = True
 
 				# Display Costmap
