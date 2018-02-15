@@ -8,7 +8,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren","Sierra Williams","Matt Aiken","Nick Sweet"]
 __license__ = "GPL"
-__version__ = "2.0"
+__version__ = "2.1" # for CnR 2.0
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -41,13 +41,21 @@ class MainTester(object):
 	"""
         running_experiment = True
 
-        experiment_runspeed_hz = 10
+        experiment_runspeed_hz = 4
         
-        map_bounds = [-9.6, -3.6, 4, 3.6]
+        map_bounds = [-5, -2.5, 5, 2.5]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
-        cop_initial_belief = GM([[-6,2.5],[1,0],[-3,0]],[[[4,0],[0,4]],[[10,0],[0,4]],[[2,0],[0,4]]],[0.5,0.5,0.5])
+        cop_initial_belief = GM() # cop x, cop y, rob x, rob y, then follow the rooms
+        cop_initial_belief.addNewG([0,0,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        cop_initial_belief.addNewG([0,0,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
+        cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
+        cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study 
+        cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room 
+        cop_initial_belief.normalizeWeights()
+        
         delta = 0.1
 
 	def __init__(self, config_file='config/config.yaml'):
@@ -56,7 +64,6 @@ class MainTester(object):
                 
 		rospy.init_node("Python_Node")
                 rospy.Subscriber('/caught_confirm', Caught, self.end_experiment)
-                self.pub = rospy.Publisher('/stop_experiment', Bool, queue_size=10)
 
                 # caught_confirm topic
                 
@@ -69,8 +76,11 @@ class MainTester(object):
                 while self.running_experiment is True and not rospy.is_shutdown():
                         self.update_cop_robber()
                         r.sleep()
+                for robot in self.robots:
+                        self.robots[robot].goal_planner.return_position()
+                        rospy.sleep(1)
                 print("Experiment Finished")
-                        
+
 
 	def init_cop_robber(self, config_file=None):
                 """
@@ -130,10 +140,9 @@ class MainTester(object):
         def end_experiment(self, msg):
                 if msg.confirm is True:
                         self.running_experiment = False
-                        print(msg.robber + " caught")
-                        out_msg = Bool(True)
-                        self.pub.publish(out_msg)
-                        # send robots to starting positions
+                        print("*****"+ msg.robber.upper() + " CAUGHT*****")
+                        print("  ENDING EXPERIMENT")
+                self.running_experiment = False
 
 if __name__ == '__main__':
-	MainTester()
+        MainTester()
