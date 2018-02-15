@@ -19,6 +19,7 @@ from pdb import set_trace
 import sys
 import os
 import rospy
+import yaml
 
 from core.helpers.config import load_config
 from core.robo_tools.cop import Cop
@@ -48,7 +49,7 @@ class MainTester(object):
 
         # Related to Cop's belief 
         cop_initial_belief = GM() # cop x, cop y, rob x, rob y, then follow the rooms
-        cop_initial_belief.addNewG([0,0,-3,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        cop_initial_belief.addNewG([0,0,-2,2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
         cop_initial_belief.addNewG([0,0,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
         cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
         cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
@@ -108,11 +109,25 @@ class MainTester(object):
 
                                         # goal_planner string
                                         goal_planner = cfg['robots'][robot]['goal_planner']
-
+                                        
                                         # Check cop or robber 
                                         # Initialize a cop
 				        if cfg['cop_rob'][robot] == 'cop':
-					        self.robots[robot] = Cop(self.cop_initial_belief,
+                                                with open('models/'+cfg['map']+'.yaml', 'r') as stream:
+                                                        map_cfg = yaml.load(stream)
+                                                cop_initial_belief = GM()
+                                                for room in map_cfg['info']['rooms']:
+                                                        max_x = map_cfg['info']['rooms'][room]['max_x']
+                                                        max_y = map_cfg['info']['rooms'][room]['max_y']
+                                                        min_x = map_cfg['info']['rooms'][room]['min_x']
+                                                        min_y = map_cfg['info']['rooms'][room]['min_y']
+                                                        cent_x = (max_x + min_x) / 2
+                                                        cent_y = (max_y + min_y) / 2
+                                                        cop_initial_belief.addNewG([0,0,cent_x,cent_y],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1)
+                                                        
+                                                cop_initial_belief.normalizeWeights()
+                                                
+					        self.robots[robot] = Cop(cop_initial_belief,
                                                                          self.delta,
                                                                          self.map_bounds,
                                                                          robot,

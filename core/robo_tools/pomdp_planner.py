@@ -65,10 +65,15 @@ class PomdpGoalPlanner(GoalPlanner):
 		rospy.wait_for_service('translator')
 		try:
 			pt = rospy.ServiceProxy('translator',policy_translator_service)
+                        print(msg.weights)
+                        print(msg.means)
 			res = pt(msg)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
-		
+
+                if not hasattr(res, 'response'):
+                        print("***ERROR***, policy translator server did not return an ideal response, check the server node for an error")
+                
 		self.belief = rehydrate_msg(res.response.weights_updated, res.response.means_updated, res.response.variances_updated)
 
 		goal_pose = list(res.response.goal_pose)
