@@ -10,6 +10,8 @@ File: softmaxModels.py
 Allows for the creation, and use of Softmax functions
 
 
+Version 1.3.0: Added Discretization function
+
 ***********************************************************
 '''
 
@@ -17,7 +19,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -39,7 +41,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy import compress
 import scipy.linalg as linalg
 from copy import deepcopy
-
+from scipy import sparse
+from sklearn.linear_model import LogisticRegression
 
 
 
@@ -292,6 +295,17 @@ class Softmax:
 		self.zeta_c = [0]*len(self.weights); 
 		for i in range(0,len(self.weights)):
 			self.zeta_c[i] = random()*10;  
+
+	def buildTriView(self,pose,length = 3,steepness = 2):
+		l = length;
+		#Without Cutting
+		triPoints = [[pose[0],pose[1]],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+		
+		#With Cutting
+		lshort = 0.5
+		triPoints = [[pose[0]+lshort*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*0.261799+math.radians(pose[2]))],[pose[0]+lshort*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+lshort*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*-0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*-0.261799+math.radians(pose[2]))],[pose[0]+l*math.cos(2*0.261799+math.radians(pose[2])),pose[1]+l*math.sin(2*0.261799+math.radians(pose[2]))]];
+ 
+		self.buildPointsModel(triPoints,steepness=steepness); 
 
 
 	def Estep(self,weight,bias,prior_mean,prior_var,alpha = 0.5,zeta_c = 1,softClassNum=0):
@@ -591,27 +605,18 @@ class Softmax:
 			post.addG(Gaussian(mu,var,g.weight*np.exp(logCHat))); 
 		return post; 
 
-	def pointEval2D(self,softClass,point):
-		#Evaluates the function at a point in 2D
-
-		top = np.exp(self.weights[softClass][0]*point[0] + self.weights[softClass][1]*point[1]); 
-		bottom = 0; 
-		for i in range(0,self.size):
-			bottom += np.exp(self.weights[i][0]*point[0] + self.weights[i][1]*point[1]); 
-		return top/bottom; 
-
 	def pointEvalND(self,softClass,point):
 		#Evaluates the function at a point in any dimensionality. 
 		topIn = 0;
 		for i in range(0,len(self.weights[0])):
 			topIn+=self.weights[softClass][i]*point[i]; 
-		top = np.exp(topIn); 
+		top = np.exp(topIn+self.bias[softClass]); 
 		bottom = 0; 
 		for i in range(0,self.size):
 			bottomIn = 0; 
 			for j in range(0,len(self.weights[0])):
 				bottomIn += self.weights[i][j]*point[j]; 
-			bottom+=np.exp(bottomIn); 
+			bottom+=np.exp(bottomIn + self.bias[i]); 
 		return top/bottom; 
 
 	def plot1D(self,low=0,high = 5,res = 100,labels = None,vis = True):
@@ -702,6 +707,65 @@ class Softmax:
 			ax.scatter(shapeEdgesX,shapeEdgesY,shapeEdgesZ); 
 
 		plt.show();
+
+
+
+	def logRegress(self,X,t,steepness = 1):
+		
+		dim = len(X[0]); 
+
+		fitter = LogisticRegression(solver = 'newton-cg',multi_class = 'multinomial'); 
+		fitter.fit(X,t); 
+		newCoef = fitter.coef_.tolist(); 
+		weights = []; 
+		for i in range(0,len(newCoef)):
+			weights.append(newCoef[i]); 
+		bias = []; 
+		newBias = fitter.intercept_.tolist(); 
+		for i in range(0,len(newBias)):
+			bias.append(newBias[i]); 
+		
+
+
+		ze = [0]*dim; 
+		weights.append(ze); 
+		bias.append(0); 
+
+
+		self.weights = (np.array(weights)*steepness).tolist(); 
+		self.bias = (np.array(bias)*steepness).tolist();
+
+		if(self.weights is not None):
+			self.size = len(self.weights); 
+
+			self.alpha = 3;
+			self.zeta_c = [0]*len(self.weights); 
+			for i in range(0,len(self.weights)):
+				self.zeta_c[i] = random()*10;  
+
+
+	def discretize2D(self,softClass,low = [0,0],high = [5,5],delta=0.1):
+		x, y = np.mgrid[low[0]:high[0]:delta, low[1]:high[1]:delta]
+		pos = np.dstack((x, y))  
+		resx = int((high[0]-low[0])//delta)+1;
+		resy = int((high[1]-low[1])//delta)+1; 
+
+		likelihood = [[0 for i in range(0,resy)] for j in range(0,resx)];
+		
+		for m in softClass:
+			for i in range(0,resx):
+				xx = (i*(high[0]-low[0])/resx + low[0]);
+				for j in range(0,resy):
+					yy = (j*(high[1]-low[1])/resy + low[1])
+					dem = 0; 
+					for k in range(0,len(self.weights)):
+						dem+=np.exp(self.weights[k][0]*xx + self.weights[k][1]*yy + self.bias[k]);
+					likelihood[i][j] += np.exp(self.weights[m][0]*xx + self.weights[m][1]*yy + self.bias[m])/dem;
+
+		return likelihood;
+
+
+
 
 def test1DSoftmax():
 
@@ -949,11 +1013,109 @@ def testOrientRecModel():
 	cent = [4,4]; 
 	length = 3; 
 	width = 2; 
-	orient = 25; 
+	orient = 0; 
 
 	pz = Softmax(); 
 	pz.buildOrientedRecModel(cent,orient,length,width); 
 	pz.plot2D(low=[0,0],high=[10,10]); 
+
+def testTriView():
+	pz = Softmax(); 
+	pose = [2,1.4,15.3]; 
+	pz.buildTriView(pose,length=2,steepness=5);
+	pz.plot2D(low=[0,0],high=[10,10]); 
+
+def testMakeNear():
+	pzIn = Softmax(); 
+	pzOut = Softmax(); 
+
+	cent = [4,4]; 
+	orient = 0;
+	nearness = 2; 
+
+	lengthIn = 3; 
+	lengthOut = lengthIn+nearness; 
+	widthIn = 2; 
+	widthOut = widthIn+nearness; 
+ 
+
+	pzIn.buildOrientedRecModel(cent,orient,lengthIn,widthIn,steepness=10); 
+	pzOut.buildOrientedRecModel(cent,orient,lengthOut,widthOut,steepness=10); 
+
+	#pzIn.plot2D(low=[0,0],high=[10,10]);
+	#pzOut.plot2D(low=[0,0],high=[10,10]);
+
+	b = GM(); 
+	for i in range(0,10):
+		for j in range(0,10):
+			b.addG(Gaussian([i,j],[[1,0],[0,1]],1)); 
+	b.normalizeWeights(); 
+
+	b1 = GM(); 
+	for i in range(1,5):
+		b1.addGM(pzIn.runVBND(b,i)); 
+	b1.normalizeWeights(); 
+
+	b2 = GM(); 
+	b2.addGM(pzOut.runVBND(b1,0)); 
+	b2.normalizeWeights(); 
+
+	fig,axarr = plt.subplots(3); 
+	[x,y,c] = b.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[0].contourf(x,y,c); 
+	[x,y,c] = b1.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[1].contourf(x,y,c); 
+	[x,y,c] = b2.plot2D(low=[0,0],high=[10,10],vis=False); 
+	axarr[2].contourf(x,y,c); 
+	plt.show(); 
+
+def testLogisticRegression():
+	X = [[1,3],[2,4],[2,2],[4,3]]; 
+	t = [0,0,1,1]; 
+	cols = ['r','b','g','y','w','k','m']; 
+	a = Softmax(); 
+	a.logRegress(X,t,1); 
+	#a.plot2D(vis = True); 
+	[x,y,c] = a.plot2D(vis = False); 
+
+
+	plt.contourf(x,y,c); 
+	for i in range(0,len(X)):
+		plt.scatter(X[i][0],X[i][1],c=cols[t[i]]); 
+
+
+	testPoint = [1,2]; 
+	winPercent = a.pointEvalND(1,testPoint); 
+	lossPercent = a.pointEvalND(0,testPoint); 
+	print('Win:' + str(winPercent),'Loss:' + str(lossPercent)); 
+	plt.show(); 
+
+
+def testDiscritization():
+	centroid = [0,0]; 
+	orientation = 35; 
+	steep = 10; 
+	length = 3; 
+	width = 2; 
+
+	softClass = [1];
+
+
+
+	pz = Softmax(); 
+	pz.buildOrientedRecModel(centroid,orientation,length,width,steepness=steep); 
+	[x,y,c] = pz.plot2D(low=[-5,-5],high=[5,5],vis=False); 
+	
+	fig,axarr = plt.subplots(2); 
+	axarr[0].contourf(x,y,c); 
+
+
+
+	c=pz.discretize2D(softClass,low=[-5,-5],high=[5,5]); 
+
+	axarr[1].contourf(x,y,c);
+	plt.show();
+
 
 if __name__ == "__main__":
 
@@ -964,8 +1126,11 @@ if __name__ == "__main__":
 	#testGeneralModel(); 
 	#testPointsModel(); 
 	#testPlot3D(); 
-	testOrientRecModel(); 
-
+	#testOrientRecModel(); 
+	#testTriView(); 
+	#testMakeNear(); 
+	#testLogisticRegression(); 
+	testDiscritization(); 
 
 	
 
