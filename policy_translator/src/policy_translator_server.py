@@ -17,6 +17,8 @@ __maintainer__ = "Ian Loefgren"
 __email__ = "ian.loefgren@colorado.edu"
 __status__ = "Development"
 
+from pdb import set_trace
+
 from policy_translator.srv import *
 from policy_translator.msg import *
 from observation_interface.msg import *
@@ -60,7 +62,7 @@ class PolicyTranslatorServer(object):
 
         # self.likelihoods = np.load(os.path.dirname(__file__) + "/likelihoods.npy")
 
-        bounds = [-9.6, -3.6, 4, 3.6]
+        bounds = [-5, -2.5, 5, 2.5]
         self.delta = 0.1
         self.shapes = [int((bounds[2]-bounds[0])/self.delta),int((bounds[3]-bounds[1])/self.delta)]
 
@@ -86,6 +88,7 @@ class PolicyTranslatorServer(object):
         else:
             obs = self.queue.flush()
 
+            print(req.request.weights)
             belief = self.translator_wrapper(req.request.name,obs,req.request.weights,
                                 req.request.means,req.request.variances)
 
@@ -127,13 +130,13 @@ class PolicyTranslatorServer(object):
         copPoses = []
 
         belief = rehydrate_msg(weights,means,variances)
-
         position = self.tf_update(name)
 
         copPoses.append(position)
 
         # if (self.call_count % 4 == 0):
         (b_updated,goal_pose,questions) = self.pt.getNextPose(belief,obs,copPoses)
+        
         q_msg = Question()
         # q_msg.qids = questions[1]
         q_msg.qids = [0 for x in range(0,len(questions[0]))]

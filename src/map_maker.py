@@ -78,14 +78,18 @@ class Map(object):
             lower_l = list()
             upper_r = list()
             for room in cfg['info']['rooms']:
-                lower_l = (cfg['info']['rooms'][room]['min_x'], cfg['info']['rooms'][room]['min_y'])
-                upper_r = (cfg['info']['rooms'][room]['max_x'], cfg['info']['rooms'][room]['max_y'])
+                min_x = cfg['info']['rooms'][room]['min_x']
+                min_y = cfg['info']['rooms'][room]['min_y']
+                max_x = cfg['info']['rooms'][room]['max_x']
+                max_y = cfg['info']['rooms'][room]['max_y']
                 self.rooms[room] = {}
-                self.rooms[room]['lower_l'] = lower_l
-                self.rooms[room]['upper_r'] = upper_r
-                length = upper_r[0] - lower_l[0]
-                width = upper_r[1] - lower_l[1]
-                cent = [lower_l[0] + length/2,lower_l[1]+width/2]
+                self.rooms[room]['min_x'] = min_x
+                self.rooms[room]['min_y'] = min_y
+                self.rooms[room]['max_x'] = max_x
+                self.rooms[room]['max_y'] = max_y
+                length = max_x - min_y
+                width = max_x - min_x
+                cent = [min_x + length/2,min_y+width/2]
                 self.rooms[room]['softmax'] = Softmax()
                 self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=10)
                 for i in range(0,len(self.rooms[room]['softmax'].weights)):
@@ -105,7 +109,11 @@ class Map(object):
                                         cfg[item]['shape']
                                         )
                     self.objects[map_obj.name] = map_obj
-
+        else:
+            print("***ERROR***, Could not find map yaml file!")
+            print("Check the 'No such file or directory' error above's search path")
+            print("If the map_.yaml name is correct, check _find_yaml() in map_maker.py")
+            raise
 
     # Searches the yaml_dir for the given yaml_file
     # Returns a python dictionary if successful
@@ -115,7 +123,7 @@ class Map(object):
         try:
             # navigate to yaml_dir
             cfg_file = os.path.dirname(__file__) \
-                + '../' + yaml_dir + '/' + yaml_file
+                + '/../' + yaml_dir + '/' + yaml_file
             # return dictionary of yaml file
             with open(cfg_file, 'r') as file:
                  return yaml.load(file)

@@ -36,9 +36,9 @@ from obs_q_map import gen_questions
 class POMDPTranslator(object):
 
 
-	def __init__(self):
-		self.map2 = Map('map2.yaml');
-		self.bounds = [-9.6, -3.6, 4, 3.6]
+	def __init__(self, map_yaml='mapA.yaml'):
+		self.map_ = Map(map_yaml);
+		self.bounds = self.map_.bounds
 		self.delta = 0.1;
 		self.upperPolicy = np.load(os.path.dirname(__file__) + '/../policies/upperPolicy1.npy');
 
@@ -47,7 +47,7 @@ class POMDPTranslator(object):
 		for i in range(0,len(roomNames)):
 			self.lowerPolicys.append(np.load(os.path.dirname(__file__) + '/../policies/' + roomNames[i]+'AlphasFull.npy'));
 
-		self.question_list = gen_questions('map2.yaml')
+		self.question_list = gen_questions(map_yaml)
 		print self.question_list
                 # set_trace()
 
@@ -70,12 +70,12 @@ class POMDPTranslator(object):
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
 		weightSums = [];
-		for room in self.map2.rooms:
+		for room in self.map_.rooms:
 			tmp = GM();
 			tmpw = 0;
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
-				if(m[0] <= self.map2.rooms[room]['upper_r'][0] and m[0] >= self.map2.rooms[room]['lower_l'][0] and m[1] <= self.map2.rooms[room]['upper_r'][1] and m[1] >= self.map2.rooms[room]['lower_l'][1]):
+                                if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
 			tmp.normalizeWeights();
@@ -83,7 +83,6 @@ class POMDPTranslator(object):
 			weightSums.append(tmpw);
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
-		print("Room: " + str(room));
 		# print(questsHigh);
 		# print(weightsHigh);
 		questHighConversion = [5,4,0,2,3,1]
@@ -113,8 +112,8 @@ class POMDPTranslator(object):
 		pose = copPoses[-1];
 		roomCount = 0;
 		copRoom = 7;
-		for room in self.map2.rooms:
-			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
+		for room in self.map_.rooms:  
+                        if(pose[0] < self.map_.rooms[room]['max_x'] and pose[0] > self.map_.rooms[room]['min_x'] and pose[1] < self.map_.rooms[room]['max_y'] and pose[1] > self.map_.rooms[room]['min_y']):
 				copRoom = self.rooms_map_inv[room]
 				break;
 			roomCount+=1;
@@ -133,8 +132,8 @@ class POMDPTranslator(object):
 			goal_pose = np.array(copPoses[-1]) + np.array(displacement);
 			goal_pose = goal_pose.tolist();
 		else:
-			xpose = (self.map2.rooms[self.rooms_map[room_conv]]['upper_r'][0] + self.map2.rooms[self.rooms_map[room_conv]]['lower_l'][0])/2;
-			ypose = (self.map2.rooms[self.rooms_map[room_conv]]['upper_r'][1] + self.map2.rooms[self.rooms_map[room_conv]]['lower_l'][1])/2;
+			xpose = (self.map_.rooms[self.rooms_map[room_conv]]['max_x'] + self.map_.rooms[self.rooms_map[room_conv]]['min_x'])/2;
+			ypose = (self.map_.rooms[self.rooms_map[room_conv]]['max_y'] + self.map_.rooms[self.rooms_map[room_conv]]['min_y'])/2;
 			goal_pose = [xpose,ypose,0];
 
 		for i in range(0,len(questsLow)):
@@ -295,26 +294,28 @@ class POMDPTranslator(object):
 		allBounds = [];
 		copBounds = [];
 		weightSums = [];
-		for room in self.map2.rooms:
+		for room in self.map_.rooms:
 			tmp = GM();
 			tmpw = 0;
-			allBounds.append([self.map2.rooms[room]['lower_l'][0],self.map2.rooms[room]['lower_l'][1],self.map2.rooms[room]['upper_r'][0],self.map2.rooms[room]['upper_r'][1]]);
+                        
+			allBounds.append([self.map_.rooms[room]['min_x'],self.map_.rooms[room]['min_y'],self.map_.rooms[room]['max_x'],self.map_.rooms[room]['max_y']]);
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
-				if(m[0] < self.map2.rooms[room]['upper_r'][0] and m[0] > self.map2.rooms[room]['lower_l'][0] and m[1] < self.map2.rooms[room]['upper_r'][1] and m[1] > self.map2.rooms[room]['lower_l'][1]):
+                                # if mean is inside the room
+				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
+                                        
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 
 			weightSums.append(tmpw);
 
-
 		pose = copPoses[-1];
 		roomCount = 0;
 		copBounds = 0;
-		for room in self.map2.rooms:
-			if(pose[0] < self.map2.rooms[room]['upper_r'][0] and pose[0] > self.map2.rooms[room]['lower_l'][0] and pose[1] < self.map2.rooms[room]['upper_r'][1] and pose[1] > self.map2.rooms[room]['lower_l'][1]):
+		for room in self.map_.rooms:
+			if(pose[0] < self.map_.rooms[room]['max_x'] and pose[0] > self.map_.rooms[room]['min_x'] and pose[1] < self.map_.rooms[room]['max_y'] and pose[1] > self.map_.rooms[room]['min_y']):
 				copBounds = self.rooms_map_inv[room]
 			roomCount+=1;
 
@@ -336,7 +337,7 @@ class POMDPTranslator(object):
 			allBels[i].normalizeWeights();
 		#allBels[copBounds].normalizeWeights();
 
-		print('allBels LENGTH: {}'.format(allBels))
+		print('allBels LENGTH: {}'.format(len(allBels)))
 
 		#2. use queued observations to update appropriate rooms GM
 		if(responses is not None):
@@ -430,7 +431,7 @@ class POMDPTranslator(object):
                 
 		ax.contourf(x_space,y_space,bel,cmap="viridis");
 
-		m = self.map2;
+		m = self.map_;
 		for obj in m.objects:
 		    cent = m.objects[obj].centroid;
 		    x = m.objects[obj].x_len;
@@ -506,21 +507,21 @@ class POMDPTranslator(object):
 			obs = obs[0]
 
 		# find map object mentioned in statement
-		for obj in self.map2.objects:
+		for obj in self.map_.objects:
 			if re.search(obj,obs.lower()):
-				model = self.map2.objects[obj].softmax
-				model_name = self.map2.objects[obj].name
-				for i, room in enumerate(self.map2.rooms):
-					if obj in self.map2.rooms[room]['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
+				model = self.map_.objects[obj].softmax
+				model_name = self.map_.objects[obj].name
+				for i, room in enumerate(self.map_.rooms):
+					if obj in self.map_.rooms[room]['objects']: # potential for matching issues if obj is 'the <obj>', as only '<obj>' will be found in room['objects']
 						room_num = i+1
-						print self.map2.rooms[room]['objects']
+						print self.map_.rooms[room]['objects']
 						print room_num
 				break
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
-			for room in self.map2.rooms:
+			for room in self.map_.rooms:
 				if re.search(room,obs.lower()):
-					model = self.map2.rooms[room]['softmax']
+					model = self.map_.rooms[room]['softmax']
 					room_num = 0
 					break
 
