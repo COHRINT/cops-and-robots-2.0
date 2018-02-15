@@ -27,6 +27,7 @@ def dehydrate_msg(belief):
         - means_flat: 1x(n*num_mixands) array of means
         - variances_flat: 1x(n)
     '''
+
     weights = belief.getWeights()
     means = belief.getMeans()
     variances = belief.getVars()
