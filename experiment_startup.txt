@@ -1,0 +1,14 @@
+Powering up the turtlebots
+1) Power on
+2) Ssh
+3) Base on
+4) Check Vicon
+5) Put in space
+
+Experiment
+1) roscore, vsys
+2) pol
+3) obs_
+4) config/gui
+5) rviz
+6) run.sh

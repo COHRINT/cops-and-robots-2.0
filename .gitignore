@@ -4,3 +4,4 @@ build/
 devel/
 .catkin_workspace
 *~
+policy_translator/tmp/tmpBelief.png

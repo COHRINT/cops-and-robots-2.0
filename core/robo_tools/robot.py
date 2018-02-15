@@ -64,7 +64,7 @@ class Robot(object):
             del self.init_map_bounds
             del self.init_delta
             
-	elif goal_planner_type == 'robber_intel':
+	elif goal_planner_type == 'rob_int':
             from robber_evasion_planner import robberEvasionGoalPlanner
             self.goal_planner = robberEvasionGoalPlanner()
 
