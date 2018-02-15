@@ -1,34 +1,20 @@
-main:
-  ROS_node_name: Python_Node
-  headless_mode: false
-  log_time: false
-  logging_level: NOTSET
-  max_run_time: 50000
-  numpy_print_precision: 2
-  pose_source: python
-  use_ROS: false
+# 1) Set map 'mapA', 'mapB', 'mapC'
+# 2) Set 'cop', 'rob' ", or " 'no' " (include the single quotes)
+# 3) Set goal_planner to 'simple', 'pomdp' ... etc
+
+map: mapA
+cop_rob: # label as 'rob' or 'cop' (INCLUDE SINGLE QUOTES)
+    Deckard: 'cop'
+    Pris: 'no'
+    Roy: 'no'
+    Zhora: 'rob'
 robots:
   Deckard:
-    goal_planner_cfg:
-      type_: stationary
-    pose_source: tf
-    type_: cop
-    use: false
+    goal_planner: simple
   Pris:
-    goal_planner_cfg:
-      type_: stationary
-    pose_source: tf
-    type_: cop
-    use: false
+    goal_planner: stationary
   Roy:
-    goal_planner_cfg:
-      type_: simple
-    pose_source: tf
-    type_: robber
-    use: true
+    goal_planner: simple
   Zhora:
-    goal_planner_cfg:
-      type_: pomdp
-    pose_source: tf
-    type_: cop
-    use: true
+    goal_planner: simple
+
