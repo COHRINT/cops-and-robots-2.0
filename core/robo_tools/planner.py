@@ -9,7 +9,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Matthew Aitken", "Nick Sweet", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -38,8 +38,9 @@ class GoalPlanner(object):
         Parameters
         ---------
         robot_pose : simply to initialize self.prev_goal_pose for when update() gets called
+                   [x,y,orient in radians]
         robot_name : name of the robot
-
+                   String
         """
         if robot_name is None:
             print("No robot_name given")
@@ -58,6 +59,9 @@ class GoalPlanner(object):
         # Used to determine whether to create a new rosmsg in the GoalPlanner.update() method
         self.prev_goal_pose = robot_pose
         self.prev_pose = robot_pose
+
+        # used for end of experiment return pose
+        self.original_pose = robot_pose
 
     def reached_pose(self, pose, goal_pose):
         if len(pose) != 3 or len(goal_pose) != 3:
@@ -103,7 +107,7 @@ class GoalPlanner(object):
             
         new_goal_pose = self.get_goal_pose(pose)
 
-        print("goal_pose: " +str(new_goal_pose))
+        print(self.robot_name + "'s goal: " +str(new_goal_pose))
 
         # Check if it's actually a new pose before we publish
         if self.is_new_pose(old_goal_pose, new_goal_pose) is True:
@@ -144,8 +148,8 @@ class GoalPlanner(object):
         ---------
         goal_pose : [x,y, orientation] in [m,m,radians]
         """
-        print("New goal msg being created.")
-        rospy.sleep(1)
+        print("----------------"+self.robot_name+" new goal----------------")
+        rospy.sleep(0.5) # sleep so that the msg get's published (doesn't publish if we don't pause here..)
         
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")
@@ -166,5 +170,6 @@ class GoalPlanner(object):
         move_base_goal.header.stamp = rospy.Time.now()
         self.pub.publish(move_base_goal)
         
-    def stop(self, pose=[0,0,0]):
-        create_ROS_goal_message(pose)
+    def return_position(self):
+        print("Returning " + self.robot_name + " to original pose: " +str(self.original_pose))
+        self.create_ROS_goal_message(self.original_pose)

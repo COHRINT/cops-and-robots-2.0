@@ -26,7 +26,8 @@ class Cop(Robot):
     delta : float
     map_bounds : 4 element list of the edges
          [left, bottom, right, top]
-    name, goal_planner see robot.py
+    name : string
+    goal_planner : string (see robot.py for list of options)
     """
     robot_type = 'cop'
     
@@ -39,12 +40,11 @@ class Cop(Robot):
 
 #       set_trace()
         
-       # Perform Pomdp initializations, self.init__ variables are deleted in robot.py, eliminating multiple references to one object, good practice for debugging purposes
+       # Perform Pomdp initializations
        self.init_belief = initial_belief
        self.init_map_bounds = map_bounds
        self.init_delta = delta
        self.init_belief.normalizeWeights()
-       self.init_belief = self.init_belief.discretize2D(low=[self.init_map_bounds[0], self.init_map_bounds[1]],high=[self.init_map_bounds[2], self.init_map_bounds[3]],delta=self.init_delta)
 
        super(Cop, self).__init__(name, goal_planner_type)
 

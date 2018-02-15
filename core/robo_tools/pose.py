@@ -29,7 +29,6 @@ class Pose(object):
     
     def __init__(self, robot_name=None):
         
-        print("ENTERING POSE")
         if robot_name is None:
             print("No robot name given to the Pose Object")
             print("Check the instantiation of Pose()")
@@ -43,8 +42,11 @@ class Pose(object):
         rospy.Subscriber(bf_topic, TransformStamped, self.update_pose_callback)
 
         print("Waiting for /" + robot_name +"/base_footprint to become available")
-        while self.received is False: # update the pose once before continuing
+        # self.pose == [0,0,0] for some reason the first pose returned from vicon is [0,0,0]
+        # so let's update it
+        while self.received is False or self.pose == [0,0,0]: # update the pose once before continuing
             pass
+        print(robot_name + " initial pose: " + str(self.pose))
         
     def update_pose_callback(self, msg):
         """
