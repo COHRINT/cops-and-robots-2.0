@@ -1,5 +1,4 @@
 *.pyc
-config/
 build/
 devel/
 .catkin_workspace

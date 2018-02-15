@@ -8,7 +8,7 @@ __author__ = ["LT"]
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Ian Loefgren","Sierra Williams","Matt Aiken","Nick Sweet"]
 __license__ = "GPL"
-__version__ = "2.1" # for CnR 2.0
+__version__ = "2.2" # for CnR 2.0
 __maintainer__ = "Luke Barbier"
 __email__ = "luke.barbier@colorado.edu"
 __status__ = "Development"
@@ -95,37 +95,44 @@ class MainTester(object):
                 
 		self.robots = {} # robot dictionary
                 num_robots  = 0
-		for robot, kwargs in cfg['robots'].iteritems():
+                try:
+                        for robot, kwargs in cfg['robots'].iteritems():
+                                if cfg['cop_rob'][robot] != 'no':
 
-                        
-			if cfg['robots'][robot]['use']:
+                                        # check for bad config, too many robots selected
+                                        num_robots += 1
+                                        if num_robots > self.max_num_robots:
+                                                print("Bad config file, More robots selected than allowed")
+                                                print("Check config/config.yaml or run gui.py and reconfigure")
+                                                raise
 
-                                # check for bad config, too many robots selected
-                                num_robots += 1
-                                if num_robots > self.max_num_robots:
-                                        print("Bad config file, More robots selected than allowed")
-                                        print("Check config/config.yaml or run gui.py and reconfigure")
-                                        raise
+                                        # goal_planner string
+                                        goal_planner = cfg['robots'][robot]['goal_planner']
 
-                                # goal_planner string
-                                goal_planner = cfg['robots'][robot]['goal_planner_cfg']['type_']
-
-                                # Check cop or robber 
-                                # Initialize a cop
-				if cfg['robots'][robot]['type_'] == 'cop':
-					self.robots[robot] = Cop(self.cop_initial_belief,
-                                                                 self.delta,
-                                                                 self.map_bounds,
-                                                                 robot,
-                                                                 goal_planner)
-                                        
-                                # Initialize a robber
-				elif cfg['robots'][robot]['type_'] == 'robber':
-					self.robots[robot] = Robber(robot, goal_planner)
-
-                                        
-                                print("Added: " + str(robot) + " to the experiment")
-                                
+                                        # Check cop or robber 
+                                        # Initialize a cop
+				        if cfg['cop_rob'][robot] == 'cop':
+					        self.robots[robot] = Cop(self.cop_initial_belief,
+                                                                         self.delta,
+                                                                         self.map_bounds,
+                                                                         robot,
+                                                                         goal_planner)
+                                                
+                                                # Initialize a robber
+				        elif cfg['cop_rob'][robot] == 'rob':
+					        self.robots[robot] = Robber(robot, goal_planner)
+                                                
+                                                
+                                                print("Added: " + str(robot) + " to the experiment")
+                except TypeError as ex:
+                        print("***ERROR***, in config/config.yaml, add singe quotes (') around 'cop', 'rob' and 'no' ")
+                        raise
+                except Exception as ex:
+                        template = "***ERROR*** An exception of type {0} occurred. Arguments:\n{1!r}"
+                        message = template.format(type(ex).__name__, ex.args)
+                        print message
+                        raise
+		                
                 print("COP AND ROBBER INITIALIZED")
 
 	def update_cop_robber(self):
