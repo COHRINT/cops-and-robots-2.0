@@ -27,25 +27,26 @@ class robberEvasionGoalPlanner(GoalPlanner):
 		super(robberGoalPlanner, self).__init__(robberName, robot_pose)
 
 	def get_goal_pose(self,pose=None):
-	"""
-	Find goal pose from robber evasion server
-	Parameters
-	----------
-	Returns
-	--------
-	goal_pose [array]
-		Goal pose in the form [x,y,theta] as [m,m,degrees]
-	"""
-	rospy.wait_for_service('robberEvasionGoal')
-    try:
-		getRobberGoal = rospy.ServiceProxy('robberEvasionGoal', robberEvasionGoal)
-		goalResponse = getRobberGoal(True)
-		(roll,pitch,yaw) = tf.transformations.euler_from_quaternion([goalResponse.robberGoalResponse.pose.orientation.x,
-			goalResponse.robberGoalResponse.pose.orientation.y, 
-			goalResponse.robberGoalResponse.pose.orientation.z, 
-			goalResponse.robberGoalResponse.pose.orientation.w]
-		)
-		theta = math.degrees(yaw)
-		goal_pose = [goalResponse.robberGoalResponse.pose.position.x, goalResponse.robberGoalResponse.pose.position.y, theta]
-    except rospy.ServiceException, e:
-		return pose
+		"""
+		Find goal pose from robber evasion server
+		Parameters
+		----------
+		Returns
+		--------
+		goal_pose [array]
+			Goal pose in the form [x,y,theta] as [m,m,degrees]
+		"""
+		rospy.wait_for_service('robberEvasionGoal')
+	    try:
+			getRobberGoal = rospy.ServiceProxy('robberEvasionGoal', robberEvasionGoal)
+			goalResponse = getRobberGoal(True)
+			(roll,pitch,yaw) = tf.transformations.euler_from_quaternion([goalResponse.robberGoalResponse.pose.orientation.x,
+				goalResponse.robberGoalResponse.pose.orientation.y,
+				goalResponse.robberGoalResponse.pose.orientation.z,
+				goalResponse.robberGoalResponse.pose.orientation.w]
+			)
+			theta = math.degrees(yaw)
+			goal_pose = [goalResponse.robberGoalResponse.pose.position.x, goalResponse.robberGoalResponse.pose.position.y, theta]
+			return goal_pose
+	    except rospy.ServiceException, e:
+			return pose
