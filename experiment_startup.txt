@@ -9,6 +9,6 @@ Experiment
 1) roscore, vsys
 2) pol
 3) obs_
-4) config/gui
-5) rviz
-6) run.sh
+4) edit config/config.yaml
+5) rviz (optional)
+6) (in top cnr directory) $ bash launch/run.sh
