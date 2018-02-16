@@ -10,7 +10,7 @@ cop_rob: # label as 'rob' or 'cop' (INCLUDE SINGLE QUOTES)
     Zhora: 'rob'
 robots:
   Deckard:
-    goal_planner: simple
+    goal_planner: pomdp
   Pris:
     goal_planner: stationary
   Roy:

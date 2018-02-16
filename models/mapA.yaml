@@ -79,7 +79,7 @@ desk:
   x_len: 1.0
   y_len: 0.62
   orientation: 0
-  shape: oval
+  shape: rectangle
 
 chair:
   name: chair
@@ -109,7 +109,7 @@ dining table:
   x_len: 1.18
   y_len: 0.7
   orientation: 0
-  shape: rectangle
+  shape: oval
 
 mars poster:
   name: mars poster
