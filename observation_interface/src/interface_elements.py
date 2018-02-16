@@ -358,6 +358,7 @@ class PullQuestion(QWidget):
             ans_text = 'No'
         elif self.sender() is self.null_btn:
             ans_text = 'I don\'t know'
+        prev_q = self.sender().parentWidget().text.text()
         self.parentWidget().parentWidget().last_question.setText('Last question was: ' + self.sender().parentWidget().text.text())
         self.parentWidget().parentWidget().last_answer.setText('Last answer was: ' + ans_text)
         question = self.parentWidget().parentWidget().get_new_question()
@@ -368,6 +369,7 @@ class PullQuestion(QWidget):
         if ans is not None:
             msg = Answer()
             msg.qid = self.qid
+            msg.question = prev_q
             msg.ans = ans
             # publish answer
             self.pub.publish(msg)

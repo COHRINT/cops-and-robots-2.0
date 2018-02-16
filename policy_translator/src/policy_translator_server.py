@@ -111,15 +111,16 @@ class PolicyTranslatorServer(object):
         Get the pose of the robot making the service request using a ROS
         transform ('tf') lookup and return that pose.
         '''
-        name = name.lower()
-        ref = "/" + name + "/odom"
-        child = "/" + name + "/base_footprint"
-        (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
-        x = trans[0]
-        y = trans[1]
-        (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
-        pose = [x, y, np.rad2deg(theta)]
-        return pose
+        return (0,0,0)
+        # name = name.lower()
+        # ref = "/" + name + "/odom"
+        # child = "/" + name + "/base_footprint"
+        # (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
+        # x = trans[0]
+        # y = trans[1]
+        # (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
+        # pose = [x, y, np.rad2deg(
+        # return pose
 
     def translator_wrapper(self,name,obs,weights=None,means=None,variances=None):
         '''
