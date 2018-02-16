@@ -76,7 +76,8 @@ class robberEvasion():
 		curfilePath = os.path.abspath(__file__)
 		curDir = os.path.abspath(os.path.join(curfilePath, os.pardir))
 		parentDir = os.path.abspath(os.path.join(curDir, os.pardir))
-		mapInfo = parentDir + '/models/map2.yaml'
+        parparDir = os.path.abspath(os.path.join(parentDir, os.pardir))
+		mapInfo = parparDir + '/models/mapA.yaml'
 		self.objLocations, self.objNames = getObjects(mapInfo)
 
 		# Load Floyd Warshall info + map parameters
