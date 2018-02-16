@@ -30,11 +30,12 @@ def main():
     curfilePath = os.path.abspath(__file__)
     curDir = os.path.abspath(os.path.join(curfilePath, os.pardir))
     parentDir = os.path.abspath(os.path.join(curDir, os.pardir))
+    parparDir = os.path.abspath(os.path.join(parentDir, os.pardir))
 
     # Map parameters
-    mapImgLocation = parentDir + "/models/map2_occupancy.png"
-    mapImgInfoLocation = parentDir + "/models/map2_occupancy.yaml"
-    mapInfoLocation = parentDir + "/models/map2.yaml"
+    mapImgLocation = parparDir + "/src/mapa_occupancy.png"
+    mapImgInfoLocation = parparDir + "/models/mapa_occupancy.yaml"
+    mapInfoLocation = parparDir + "/models/mapA.yaml"
     gridScale = 0.05 # size of each grid rectangle compared to map size (makes a 20x20 grid)
 
     costs, nextPlace, gridY, gridX = floydWarshallAlgorithm(mapImgLocation, mapImgInfoLocation, gridScale)
