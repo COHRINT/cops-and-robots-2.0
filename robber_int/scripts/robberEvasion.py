@@ -76,7 +76,8 @@ class robberEvasion():
 		curfilePath = os.path.abspath(__file__)
 		curDir = os.path.abspath(os.path.join(curfilePath, os.pardir))
 		parentDir = os.path.abspath(os.path.join(curDir, os.pardir))
-		mapInfo = parentDir + '/models/map2.yaml'
+        parparDir = os.path.abspath(os.path.join(parentDir, os.pardir))
+		mapInfo = parparDir + '/models/mapA.yaml'
 		self.objLocations, self.objNames = getObjects(mapInfo)
 
 		# Load Floyd Warshall info + map parameters
@@ -90,7 +91,7 @@ class robberEvasion():
 
 		# Evasion Parameters
 		reevaluationTime = 3 # Time to wait before reevaluating the path robber is following
-		dangerWeight = 1.2 # Amount of danger before robber should choose a new path
+		dangerWeight = .75 # Amount of danger before robber should choose a new path
 		self.copDangerVsObjValueWeight = 0.5
 
 
@@ -122,7 +123,7 @@ class robberEvasion():
 				print ("New Cost: " + str(newCost))
 
 				# Check if path is too dangerous
-				if (newCost > curCost*dangerWeight):
+				if (newCost < curCost*dangerWeight):
 					pathFailure = True
 
 				# Display Costmap
@@ -278,8 +279,8 @@ def getObjects(mapInfo):
 	for item in objDict:
 		itemName = item['name']
 		if itemName[0:4] != "wall":
-			x_loc = item['centroid_x'] + (item['width']/2 + .6) * math.cos(math.radians(item['orientation']))
-			y_loc = item['centroid_y'] + (item['length']/2 + .6) * math.sin(math.radians(item['orientation']))
+			x_loc = item['centroid_x'] + (item['x_len']/2 + .6) * math.cos(math.radians(item['orientation']))
+			y_loc = item['centroid_y'] + (item['y_len']/2 + .6) * math.sin(math.radians(item['orientation']))
 			quat = tf.transformations.quaternion_from_euler(0, 0, item['orientation']-180)
 			itemLoc = geo_msgs.PoseStamped(std_msgs.Header(), geo_msgs.Pose(geo_msgs.Point(x_loc, y_loc, 0), geo_msgs.Quaternion(quat[0],quat[1],quat[2],quat[3])))
 			objLocations[itemName] = itemLoc

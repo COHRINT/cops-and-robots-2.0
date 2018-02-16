@@ -65,8 +65,6 @@ class PomdpGoalPlanner(GoalPlanner):
 		rospy.wait_for_service('translator')
 		try:
 			pt = rospy.ServiceProxy('translator',policy_translator_service)
-                        print(msg.weights)
-                        print(msg.means)
 			res = pt(msg)
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e

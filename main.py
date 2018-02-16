@@ -24,7 +24,7 @@ import yaml
 from core.helpers.config import load_config
 from core.robo_tools.cop import Cop
 from core.robo_tools.robber import Robber
-from core.robo_tools.gaussianMixtures import GM
+from core.robo_tools.gaussianMixtures import GM, Gaussian
 from caught.msg import Caught
 from std_msgs.msg import Bool
 
@@ -48,14 +48,14 @@ class MainTester(object):
         max_num_robots = 2 # Maximum number of robots our experiment is designed for
 
         # Related to Cop's belief 
-        cop_initial_belief = GM() # cop x, cop y, rob x, rob y, then follow the rooms
-        cop_initial_belief.addNewG([0,0,-2,2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
-        cop_initial_belief.addNewG([0,0,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
-        cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
-        cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
-        cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study 
-        cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room 
-        cop_initial_belief.normalizeWeights()
+        # cop_initial_belief = GM() # cop x, cop y, rob x, rob y, then follow the rooms
+        # cop_initial_belief.addNewG([0,0,-2,2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # kitchen
+        # cop_initial_belief.addNewG([0,0,-5,0],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # hallway
+        # cop_initial_belief.addNewG([0,0,0,-2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # library
+        # cop_initial_belief.addNewG([0,0,2,2.5],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # billiards room
+        # cop_initial_belief.addNewG([0,0,-5,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # study 
+        # cop_initial_belief.addNewG([0,0,-8,-2],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1) # dining room 
+        # cop_initial_belief.normalizeWeights()
         
         delta = 0.1
 
@@ -123,7 +123,7 @@ class MainTester(object):
                                                         min_y = map_cfg['info']['rooms'][room]['min_y']
                                                         cent_x = (max_x + min_x) / 2
                                                         cent_y = (max_y + min_y) / 2
-                                                        cop_initial_belief.addNewG([0,0,cent_x,cent_y],[[2,0,0,0],[0,2,0,0],[0,0,2,0],[0,0,0,2]],1)
+                                                        cop_initial_belief.addG(Gaussian([0,0,cent_x,cent_y],[[0.5,0,0,0],[0,0.5,0,0],[0,0,0.5,0],[0,0,0,0.5]],1))
                                                         
                                                 cop_initial_belief.normalizeWeights()
                                                 

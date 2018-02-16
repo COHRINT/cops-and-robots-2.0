@@ -330,6 +330,7 @@ class POMDPTranslator(object):
 		newerBelief = GM();
 		for i in range(1,5):
 			tmpBel = viewCone.runVBND(allBels[copBounds],i);
+			# tmpBel = allBels[copBounds]
 			newerBelief.addGM(tmpBel);
 		allBels[copBounds] = newerBelief;
 
@@ -351,7 +352,7 @@ class POMDPTranslator(object):
 					#apply to all
 					for i in range(0,len(allBels)):
 						if(sign==True):
-							allBels[i] = mod.runVBND(allBels[i],0,steepness=10);
+							allBels[i] = mod.runVBND(allBels[i],0);
 						else:
 							tmp = GM();
 							for j in range(1,mod.size):
@@ -362,7 +363,7 @@ class POMDPTranslator(object):
 					print('ROOM NUM: {}'.format(roomNum))
 					#apply to roomNum-1;
 					if(sign == True):
-						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas,steepness=10);
+						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas);
 					else:
 						tmp = GM();
 						for i in range(1,mod.size):
@@ -387,6 +388,7 @@ class POMDPTranslator(object):
 		#3. recombine beliefs
 		newBelief = GM();
 		for g in allBels:
+			# g.scalerMultiply(1/g.size)
 			g.scalerMultiply(weightSums[allBels.index(g)]);
 			newBelief.addGM(g);
 		newBelief.normalizeWeights();
@@ -405,6 +407,12 @@ class POMDPTranslator(object):
 			g.var[3][3] += 1
 
 		# newBelief.normalizeWeights();
+
+		# for g in newBelief:
+		# 	g.weight += 1
+		# newBelief.normalizeWeights();
+		# newBelief.display()
+		# newBelief.display()
 
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]
@@ -438,11 +446,15 @@ class POMDPTranslator(object):
 		    y = m.objects[obj].y_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
-		    if(m.objects[obj].shape == 'oval'):
-		        tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		    else:
-                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
+
+                    
+		    # if(m.objects[obj].shape == 'oval'):
+		    tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+		    # else:
+                    #     xprime = (cent[0]-x/2)*x*np.cos(theta);
+                    #     yprime = (cent[1]-y/2)*y*np.cos(theta);
+                    #     tmp = patches.Rectangle((xprime,yprime),width = x, height=y,angle=theta,fc=col,ec='black');
+		    #     #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 		    ax.add_patch(tmp)
 
 		bearing = -90;

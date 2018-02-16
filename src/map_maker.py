@@ -87,8 +87,8 @@ class Map(object):
                 self.rooms[room]['min_y'] = min_y
                 self.rooms[room]['max_x'] = max_x
                 self.rooms[room]['max_y'] = max_y
-                length = max_x - min_y
-                width = max_x - min_x
+                length = max_x - min_x
+                width = max_y - min_y
                 cent = [min_x + length/2,min_y+width/2]
                 self.rooms[room]['softmax'] = Softmax()
                 self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=10)
