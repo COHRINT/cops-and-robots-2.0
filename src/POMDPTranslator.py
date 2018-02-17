@@ -305,7 +305,7 @@ class POMDPTranslator(object):
 				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
-                                        
+                                      
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 
@@ -327,12 +327,18 @@ class POMDPTranslator(object):
 		
 		#Only update room that cop is in with view cone update
 		#Make sure to renormalize that room
-		newerBelief = GM();
-		for i in range(1,5):
-			#tmpBel = viewCone.runVBND(allBels[copBounds],i);
-			tmpBel = allBels[copBounds]
-			newerBelief.addGM(tmpBel);
-		allBels[copBounds] = newerBelief;
+		# newerBelief = GM();
+		# for i in range(1,5):
+		# 	tmpBel = viewCone.runVBND(allBels[copBounds],i);
+		# 	newerBelief.addGM(tmpBel);
+		# allBels[copBounds] = newerBelief;
+
+		#Update all rooms
+		for i in range(0,len(allBels)):
+			newerBelief = GM(); 
+			for j in range(1,5):
+				newerBelief.addGM(viewCone.runVBND(allBels[i],j)); 
+			allBels[i]=newerBelief;
 
 		for i in range(0,len(allBels)):
 			allBels[i].normalizeWeights();
@@ -359,26 +365,38 @@ class POMDPTranslator(object):
 								tmp.addGM(mod.runVBND(allBels[i],j));
 							allBels[i] = tmp;
 
+				# else:
+				# 	print('ROOM NUM: {}'.format(roomNum))
+				# 	#apply to roomNum-1;
+				# 	if(sign == True):
+				# 		allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas);
+				# 	else:
+				# 		tmp = GM();
+				# 		for i in range(1,mod.size):
+				# 			if(i!=clas):
+				# 				tmp.addGM(mod.runVBND(allBels[roomNum-1],i));
+				# 		allBels[roomNum-1] = tmp;
 				else:
 					print('ROOM NUM: {}'.format(roomNum))
-					#apply to roomNum-1;
-					if(sign == True):
-						allBels[roomNum-1] = mod.runVBND(allBels[roomNum-1],clas);
-					else:
-						tmp = GM();
-						for i in range(1,mod.size):
-							if(i!=clas):
-								tmp.addGM(mod.runVBND(allBels[roomNum-1],i));
-						allBels[roomNum-1] = tmp;
+					#apply to all rooms
+					for i in range(0,len(allBels)):
+						if(sign == True):
+							allBels[i] = mod.runVBND(allBels[i],clas);
+						else:
+							tmp = GM();
+							for j in range(1,mod.size):
+								if(j!=clas):
+									tmp.addGM(mod.runVBND(allBels[i],j));
+							allBels[i] = tmp;
 
 		#2.5. Make sure all GMs stay within their rooms bounds:
 		#Also condense each mixture
 		for gm in allBels:
 			for g in gm:
-				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0])+0.01;
-				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2])-0.01;
-				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1])+0.01;
-				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3])-0.01;
+				g.mean[2] = max(g.mean[2],allBounds[allBels.index(gm)][0]-0.01);
+				g.mean[2] = min(g.mean[2],allBounds[allBels.index(gm)][2]+0.01);
+				g.mean[3] = max(g.mean[3],allBounds[allBels.index(gm)][1]-0.01);
+				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]+0.01);
 
 		for i in range(0,len(allBels)):
                         allBels[i].condense(10);
@@ -388,7 +406,6 @@ class POMDPTranslator(object):
 		#3. recombine beliefs
 		newBelief = GM();
 		for g in allBels:
-			# g.scalerMultiply(1/g.size)
 			g.scalerMultiply(weightSums[allBels.index(g)]);
 			newBelief.addGM(g);
 		newBelief.normalizeWeights();
@@ -407,12 +424,6 @@ class POMDPTranslator(object):
 			g.var[3][3] += 1
 
 		# newBelief.normalizeWeights();
-
-		# for g in newBelief:
-		# 	g.weight += 1
-		# newBelief.normalizeWeights();
-		# newBelief.display()
-		# newBelief.display()
 
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]
@@ -446,15 +457,11 @@ class POMDPTranslator(object):
 		    y = m.objects[obj].y_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
-
-                    
-		    # if(m.objects[obj].shape == 'oval'):
-		    tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
-		    # else:
-                    #     xprime = (cent[0]-x/2)*x*np.cos(theta);
-                    #     yprime = (cent[1]-y/2)*y*np.cos(theta);
-                    #     tmp = patches.Rectangle((xprime,yprime),width = x, height=y,angle=theta,fc=col,ec='black');
-		    #     #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
+		    if(m.objects[obj].shape == 'oval'):
+		        tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		    else:
+                tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 		    ax.add_patch(tmp)
 
 		bearing = -90;
