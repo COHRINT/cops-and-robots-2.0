@@ -337,7 +337,11 @@ class POMDPTranslator(object):
 		for i in range(0,len(allBels)):
 			newerBelief = GM(); 
 			for j in range(1,5):
-				newerBelief.addGM(viewCone.runVBND(allBels[i],j)); 
+				tmpBel = viewCone.runVBND(allBels[i],j); 
+				if(j==1):
+					tmpBel.scalerMultiply(.8); 
+				newerBelief.addGM(tmpBel); 
+
 			allBels[i]=newerBelief;
 
 		for i in range(0,len(allBels)):
