@@ -164,7 +164,7 @@ class MainTester(object):
                         self.running_experiment = False
                         print("*****"+ msg.robber.upper() + " CAUGHT*****")
                         print("  ENDING EXPERIMENT")
-                self.running_experiment = False
+                        self.running_experiment = False
 
 if __name__ == '__main__':
         MainTester()

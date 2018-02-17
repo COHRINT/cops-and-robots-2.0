@@ -1,14 +1,17 @@
 Powering up the turtlebots
 1) Power on
-2) Ssh
-3) Base on
-4) Check Vicon
+2) $ ssh odroid@{robot} (Replace {} with 'zhora','deck'...
+3) Turn the base on
+4) Turn on vicon, calibrate, and check the correct boxes on the interface
 5) Put in space
+6) On the odroid for a cop run: $ cop rob:='{robber}'
+OR for a robber: $ rob
 
-Experiment
-1) roscore, vsys
-2) pol
-3) obs_
-4) config/gui
-5) rviz
-6) run.sh
+Experiment (aliases, see aliases.txt for details)
+1) $ roscore
+2) $ vsys
+2) $ pol
+3) $ obs{} (replace {} with 'r' for roy as in '$ obsr' etc)
+4) edit config/config.yaml
+5) rviz (optional)
+6) (in top cnr directory) $ bash launch/run.sh

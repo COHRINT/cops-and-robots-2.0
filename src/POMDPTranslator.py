@@ -329,8 +329,8 @@ class POMDPTranslator(object):
 		#Make sure to renormalize that room
 		newerBelief = GM();
 		for i in range(1,5):
-			tmpBel = viewCone.runVBND(allBels[copBounds],i);
-			# tmpBel = allBels[copBounds]
+			#tmpBel = viewCone.runVBND(allBels[copBounds],i);
+			tmpBel = allBels[copBounds]
 			newerBelief.addGM(tmpBel);
 		allBels[copBounds] = newerBelief;
 

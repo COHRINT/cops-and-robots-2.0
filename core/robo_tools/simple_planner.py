@@ -20,13 +20,13 @@ from core.robo_tools.planner import GoalPlanner
 #from planner import GoalPlanner # if running as the main file (for tests)
 
 # Whether to run through the run_list of poses or pick randomly among the pose_list
-RUN_THROUGH = False
+RUN_THROUGH = True
 
 
 class SimpleGoalPlanner(GoalPlanner):
 
         pose_list = [[0, -2.25,0],[-4,-1,0],[-3,2,0],[2,-2,0],[4,-1,0],[1,2,0],[2.5,2,0],[4.5,2,0],[-3,-2,0],[0,0,0],[4.5,-2,0]]
-        run_list = [[-4,-1,0],[-2,2,0],[2,2,3.14],[-3,-2,0],[0,0,0],[4.5,0,0]]
+        run_list = [[-3,-2.4,0]]
         
         def __init__(self, robot_name=None, robot_pose=None):
                 random.seed()
