@@ -367,7 +367,7 @@ class POMDPTranslator(object):
 
 
 		#Make sure there is a belief in each room
-		allBels = assignRooms(newerBelief); 
+		allBels = self.assignRooms(newerBelief); 
 
 		#3. recombine beliefs
 		newBelief = GM();
@@ -378,7 +378,7 @@ class POMDPTranslator(object):
 
 		#4. fix cops position in belief
 		for g in newBelief:
-			g.mean = [copPoses[0][0],copPoses[0][1],g.mean[2],g.mean[3]];
+			g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
 			g.var[0][0] = 0.1;
 			g.var[0][1] = 0;
 			g.var[1][0] = 0;
