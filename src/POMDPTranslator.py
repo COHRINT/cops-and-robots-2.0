@@ -367,7 +367,12 @@ class POMDPTranslator(object):
 
 
 		#Make sure there is a belief in each room
-		allBels = self.assignRooms(newerBelief); 
+		#allBels = self.assignRooms(newerBelief); 
+		for room in self.map_.rooms:
+			centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
+	        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
+	        var = np.identity(4).tolist(); 
+	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.0001));  
 
 		#3. recombine beliefs
 		newBelief = GM();
