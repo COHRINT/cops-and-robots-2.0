@@ -291,6 +291,7 @@ class POMDPTranslator(object):
 	def assignRooms(self,belief):
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
+                allBounds = []
 		for room in self.map_.rooms:
 			tmp = GM();
 			tmpw = 0;
@@ -365,6 +366,9 @@ class POMDPTranslator(object):
 		#Condense the belief
 		newerBelief.condense(10); 
 
+                print("*********************")
+		print(newerBelief.size)
+                print("*********************")
 
 		#Make sure there is a belief in each room
 		#allBels = self.assignRooms(newerBelief); 
@@ -394,8 +398,9 @@ class POMDPTranslator(object):
 			g.var[2][2] += 1
 			g.var[3][3] += 1
 
-		
-
+                print("*********************")
+		print(newBelief.size)
+                print("*********************")
 
 		if copPoses is not None:
 			pose = copPoses[len(copPoses)-1]

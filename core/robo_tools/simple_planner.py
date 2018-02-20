@@ -20,7 +20,7 @@ from core.robo_tools.planner import GoalPlanner
 #from planner import GoalPlanner # if running as the main file (for tests)
 
 # Whether to run through the run_list of poses or pick randomly among the pose_list
-RUN_THROUGH = True
+RUN_THROUGH = False
 
 
 class SimpleGoalPlanner(GoalPlanner):
