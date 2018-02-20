@@ -287,7 +287,123 @@ class POMDPTranslator(object):
 				suma += a.Gs[k].weight*b.Gs[l].weight*mvn.pdf(b.Gs[l].mean,a.Gs[k].mean, np.matrix(a.Gs[k].var)+np.matrix(b.Gs[l].var));
 		return suma;
 
-	def beliefUpdate(self, belief, responses = None,copPoses = None):
+
+	def assignRooms(self,belief):
+		#1. partition means into separate GMs, 1 for each room
+		allBels = [];
+		for room in self.map_.rooms:
+			tmp = GM();
+			tmpw = 0;
+                        
+			allBounds.append([self.map_.rooms[room]['min_x'],self.map_.rooms[room]['min_y'],self.map_.rooms[room]['max_x'],self.map_.rooms[room]['max_y']]);
+			for g in belief:
+				m = [g.mean[2],g.mean[3]];
+                                # if mean is inside the room
+				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
+					tmp.addG(deepcopy(g));
+					tmpw+=g.weight;
+                     
+            if(tmp.size==0):
+            	centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
+            	centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
+            	var = np.identity(4).tolist(); 
+            	tmp.addG(Gaussian([0,0,centx,centy],var,0.0001));                  
+	
+			allBels.append(tmp);
+
+		return allBels;
+
+
+
+	def beliefUpdate(self,belief,responses = None, copPoses = None):
+		#Create Cop View Cone
+		pose = copPoses[-1];
+		viewCone = Softmax();
+		viewCone.buildTriView(pose,length=1,steepness=10);
+		for i in range(0,len(viewCone.weights)):
+			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+
+		#Update Cop View Cone
+		newerBelief = GM(); 
+		for j in range(1,5):
+			tmpBel = viewCone.runVBND(belief,j); 
+			if(j==1):
+				tmpBel.scalerMultiply(.8); 
+			newerBelief.addGM(tmpBel);
+
+		newerBelief.normalizeWeights(); 
+
+		#Update From Responses
+		if(responses is not None):
+			for res in responses:
+				roomNum = res[0];
+				mod = res[1];
+				clas = res[2];
+				sign = res[3];
+
+				if(roomNum == 0):
+					#apply to all
+					if(sign==True):
+						newerBelief = mod.runVBND(newerBelief,0);
+					else:
+						tmp = GM();
+						for j in range(1,mod.size):
+							tmp.addGM(mod.runVBND(newerBelief,j));
+						newerBelief = tmp;
+				else:
+					print('ROOM NUM: {}'.format(roomNum))
+					#apply to all rooms
+					if(sign == True):
+						newerBelief = mod.runVBND(newerBelief,clas);
+					else:
+						tmp = GM();
+						for j in range(1,mod.size):
+							if(j!=clas):
+								tmp.addGM(mod.runVBND(newerBelief,j));
+						newerBelief = tmp;
+
+		
+		#Condense the belief
+		newerBelief.condense(10); 
+
+
+		#Make sure there is a belief in each room
+		allBels = assignRooms(newerBelief); 
+
+		#3. recombine beliefs
+		newBelief = GM();
+		for g in allBels:
+			newBelief.addGM(g);
+		newBelief.normalizeWeights();
+
+
+		#4. fix cops position in belief
+		for g in newBelief:
+			g.mean = [copPoses[0][0],copPoses[0][1],g.mean[2],g.mean[3]];
+			g.var[0][0] = 0.1;
+			g.var[0][1] = 0;
+			g.var[1][0] = 0;
+			g.var[1][1] = 0.1;
+
+		#5. add uncertainty for robber position
+		for g in newBelief:
+			g.var[2][2] += 1
+			g.var[3][3] += 1
+
+		
+
+
+		if copPoses is not None:
+			pose = copPoses[len(copPoses)-1]
+			print("MAP COP POSE TO PLOT: {}".format(pose))
+			self.makeBeliefMap(newBelief,pose)
+
+
+
+		return newBelief;
+
+
+	def oldbeliefUpdate(self, belief, responses = None,copPoses = None):
 		print('UPDATING BELIEF')
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
