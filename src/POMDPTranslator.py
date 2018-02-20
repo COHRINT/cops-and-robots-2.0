@@ -319,18 +319,20 @@ class POMDPTranslator(object):
 		#Create Cop View Cone
 		pose = copPoses[-1];
 		viewCone = Softmax();
-		viewCone.buildTriView(pose,length=1,steepness=10);
+		viewCone.buildTriView(pose,length=1,steepness=.5);
 		for i in range(0,len(viewCone.weights)):
 			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 
 		#Update Cop View Cone
-		newerBelief = GM(); 
-		for j in range(1,5):
-			tmpBel = viewCone.runVBND(belief,j); 
-			if(j==1):
-				tmpBel.scalerMultiply(.8); 
-			newerBelief.addGM(tmpBel);
+		# newerBelief = GM(); 
+		# for j in range(1,5):
+		# 	tmpBel = viewCone.runVBND(belief,j); 
+		# 	if(j==1):
+		# 		tmpBel.scalerMultiply(.4); 
+		# 	newerBelief.addGM(tmpBel);
+                newerBelief = belief
 
+                
 		newerBelief.normalizeWeights(); 
 
 		#Update From Responses
@@ -379,9 +381,7 @@ class POMDPTranslator(object):
 	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.0001));  
 
 		#3. recombine beliefs
-		newBelief = GM();
-		for g in allBels:
-			newBelief.addGM(g);
+		newBelief = newerBelief
 		newBelief.normalizeWeights();
 
 

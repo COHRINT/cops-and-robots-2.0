@@ -318,7 +318,8 @@ class Map_Object(object):
         Create and store corresponding likelihood.
         Approximate all shapes as rectangles
         """
-        self.softmax.buildOrientedRecModel(self.centroid,self.orient, self.x_len, self.y_len, steepness=10)
+        # 90 on rotation b/c coords are different
+        self.softmax.buildOrientedRecModel(self.centroid,self.orient + 90, self.x_len, self.y_len, steepness=2)
         for i in range(0,len(self.softmax.weights)):
             self.softmax.weights[i] = [0,0,self.softmax.weights[i][0],self.softmax.weights[i][1]];
 
