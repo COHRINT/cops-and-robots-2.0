@@ -803,7 +803,30 @@ class Softmax:
 		if(len(prior.var)==1):
 			varHat = varHat[0][0]; 
 
-		post = Gaussian(muHat,varHat,prior.weight); 
+		#Calculate Weights
+		#sample a bunch from the prior
+		tmp = GM(); 
+		tmp.addG(Gaussian(prior.mean,prior.var,1)); 
+		tmpSamps = tmp.sample(500);
+
+		#Find the likelihood at each sampled point
+		probs = [0]*500; 
+		for i in range(0,500):
+			if(not inverse):
+				probs[i] = self.pointEvalND(softClass,tmpSamps[i]); 
+			else:
+				probs[i] = 1-self.pointEvalND(softClass,tmpSamps[i]); 
+		#Find the average likelihood, which is the weight factor
+		sumSamp = sum(probs)/500; 
+
+		#Multiply the sampled weight factor by the previous weight
+		#or add in log space
+		logSamps = np.log(sumSamp); 
+		logWeight = np.log(prior.weight)+logSamps; 
+		#Extract final weight
+		weight = np.exp(logWeight); 
+
+		post = Gaussian(muHat,varHat,weight); 
 
 		return post;
 
@@ -1167,7 +1190,7 @@ def testLWIS():
 	#prior.addG(Gaussian([1,0],[[1,0],[0,1]],1));
 
 	for i in range(0,100):
-		prior.addG(Gaussian([np.random.random()*10-5,np.random.random()*10-5],[[1,0],[0,1]],1))
+		prior.addG(Gaussian([np.random.random()*4-2,np.random.random()*4-2],[[0.1,0],[0,0.1]],1))
 	prior.normalizeWeights(); 
 
 
@@ -1175,7 +1198,7 @@ def testLWIS():
 	for g in prior:
 		post.addG(pz.lwisUpdate(g,0,500,inverse=True)); 
 
-	post.display(); 
+	#post.display(); 
 
 
 	[x1,y1,c1] = prior.plot2D(low=[-5,-5],high=[5,5],vis=False); 
@@ -1183,6 +1206,9 @@ def testLWIS():
 	[x2,y2,c2] = post.plot2D(low=[-5,-5],high=[5,5],vis=False); 
 
 	diffs = c2-c1; 
+	print(np.amax(c2)); 
+	print(np.amax(diffs)); 
+	print(np.amin(diffs));
 
 	fig,axarr = plt.subplots(4); 
 	axarr[0].contourf(x1,y1,c1); 

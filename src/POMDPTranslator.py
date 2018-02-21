@@ -81,6 +81,7 @@ class POMDPTranslator(object):
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 			weightSums.append(tmpw);
+			
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
 		# print(questsHigh);
