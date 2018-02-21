@@ -387,7 +387,7 @@ class POMDPTranslator(object):
 				newerBelief.normalizeWeights(); 
 		
 		#Condense the belief
-		newerBelief.condense(10); 
+		newerBelief.condense(15); 
 
                 print("*********************")
 		print(newerBelief.size)
@@ -395,19 +395,18 @@ class POMDPTranslator(object):
 
 		#Make sure there is a belief in each room
 		#A bit of a hack, but if this isn't here the lower level query fails
-		#allBels = self.assignRooms(newerBelief); 
 		for room in self.map_.rooms:
 			centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
 	        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
 	        var = np.identity(4).tolist(); 
 	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
 
-		#3. recombine beliefs
+		#3. recombine beliefs (if we're still doing that sort of thing)
 		newBelief = newerBelief
 		newBelief.normalizeWeights();
 
 
-		#4. fix cops position in belief
+		#4. update cops position to current position
 		for g in newBelief:
 			g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
 			g.var[0][0] = 0.1;
@@ -415,7 +414,7 @@ class POMDPTranslator(object):
 			g.var[1][0] = 0;
 			g.var[1][1] = 0.1;
 
-		#5. add uncertainty for robber position
+		#5. update belief with robber dynamics
 		for g in newBelief:
 			g.var[2][2] += 1
 			g.var[3][3] += 1
