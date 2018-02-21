@@ -314,12 +314,11 @@ class POMDPTranslator(object):
 		return allBels;
 
 
-
 	def beliefUpdate(self,belief,responses = None, copPoses = None):
 		#Create Cop View Cone
 		pose = copPoses[-1];
 		viewCone = Softmax();
-		viewCone.buildTriView(pose,length=1,steepness=.5);
+		viewCone.buildTriView(pose,length=1,steepness=10);
 		for i in range(0,len(viewCone.weights)):
 			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 
@@ -330,9 +329,30 @@ class POMDPTranslator(object):
 		# 	if(j==1):
 		# 		tmpBel.scalerMultiply(.4); 
 		# 	newerBelief.addGM(tmpBel);
-                newerBelief = belief
+        
+        #Dont Update Cop View Cone
+        #newerBelief = belief
 
-                
+        #Distance Cutoff
+        #How many standard deviations away from the cop should gaussians be updated with view cone? 
+        distCut = 2; 
+
+        #Update Cop View Cone Using LWIS
+        newerBelief = GM(); 
+        for g in belief:
+        	#If the gaussian is suffciently close to the pose
+        	#based on mahalanobis distance.
+        	#Logic: M-dist basically says how many standard devs away the point is from the mean
+        	#If it's more than distCut, it should be left alone
+        	if(g.mahalanobis([pose[0],pose[1]]) <= distCut):
+	        	for i in range(1,viewCone.size):
+	        		newG = viewCone.lwisUpdate(g,i,500);
+	        		newG.weight = newG.weight*.25; 
+	        		newerBelief.addG(newG); 
+	        else:
+	        	newerBelief.add(g); 
+        
+        #Just to be sure, it never hurts to check   
 		newerBelief.normalizeWeights(); 
 
 		#Update From Responses
@@ -363,7 +383,8 @@ class POMDPTranslator(object):
 							if(j!=clas):
 								tmp.addGM(mod.runVBND(newerBelief,j));
 						newerBelief = tmp;
-
+				#Each response recieves a full bayes update, so we need to normalize each time
+				newerBelief.normalizeWeights(); 
 		
 		#Condense the belief
 		newerBelief.condense(10); 
@@ -373,12 +394,13 @@ class POMDPTranslator(object):
                 print("*********************")
 
 		#Make sure there is a belief in each room
+		#A bit of a hack, but if this isn't here the lower level query fails
 		#allBels = self.assignRooms(newerBelief); 
 		for room in self.map_.rooms:
 			centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
 	        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
 	        var = np.identity(4).tolist(); 
-	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.0001));  
+	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
 
 		#3. recombine beliefs
 		newBelief = newerBelief
