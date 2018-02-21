@@ -32,6 +32,7 @@ import math
 import os
 
 # import voi # obs_mapping in callbacks
+from pose import Pose
 from gaussianMixtures import GM
 from POMDPTranslator import POMDPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg, discrete_rehydrate, discrete_dehydrate
@@ -51,7 +52,10 @@ class PolicyTranslatorServer(object):
         self.pt = POMDPTranslator()
 
         rospy.init_node('policy_translator_server')
-        self.listener = tf.TransformListener()
+        self.cop_pose = None
+#        self.listener = tf.TransformListener()
+#        cop_name = rospy.get_param('cop')
+#        self.cop_pose = Pose(cop_name)
         s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
 
         # Observations -> likelihood queue
@@ -106,21 +110,21 @@ class PolicyTranslatorServer(object):
 
         return res
 
-    def tf_update(self,name):
-        '''
-        Get the pose of the robot making the service request using a ROS
-        transform ('tf') lookup and return that pose.
-        '''
-        return (0,0,0)
-        # name = name.lower()
-        # ref = "/" + name + "/odom"
-        # child = "/" + name + "/base_footprint"
-        # (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
-        # x = trans[0]
-        # y = trans[1]
-        # (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
-        # pose = [x, y, np.rad2deg(
-        # return pose
+    # def tf_update(self,name):
+    #     '''
+    #     Get the pose of the robot making the service request using a ROS
+    #     transform ('tf') lookup and return that pose.
+    #     '''
+    #     # return (0,0,0)
+    #     name = name.lower()
+    #     ref = "/" + name + "/odom"
+    #     child = "/" + name + "/base_footprint"
+    #     (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
+    #     x = trans[0]
+    #     y = trans[1]
+    #     (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
+    #     pose = [x, y, np.rad2deg()]
+    #     return pose
 
     def translator_wrapper(self,name,obs,weights=None,means=None,variances=None):
         '''
@@ -131,7 +135,12 @@ class PolicyTranslatorServer(object):
         copPoses = []
 
         belief = rehydrate_msg(weights,means,variances)
-        position = self.tf_update(name)
+        if self.cop_pose is None:
+            self.cop_pose = Pose(name)
+        position = self.cop_pose.pose
+        position[2] = (position[2] * 180) / np.pi
+        
+#        position = self.tf_update(name)
 
         copPoses.append(position)
 
