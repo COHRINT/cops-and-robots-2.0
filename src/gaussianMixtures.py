@@ -9,7 +9,7 @@ Classes: GM,Gaussian
 Allows for the creation, use, and compression of mixtures
 of multivariate normals, or Gaussian Mixture Models (GMM).
 
-Version 1.3.2.1: Added Mahalonobis Distance to mixands
+Version 1.3.2.1: Added Mahalanobis Distance to mixands
 
 ***********************************************************
 '''
@@ -73,6 +73,7 @@ class Gaussian:
 		return True;
 
 	def mahalanobisDistance(self,point):
+                
 		p = np.matrix(point).T; 
 		mu = np.matrix(self.mean).T; 
 		var = np.matrix(self.var); 

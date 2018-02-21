@@ -4,15 +4,15 @@
 
 map: mapA
 cop_rob: # label as 'rob' or 'cop' (INCLUDE SINGLE QUOTES)
-    Deckard: 'cop'
-    Pris: 'no'
+    Deckard: 'no'
+    Pris: 'cop'
     Roy: 'no'
-    Zhora: 'rob'
+    Zhora: 'no'
 robots:
   Deckard:
     goal_planner: pomdp
   Pris:
-    goal_planner: stationary
+    goal_planner: pomdp
   Roy:
     goal_planner: simple
   Zhora:

@@ -310,7 +310,6 @@ class POMDPTranslator(object):
             	                var = np.identity(4).tolist(); 
             	                tmp.addG(Gaussian([0,0,centx,centy],var,0.0001));                  
 			        allBels.append(tmp);
-
 		return allBels;
 
 
@@ -330,29 +329,29 @@ class POMDPTranslator(object):
 		# 		tmpBel.scalerMultiply(.4); 
 		# 	newerBelief.addGM(tmpBel);
         
-        #Dont Update Cop View Cone
-        #newerBelief = belief
+                #Dont Update Cop View Cone
+                #newerBelief = belief
 
-        #Distance Cutoff
-        #How many standard deviations away from the cop should gaussians be updated with view cone? 
-        distCut = 2; 
+                #Distance Cutoff
+                #How many standard deviations away from the cop should gaussians be updated with view cone? 
+                distCut = 2; 
 
-        #Update Cop View Cone Using LWIS
-        newerBelief = GM(); 
-        for g in belief:
-        	#If the gaussian is suffciently close to the pose
-        	#based on mahalanobis distance.
-        	#Logic: M-dist basically says how many standard devs away the point is from the mean
-        	#If it's more than distCut, it should be left alone
-        	if(g.mahalanobis([pose[0],pose[1]]) <= distCut):
-	        	for i in range(1,viewCone.size):
-	        		newG = viewCone.lwisUpdate(g,i,500);
-	        		newG.weight = newG.weight*.25; 
-	        		newerBelief.addG(newG); 
-	        else:
-	        	newerBelief.add(g); 
+                #Update Cop View Cone Using LWIS
+                newerBelief = GM(); 
+                for g in belief:
+        	        #If the gaussian is suffciently close to the pose
+        	        #based on mahalanobis distance.
+        	        #Logic: M-dist basically says how many standard devs away the point is from the mean
+        	        #If it's more than distCut, it should be left alone
+        	        if(g.mahalanobisDistance([0,0,pose[0],pose[1]]) <= distCut):
+	        	        for i in range(1,viewCone.size):
+	        		        newG = viewCone.lwisUpdate(g,i,500);
+	        		        newG.weight = newG.weight*.25; 
+	        		        newerBelief.addG(newG); 
+	                else:
+	        	        newerBelief.addG(g); 
         
-        #Just to be sure, it never hurts to check   
+                #Just to be sure, it never hurts to check   
 		newerBelief.normalizeWeights(); 
 
 		#Update From Responses
@@ -427,10 +426,7 @@ class POMDPTranslator(object):
 			pose = copPoses[len(copPoses)-1]
 			print("MAP COP POSE TO PLOT: {}".format(pose))
 			self.makeBeliefMap(newBelief,pose)
-
-
-
-		return newBelief;
+        	return newBelief;
 
 
 	def oldbeliefUpdate(self, belief, responses = None,copPoses = None):
