@@ -765,7 +765,7 @@ class Softmax:
 		return likelihood;
 
 
-	def lwisUpdate(self,prior,softClass,numSamples):
+	def lwisUpdate(self,prior,softClass,numSamples,inverse = False):
 		#Runs a likelihood weighted importance sampling update on a given gaussian
 		q = GM(); 
 		q.addG(Gaussian(prior.mean,prior.var,1)); 
@@ -777,7 +777,10 @@ class Softmax:
 
 		w = np.zeros(numSamples); 
 		for i in range(0,numSamples):
-			w[i] = p.pointEval(x[i])*self.pointEvalND(softClass,x[i])/q.pointEval(x[i]); 
+			if(not inverse):
+				w[i] = p.pointEval(x[i])*self.pointEvalND(softClass,x[i])/q.pointEval(x[i]);
+			else:
+				w[i] = p.pointEval(x[i])*(1-self.pointEvalND(softClass,x[i]))/q.pointEval(x[i]); 
 
 		suma = sum(w); 
 		for i in range(0,len(w)):
@@ -1157,18 +1160,20 @@ def testDiscritization():
 
 def testLWIS():
 	pz = Softmax(); 
-	pose = [1,0,180]; 
+	pose = [0,0,0]; 
 	pz.buildTriView(pose,length=2,steepness=10);
 	
 	prior = GM(); 
-	prior.addG(Gaussian([1,0],[[1,0],[0,1]],1)); 
+	#prior.addG(Gaussian([1,0],[[1,0],[0,1]],1));
+
+	for i in range(0,100):
+		prior.addG(Gaussian([np.random.random()*10-5,np.random.random()*10-5],[[1,0],[0,1]],1))
 	prior.normalizeWeights(); 
 
 
 	post = GM(); 
 	for g in prior:
-		for i in range(1,5):
-			post.addG(pz.lwisUpdate(g,i,500)); 
+		post.addG(pz.lwisUpdate(g,0,500,inverse=True)); 
 
 	post.display(); 
 
@@ -1177,14 +1182,17 @@ def testLWIS():
 	[x3,y3,c3] = pz.plot2D(low=[-5,-5],high=[5,5],vis=False); 
 	[x2,y2,c2] = post.plot2D(low=[-5,-5],high=[5,5],vis=False); 
 
+	diffs = c2-c1; 
 
-	fig,axarr = plt.subplots(3); 
+	fig,axarr = plt.subplots(4); 
 	axarr[0].contourf(x1,y1,c1); 
 	axarr[0].set_title('Prior'); 
 	axarr[1].contourf(x3,y3,c3); 
 	axarr[1].set_title('Likelihood'); 
 	axarr[2].contourf(x2,y2,c2); 
 	axarr[2].set_title('Posterior'); 
+	axarr[3].contourf(x2,y2,diffs); 
+	axarr[3].set_title('Diffs'); 
 	plt.show(); 
 
 if __name__ == "__main__":

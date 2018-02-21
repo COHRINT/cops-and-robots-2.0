@@ -314,12 +314,12 @@ class POMDPTranslator(object):
 
 
 	def beliefUpdate(self,belief,responses = None, copPoses = None):
-		#Create Cop View Cone
-		pose = copPoses[-1];
-		viewCone = Softmax();
-		viewCone.buildTriView(pose,length=1,steepness=10);
-		for i in range(0,len(viewCone.weights)):
-			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+		# #Create Cop View Cone
+		# pose = copPoses[-1];
+		# viewCone = Softmax();
+		# viewCone.buildTriView(pose,length=1,steepness=10);
+		# for i in range(0,len(viewCone.weights)):
+		# 	viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 
 		#Update Cop View Cone
 		# newerBelief = GM(); 
@@ -329,30 +329,38 @@ class POMDPTranslator(object):
 		# 		tmpBel.scalerMultiply(.4); 
 		# 	newerBelief.addGM(tmpBel);
         
-                #Dont Update Cop View Cone
-                #newerBelief = belief
+        #Dont Update Cop View Cone
+        #newerBelief = belief
 
-                #Distance Cutoff
-                #How many standard deviations away from the cop should gaussians be updated with view cone? 
-                distCut = 2; 
+        #Distance Cutoff
+        #How many standard deviations away from the cop should gaussians be updated with view cone? 
+        distCut = 1; 
 
-                #Update Cop View Cone Using LWIS
-                newerBelief = GM(); 
-                for g in belief:
-        	        #If the gaussian is suffciently close to the pose
-        	        #based on mahalanobis distance.
-        	        #Logic: M-dist basically says how many standard devs away the point is from the mean
-        	        #If it's more than distCut, it should be left alone
-        	        if(g.mahalanobisDistance([0,0,pose[0],pose[1]]) <= distCut):
-	        	        for i in range(1,viewCone.size):
-	        		        newG = viewCone.lwisUpdate(g,i,500);
-	        		        newG.weight = newG.weight*.25; 
-	        		        newerBelief.addG(newG); 
-	                else:
-	        	        newerBelief.addG(g); 
+        #Update Cop View Cone Using LWIS
+        newerBelief = GM(); 
+
+        for pose in copPoses:
+	        #Create Cop View Cone
+			#pose = copPoses[-1];
+			viewCone = Softmax();
+			viewCone.buildTriView(pose,length=1,steepness=10);
+			for i in range(0,len(viewCone.weights)):
+				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+	        for g in belief:		
+		        #If the gaussian is suffciently close to the pose
+		        #based on mahalanobis distance.
+		        #Logic: M-dist basically says how many standard devs away the point is from the mean
+		        #If it's more than distCut, it should be left alone
+		        if(g.mahalanobisDistance([0,0,pose[0],pose[1]]) <= distCut):
+	    		    newG = viewCone.lwisUpdate(g,0,500,inverse=True); 
+	    		    newerBelief.addG(newG); 
+	            else:
+	    	        newerBelief.addG(g); 
+	    	#after each bayes update for the view cone, re-normalize
+	    	#Just to be sure, it never hurts to check   
+			newerBelief.normalizeWeights(); 
         
-                #Just to be sure, it never hurts to check   
-		newerBelief.normalizeWeights(); 
+        
 
 		#Update From Responses
 		if(responses is not None):
