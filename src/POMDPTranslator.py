@@ -98,7 +98,7 @@ class POMDPTranslator(object):
 
 		#3. find position and questions from lower level pomdp for that room
 
-
+                # DO NOT COMMENT THESE LINES !!!!!!!!!!!!!!
 		roomConversion = [5,4,0,2,3,1];
 		room_conv = roomConversion[room];
 
@@ -120,8 +120,8 @@ class POMDPTranslator(object):
 			roomCount+=1;
 
 		if(copRoom == room_conv):
-			displacement = [0,0,0];
 			dela = 1.0
+			displacement = [dela,0,0];
 			if(movement ==0):
 				displacement = [-dela,0,0];
 			elif(movement == 1):
@@ -172,10 +172,10 @@ class POMDPTranslator(object):
 		#questions = self.getQuestionStrings(questsFull);
 		questions = [];
 		for i in range(0,len(questsFull)):
-			print questsFull
-			print i
-			print questsFull[i][0]
-			print questsFull[i][1]
+			#print questsFull
+			#print i
+			#print questsFull[i][0]
+			#print questsFull[i][1]
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
                         
@@ -249,6 +249,13 @@ class POMDPTranslator(object):
 		questWeights = [];
 
 		for i in a:
+			#print(i); 
+			if(i[1][1] != 0 and i[1][1] != 4):
+				i[1][1] -= 1; 
+			elif(i[1][1] == 0):
+				i[1][1] = 3; 
+			elif(i[1][1] == 4):
+				i[1][1] = 7; 
 			if(i[1][1] not in quests):
 				quests.append(i[1][1]);
 				questWeights.append(i[0]);
@@ -335,14 +342,14 @@ class POMDPTranslator(object):
 
 		#Distance Cutoff
 		#How many standard deviations away from the cop should gaussians be updated with view cone? 
-		distCut = 4; 
+		distCut = 2; 
 
 		#Update Cop View Cone Using LWIS
 		newerBelief = GM(); 
 
 		for pose in copPoses:
 			#Create Cop View Cone
-			pose = copPoses[-1];
+			#pose = copPoses[-1];
 			viewCone = Softmax();
 			viewCone.buildTriView(pose,length=1,steepness=10);
 			for i in range(0,len(viewCone.weights)):
@@ -352,7 +359,12 @@ class POMDPTranslator(object):
 				#based on mahalanobis distance.
 				#Logic: M-dist basically says how many standard devs away the point is from the mean
 				#If it's more than distCut, it should be left alone
-				if(g.mahalanobisDistance([0,0,pose[0],pose[1]]) <= distCut):
+				gprime = Gaussian(); 
+				gprime.mean = [g.mean[2],g.mean[3]]; 
+				gprime.var = [[g.var[2][2],g.var[2][3]],[g.var[3][2],g.var[3][3]]];
+				gprime.weight = g.weight; 
+				#print(gprime.mean,gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5])); 
+				if(gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]) <= distCut):
 					print("************MAHALALALALALA******************")
 					newG = viewCone.lwisUpdate(g,0,500,inverse=True); 
 					newerBelief.addG(newG); 
@@ -404,11 +416,11 @@ class POMDPTranslator(object):
 
 		#Make sure there is a belief in each room
 		#A bit of a hack, but if this isn't here the lower level query fails
-		for room in self.map_.rooms:
-			centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
-	        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
-	        var = np.identity(4).tolist(); 
-	        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
+		# for room in self.map_.rooms:
+		# 	centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
+	 #        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
+	 #        var = np.identity(4).tolist();  
+	 #        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
 
 		#3. recombine beliefs (if we're still doing that sort of thing)
 		newBelief = newerBelief
@@ -425,8 +437,8 @@ class POMDPTranslator(object):
 
 		#5. update belief with robber dynamics
 		for g in newBelief:
-			g.var[2][2] += 0;
-			g.var[3][3] += 0;
+			g.var[2][2] += 0.05;
+			g.var[3][3] += 0.05;
 
                 print("*********************")
 		print(newBelief.size)

@@ -810,7 +810,7 @@ class Softmax:
 		tmpSamps = tmp.sample(500);
 
 		#Find the likelihood at each sampled point
-		probs = [0]*500; 
+		probs = np.zeros(500).tolist()
 		for i in range(0,500):
 			if(not inverse):
 				probs[i] = self.pointEvalND(softClass,tmpSamps[i]); 

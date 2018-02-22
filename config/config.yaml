@@ -7,10 +7,10 @@ cop_rob: # label as 'rob' or 'cop' (INCLUDE SINGLE QUOTES)
     Deckard: 'no'
     Pris: 'cop'
     Roy: 'no'
-    Zhora: 'no'
+    Zhora: 'rob'
 robots:
   Deckard:
-    goal_planner: pomdp
+    goal_planner: simple
   Pris:
     goal_planner: pomdp
   Roy:
