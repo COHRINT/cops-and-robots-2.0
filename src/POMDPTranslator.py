@@ -179,6 +179,11 @@ class POMDPTranslator(object):
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
                         
+		#5.1 Make new belief map with goal_pose on it
+		pose = copPoses[-1]
+		#print("MAP COP POSE TO PLOT: {}".format(pose))
+		self.makeBeliefMap(newBel,pose,goal_pose); 
+
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -444,11 +449,8 @@ class POMDPTranslator(object):
 		print(newBelief.size)
                 print("*********************")
 
-		if copPoses is not None:
-			pose = copPoses[len(copPoses)-1]
-			print("MAP COP POSE TO PLOT: {}".format(pose))
-			self.makeBeliefMap(newBelief,pose)
-        	return newBelief;
+
+        return newBelief;
 
 
 	def oldbeliefUpdate(self, belief, responses = None,copPoses = None):
@@ -602,7 +604,7 @@ class POMDPTranslator(object):
 
 		return newBelief;
 
-	def makeBeliefMap(self,belief,copPose = [0,0,0]):
+	def makeBeliefMap(self,belief,copPose = [0,0,0],goal_pose = [0,0,0]):
 
 		print("MAKING NEW BELIEF MAP!")
 		fig = Figure()
@@ -640,6 +642,19 @@ class POMDPTranslator(object):
 
 		cop = patches.Circle((copPose[0],copPose[1]),radius=0.2,fc = 'white',ec='black');
 		ax.add_patch(cop)
+
+		#Add cops goal pose as red target
+		ax.scatter(goal_pose[0],goal_pose[1],marker='X',s=15); 
+		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30); 
+
+		#Add room labels
+		ax.text(-3,2,'Kitchen',style='bold'); 
+		ax.text(-5,-1.5,'Dining Room',fontsize=10,style='bold'); 
+		ax.text(-3,-1.5,'Study',style='bold'); 
+		ax.text(2,-1.5,'Library',style='bold'); 
+		ax.text(-1,0,'Hallway',style='bold'); 
+		ax.text(3,2,'Billiard Room',style='bold',fontsize=10); 
+
 
 		ax.axis('scaled')
 		print('about to save plot')
