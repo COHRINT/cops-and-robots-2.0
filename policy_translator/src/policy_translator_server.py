@@ -223,7 +223,7 @@ class PolicyTranslatorServer(object):
         # strip the space from message
         question = human_push.data.lstrip()
         room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
-        self.queue.add(room_num, model, class_idx, sign, question)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 
     def robot_pull_callback(self, data):
@@ -239,7 +239,7 @@ class PolicyTranslatorServer(object):
         """
         question = [data.question,data.ans]
         room_num, model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(room_num, model, class_idx, sign, question)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
 def Test_Callbacks():

@@ -38,7 +38,7 @@ class Obs_Queue:
         return f
 
 
-    def add(self, obs_room_num, obs_model, obs_id=0, obs_pos_neg=False, text):
+    def add(self, text, obs_room_num, obs_model, obs_id=0, obs_pos_neg=False):
         """
         -Adds a single item to the queue
         Parameters
