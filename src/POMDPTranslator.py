@@ -684,7 +684,7 @@ class POMDPTranslator(object):
 
 		return (obj.centroid[0]-s2, obj.centroid[1]-s1)
 
-	def obs2models(self,obs):
+	def obs2models(self,obs,pose):
 		"""Map received observation to the appropriate softmax model and class.
 		Observation may be a str type with a pushed observation or a list with
 		question and answer.
@@ -717,6 +717,12 @@ class POMDPTranslator(object):
 						print self.map_.rooms[room]['objects']
 						print room_num
 				break
+
+		# if observation is relative to the cop
+		if re.search('cop',obs.lower()):
+			model = Softmax()
+			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5)
+
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
 			for room in self.map_.rooms:

@@ -206,7 +206,7 @@ class PolicyTranslatorServer(object):
         """
         # strip the space from message
         question = human_push.data.lstrip()
-        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
         self.queue.add(room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 

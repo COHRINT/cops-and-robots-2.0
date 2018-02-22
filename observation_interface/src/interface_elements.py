@@ -389,11 +389,12 @@ object_relations = ["behind","in front of","left of","right of"] # removed 'near
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster"] 
+            "the fridge","the mars poster","the cop"] 
             # removed Deckard from objects as no voi questions exist for Deckard. 
             # See voi.py in policy_translator package
+            # added 'the cop'
 
-area_relations = ["inside","outside"] # removed 'near'
+area_relations = ["inside"] # removed 'near', 'outside'
 
 areas = ["the study","the billiard room","the hallway","the dining room",
             "the kitchen","the library"]
