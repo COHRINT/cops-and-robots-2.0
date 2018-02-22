@@ -722,6 +722,9 @@ class POMDPTranslator(object):
 		if re.search('cop',obs.lower()):
 			model = Softmax()
 			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5)
+			room_num = 0
+			for i in range(0,len(model.weights)):
+				model.weights[i] = [0,0,model.weights[i][0],model.weights[i][1]]
 
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
