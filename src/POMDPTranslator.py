@@ -31,6 +31,7 @@ import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
 from obs_q_map import gen_questions
+import time
 
 
 class POMDPTranslator(object):
@@ -659,6 +660,7 @@ class POMDPTranslator(object):
 		ax.axis('scaled')
 		print('about to save plot')
 		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
+		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief_{}.png'.format(time.time())),bbox_inches='tight',pad_inches=0)
 		#canvas.print_figure('tmpBelief.png',bbox_inches='tight',pad_inches=0)
 
 
