@@ -450,7 +450,7 @@ class POMDPTranslator(object):
                 print("*********************")
 
 
-        return newBelief;
+                return newBelief;
 
 
 	def oldbeliefUpdate(self, belief, responses = None,copPoses = None):
@@ -644,16 +644,16 @@ class POMDPTranslator(object):
 		ax.add_patch(cop)
 
 		#Add cops goal pose as red target
-		ax.scatter(goal_pose[0],goal_pose[1],marker='X',s=15); 
-		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30); 
+		ax.scatter(goal_pose[0],goal_pose[1],marker='x',s=50,c='r'); 
+#		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30); 
 
 		#Add room labels
-		ax.text(-3,2,'Kitchen',style='bold'); 
-		ax.text(-5,-1.5,'Dining Room',fontsize=10,style='bold'); 
-		ax.text(-3,-1.5,'Study',style='bold'); 
-		ax.text(2,-1.5,'Library',style='bold'); 
-		ax.text(-1,0,'Hallway',style='bold'); 
-		ax.text(3,2,'Billiard Room',style='bold',fontsize=10); 
+		ax.text(-3,2,'Kitchen'); 
+		ax.text(-5,-1.5,'Dining\n Room',fontsize=10); 
+		ax.text(-3,-1.5,'Study'); 
+		ax.text(2,-1.5,'Library'); 
+		ax.text(-1,0,'Hallway'); 
+		ax.text(3,2,'Billiard Room',fontsize=10); 
 
 
 		ax.axis('scaled')

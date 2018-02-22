@@ -555,7 +555,7 @@ class HumanPush(QWidget):
             msg = String(answer)
             self.pub.publish(msg)
 
-        self.clear_selection()
+#        self.clear_selection()
 
 
 MapDisplay_style = "\
@@ -704,7 +704,8 @@ class SecurityCamera(VideoContainer):
         super(VideoContainer,self).__init__()
         self.name = "Camera {}: {}".format(num,location)
         self.topic_name = 'cam{}'.format(num)
-        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
+        self.topic_name = "/" + self.topic_name + "/theora/theora"
+#        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
         self.size = (320,240)
         self.img = 'smaller_placeholder.png'
         self.initUI()
