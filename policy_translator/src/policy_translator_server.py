@@ -114,15 +114,15 @@ class PolicyTranslatorServer(object):
         if obs is not None:
             for observation in obs:
                 if observation is str:
-                    qs.append(observation[-1])
+                    qs.append(observation[-1]+'\n')
                 else:
-                    observation = ''.join(observation)
-                    qs.append(observation)
+                    observation = ''.join(str(e) for e in observation[-1])
+                    qs.append(observation+'\n')
             qs = ''.join(qs)
         else:
             qs = 'no observations'
         with open(os.path.dirname(__file__) + "/../tmp/obs_{}.txt".format(time.time()),'a+') as f:
-            f.write(qs+'\n')
+            f.write(qs)
 
         return res
 
@@ -238,7 +238,7 @@ class PolicyTranslatorServer(object):
         data : Answer.msg , Custom Message
         """
         question = [data.question,data.ans]
-        room_num, model, class_idx, sign = self.pt.obs2models(question)
+        room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
         self.queue.add(question, room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
