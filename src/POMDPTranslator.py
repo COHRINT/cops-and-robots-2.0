@@ -185,6 +185,9 @@ class POMDPTranslator(object):
 		#print("MAP COP POSE TO PLOT: {}".format(pose))
 		self.makeBeliefMap(newBel,pose,goal_pose); 
 
+		#Save the belief map, save the observations that led to it
+		#For belief map, copy the tmp belief file 
+		#For the observations, grab the strings
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -729,8 +732,8 @@ class POMDPTranslator(object):
 		# if observation is relative to the cop
 		if re.search('cop',obs.lower()):
 			model = Softmax()
-			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5)
-			room_num = 0
+			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5,steepness=2)
+			room_num = 1
 			for i in range(0,len(model.weights)):
 				model.weights[i] = [0,0,model.weights[i][0],model.weights[i][1]]
 

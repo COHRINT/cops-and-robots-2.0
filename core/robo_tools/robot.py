@@ -66,7 +66,7 @@ class Robot(object):
             
 	elif goal_planner_type == 'rob_int':
             from robber_evasion_planner import robberEvasionGoalPlanner
-            self.goal_planner = robberEvasionGoalPlanner()
+            self.goal_planner = robberEvasionGoalPlanner(self.name, self.Pose.pose)
 
         elif goal_planner_type == 'audio': # Jeremy's Audio Planner. Intergration with this goal planner class has not been set up yet
             from audio_planner import AudioGoalPlanner
