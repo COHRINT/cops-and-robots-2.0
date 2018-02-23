@@ -92,8 +92,8 @@ class robberEvasion():
 
 		# Evasion Parameters
 		reevaluationTime = 3 # Time to wait before reevaluating the path robber is following
-		dangerWeight = .75 # Amount of danger before robber should choose a new path
-		self.copDangerVsObjValueWeight = 0.5
+		dangerWeight = .1# Amount of danger before robber should choose a new path
+		self.copDangerVsObjValueWeight = .75
 
 
 		# Begin Evasion
@@ -107,18 +107,18 @@ class robberEvasion():
 			goal.target_pose.pose = self.objLocations[curDestination].pose
 			goal.target_pose.header.frame_id = 'map'
 			goal.target_pose.header.stamp = rospy.Time.now()
-			rospy.loginfo(goal)
+			# rospy.loginfo(goal)
 
 			# Send goal to planner
 			self.curRobberGoal = self.objLocations[curDestination]
-			self.mover_base.send_goal(goal)
+			# self.mover_base.send_goal(goal)
 			# Wait for move base to begin
-			self.mover_base.wait_for_result(rospy.Duration(1))
+			# self.mover_base.wait_for_result(rospy.Duration(1))
 
 			# While robber is travelling to destination, evaluate the path it is following every few seconds
-			state = self.mover_base.get_state()
+			# state = self.mover_base.get_state()
 			pathFailure = False
-			while (pathFailure==False) or (self.isAtGoal): #(status[state]=='PENDING' or status[state]=='ACTIVE') and
+			while (pathFailure==False) or (self.isAtGoal==False): #(status[state]=='PENDING' or status[state]=='ACTIVE') and
 				# Evaluate cost of path
 				newCost = self.evaluateFloydCost(self.objLocations[curDestination], curDestination)
 				print ("New Cost: " + str(newCost))
@@ -136,7 +136,14 @@ class robberEvasion():
 
 				# Pause for few seconds until reevaluation of path
 				rospy.sleep(reevaluationTime)
-				state = self.mover_base.get_state()
+				# state = self.mover_base.get_state()
+				# print(status[state])
+
+				# if (status[state] == "SUCCEEDED"):
+				# 	self.isAtGoal = True
+
+			print("lol")
+
 
 			# Check what robber has accomplished
 			if pathFailure == True: # Robber path is too dangerous, choose a new path
@@ -145,10 +152,12 @@ class robberEvasion():
 			elif self.isAtGoal:
 				rospy.loginfo("MWUAHAHAHAHAHA You've successfully stolen valuable goods from the " + curDestination)
 				self.isAtGoal = False
-			elif status[state] != 'SUCCEEDED': # Failure in getting to object
-				rospy.loginfo("Robber failed to reach object with error code " + str(state) + ": " + status[state] + ". Finding something else to steal.")
-			else: # SUCCESSFUL ROBBERY
-				rospy.loginfo("MWUAHAHAHAHAHA You've successfully stolen valuable goods from the " + curDestination)
+				del objLocations[vertexKeys[i]]
+				del objNames[maximum]
+			# elif status[state] != 'SUCCEEDED': # Failure in getting to object
+			# 	rospy.loginfo("Robber failed to reach object with error code " + str(state) + ": " + status[state] + ". Finding something else to steal.")
+			# else: # SUCCESSFUL ROBBERY
+			# 	rospy.loginfo("MWUAHAHAHAHAHA You've successfully stolen valuable goods from the " + curDestination)
 
 	# Sends goal of robber to robber_evasion_planner
 	def handleRobberSrv(self, req):
@@ -190,7 +199,7 @@ class robberEvasion():
 			count = 0
 			while pointCost == np.Inf and count<19:
 				poseGridLocY+=1
-				if poseGridLocY>39:
+				if poseGridLocY>19:
 					poseGridLocY = 0
 				pointCost = self.floydWarshallCosts[copGridLocY][copGridLocX][poseGridLocY][poseGridLocX]
 				count+=1
@@ -210,8 +219,8 @@ class robberEvasion():
 	def convertPoseToGridLocation(self, y, x):
 		y += -1*self.originY
 		x += -1*self.originX
-		gridLocY = int(y / self.mapSizeY)
-		gridLocX = int(x / self.mapSizeX)
+		gridLocY = int(y / self.mapSizeY) -1
+		gridLocX = int(x / self.mapSizeX) -1
 		return gridLocY, gridLocX
 
 	# Callback functions to recieve cop and robber locations from ros topics
