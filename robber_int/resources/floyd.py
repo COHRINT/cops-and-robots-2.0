@@ -222,6 +222,9 @@ def findMaxCopCost(objLocations, objNames, floydWarshallCosts, floydWarshallNext
                 for k in range(floydSize[2]):
                     for l in range(floydSize[3]):
                         cost = 0
+                        lenPath = len(path)
+                        if lenPath==0:
+                            lenPath=1
                         for point in path:
                             poseGridLocY, poseGridLocX = point
                             pointCost = floydWarshallCosts[k][l][poseGridLocY][poseGridLocX]
@@ -234,7 +237,7 @@ def findMaxCopCost(objLocations, objNames, floydWarshallCosts, floydWarshallNext
                                 count+=1
                             if pointCost != np.Inf:
                                 cost += pointCost
-                        costArray.append(cost)
+                        costArray.append(cost/lenPath)
 
     return np.mean(costArray), np.std(costArray)
 

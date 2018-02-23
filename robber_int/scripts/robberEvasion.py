@@ -179,7 +179,9 @@ class robberEvasion():
 		poseGridLocY, poseGridLocX = self.convertPoseToGridLocation(objPose.pose.position.y, objPose.pose.position.x)
 		# Make path from robber to object
 		path = self.makePath(robGridLocY, robGridLocX, poseGridLocY, poseGridLocX)
-
+		lenPath = len(path)
+		if lenPath==0:
+			lenPath=1
 		# Calculate cop danger by summing distance from cop to every location on robber's path
 		copCost = 0
 		for point in path:
@@ -200,7 +202,7 @@ class robberEvasion():
 		objCost = self.floydWarshallCosts[robGridLocY][robGridLocX][poseGridLocY][poseGridLocX]
 		objCost = (-1*objCost) + self.objNames[objKey]
 		# Normalize costs
-		copCost = self.copSafetyDistribution.cdf(copCost)
+		copCost = self.copSafetyDistribution.cdf(copCost/lenPath)
 		objCost = self.objValueDistribution.cdf(objCost)
 		# Return cost heuristic
 		cost = self.copDangerVsObjValueWeight * copCost + (1-self.copDangerVsObjValueWeight) * objCost
