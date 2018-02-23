@@ -184,6 +184,9 @@ class POMDPTranslator(object):
 		#print("MAP COP POSE TO PLOT: {}".format(pose))
 		self.makeBeliefMap(newBel,pose,goal_pose); 
 
+		#Save the belief map, save the observations that led to it
+		#For belief map, copy the tmp belief file 
+		#For the observations, grab the strings
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
