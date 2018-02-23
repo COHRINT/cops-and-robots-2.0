@@ -705,7 +705,7 @@ class SecurityCamera(VideoContainer):
         super(VideoContainer,self).__init__()
         self.name = "Camera {}: {}".format(num,location)
         self.topic_name = 'cam{}'.format(num)
-        self.topic_name = "/" + self.topic_name + "/theora/theora"
+        self.topic_name = "/" + self.topic_name + "/usb_cam/image_decompressed"
 #        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
         self.size = (320,240)
         self.img = 'smaller_placeholder.png'
@@ -723,8 +723,18 @@ class SecurityCamera(VideoContainer):
         image_width = msg.width
         bytes_per_line = msg.step
 
+        # convert image from little endian BGR to big endian RGB
+        length = int(len(image_data)/2)
+        # unpack data into array
+        unpacked_data = array.array('H',image_data)
+        # swap bytes (to swap B and R)
+        unpacked_data.byteswap() # causes strange vertical line artifacts
+        unpacked_data.reverse() #<>NOTE: reversing the entire list of bytes causes the image to be displayed upside down, but also removes artifacts for some reason
+        # repack with opposite endian format
+        image_data = struct.pack('<'+str(length)+'H',*unpacked_data)
+
         # create QImage with received image data and metadata
         self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
         if not self.image.isNull():
-            self.canvas.image = self.image
+            self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
         self.canvas.update()
