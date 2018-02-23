@@ -31,6 +31,7 @@ import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
 from obs_q_map import gen_questions
+import time
 
 
 class POMDPTranslator(object):
@@ -630,6 +631,12 @@ class POMDPTranslator(object):
 		    y = m.objects[obj].y_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
+		    # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		  #   if(m.objects[obj].shape == 'oval'):
+		  #       # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		  #   else:
+				# tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+				# #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 	            tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
                     # tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
@@ -662,6 +669,7 @@ class POMDPTranslator(object):
 		ax.axis('scaled')
 		print('about to save plot')
 		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
+		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief_{}.png'.format(time.time())),bbox_inches='tight',pad_inches=0)
 		#canvas.print_figure('tmpBelief.png',bbox_inches='tight',pad_inches=0)
 
 
@@ -687,7 +695,7 @@ class POMDPTranslator(object):
 
 		return (obj.centroid[0]-s2, obj.centroid[1]-s1)
 
-	def obs2models(self,obs):
+	def obs2models(self,obs,pose):
 		"""Map received observation to the appropriate softmax model and class.
 		Observation may be a str type with a pushed observation or a list with
 		question and answer.
@@ -720,6 +728,15 @@ class POMDPTranslator(object):
 						print self.map_.rooms[room]['objects']
 						print room_num
 				break
+
+		# if observation is relative to the cop
+		if re.search('cop',obs.lower()):
+			model = Softmax()
+			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5,steepness=2)
+			room_num = 1
+			for i in range(0,len(model.weights)):
+				model.weights[i] = [0,0,model.weights[i][0],model.weights[i][1]]
+
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
 			for room in self.map_.rooms:

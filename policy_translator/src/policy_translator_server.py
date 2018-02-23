@@ -30,6 +30,7 @@ import tf
 import numpy as np
 import math
 import os
+import time
 
 # import voi # obs_mapping in callbacks
 from pose import Pose
@@ -107,6 +108,21 @@ class PolicyTranslatorServer(object):
                             weights=weights_updated,
                             means=means_updated,
                             variances=variances_updated)
+        
+        # write observations for update to text file
+        qs = []
+        if obs is not None:
+            for observation in obs:
+                if observation is str:
+                    qs.append(observation[-1]+'\n')
+                else:
+                    observation = ''.join(str(e) for e in observation[-1])
+                    qs.append(observation+'\n')
+            qs = ''.join(qs)
+        else:
+            qs = 'no observations'
+        with open(os.path.dirname(__file__) + "/../tmp/obs_{}.txt".format(time.time()),'a+') as f:
+            f.write(qs)
 
         return res
 
@@ -206,8 +222,8 @@ class PolicyTranslatorServer(object):
         """
         # strip the space from message
         question = human_push.data.lstrip()
-        room_num, model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(room_num, model, class_idx, sign)
+        room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 
     def robot_pull_callback(self, data):
@@ -222,8 +238,8 @@ class PolicyTranslatorServer(object):
         data : Answer.msg , Custom Message
         """
         question = [data.question,data.ans]
-        room_num, model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(room_num, model, class_idx, sign)
+        room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
 def Test_Callbacks():
