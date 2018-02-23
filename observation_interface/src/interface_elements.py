@@ -389,11 +389,12 @@ object_relations = ["behind","in front of","left of","right of"] # removed 'near
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster"] 
+            "the fridge","the mars poster","the cop"] 
             # removed Deckard from objects as no voi questions exist for Deckard. 
             # See voi.py in policy_translator package
+            # added 'the cop'
 
-area_relations = ["inside","outside"] # removed 'near'
+area_relations = ["inside"] # removed 'near', 'outside'
 
 areas = ["the study","the billiard room","the hallway","the dining room",
             "the kitchen","the library"]
@@ -555,7 +556,7 @@ class HumanPush(QWidget):
             msg = String(answer)
             self.pub.publish(msg)
 
-        self.clear_selection()
+#        self.clear_selection()
 
 
 MapDisplay_style = "\
@@ -704,7 +705,8 @@ class SecurityCamera(VideoContainer):
         super(VideoContainer,self).__init__()
         self.name = "Camera {}: {}".format(num,location)
         self.topic_name = 'cam{}'.format(num)
-        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
+        self.topic_name = "/" + self.topic_name + "/theora/theora"
+#        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
         self.size = (320,240)
         self.img = 'smaller_placeholder.png'
         self.initUI()

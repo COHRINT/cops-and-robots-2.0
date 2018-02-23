@@ -91,7 +91,7 @@ class Map(object):
                 width = max_y - min_y
                 cent = [min_x + length/2,min_y+width/2]
                 self.rooms[room]['softmax'] = Softmax()
-                self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=10)
+                self.rooms[room]['softmax'].buildOrientedRecModel(cent, 0.0, length, width,steepness=5)
                 for i in range(0,len(self.rooms[room]['softmax'].weights)):
                     self.rooms[room]['softmax'].weights[i] = [0,0,self.rooms[room]['softmax'].weights[i][0],self.rooms[room]['softmax'].weights[i][1]];
                 self.rooms[room]['objects'] = cfg['info']['rooms'][room]['objects']
@@ -318,7 +318,8 @@ class Map_Object(object):
         Create and store corresponding likelihood.
         Approximate all shapes as rectangles
         """
-        self.softmax.buildOrientedRecModel(self.centroid,self.orient, self.x_len, self.y_len, steepness=10)
+        # 90 on rotation b/c coords are different
+        self.softmax.buildOrientedRecModel(self.centroid,self.orient + 90, self.x_len, self.y_len, steepness=1)
         for i in range(0,len(self.softmax.weights)):
             self.softmax.weights[i] = [0,0,self.softmax.weights[i][0],self.softmax.weights[i][1]];
 

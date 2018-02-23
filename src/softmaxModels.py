@@ -11,7 +11,7 @@ Allows for the creation, and use of Softmax functions
 
 
 Version 1.3.0: Added Discretization function
-
+Version 1.3.1: Added Likelihood weighted Importance sampling
 ***********************************************************
 '''
 
@@ -19,7 +19,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2017, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -765,6 +765,70 @@ class Softmax:
 		return likelihood;
 
 
+	def lwisUpdate(self,prior,softClass,numSamples,inverse = False):
+		#Runs a likelihood weighted importance sampling update on a given gaussian
+		q = GM(); 
+		q.addG(Gaussian(prior.mean,prior.var,1)); 
+		
+		p = GM(); 
+		p.addG(prior); 
+
+		x = q.sample(numSamples); 
+
+		w = np.zeros(numSamples); 
+		for i in range(0,numSamples):
+			if(not inverse):
+				w[i] = p.pointEval(x[i])*self.pointEvalND(softClass,x[i])/q.pointEval(x[i]);
+			else:
+				w[i] = p.pointEval(x[i])*(1-self.pointEvalND(softClass,x[i]))/q.pointEval(x[i]); 
+
+		suma = sum(w); 
+		for i in range(0,len(w)):
+			w[i] = w[i]/suma; 
+
+		muHat = np.zeros(len(prior.mean)); 
+		for i in range(0,numSamples):
+			muHat = muHat + np.dot(x[i],w[i]); 
+ 
+		varHat = np.zeros(shape = (len(prior.mean),len(prior.mean))); 
+		for i in range(0,numSamples):
+			xi = np.asarray(x[i]); 
+			varHat = varHat + w[i]*np.outer(xi,xi); 
+		varHat = varHat - np.outer(muHat,muHat); 
+
+		muHat = muHat.tolist();
+		varHat = varHat.tolist(); 
+		if(len(prior.mean) == 1):
+			muHat = muHat[0]; 
+		if(len(prior.var)==1):
+			varHat = varHat[0][0]; 
+
+		#Calculate Weights
+		#sample a bunch from the prior
+		tmp = GM(); 
+		tmp.addG(Gaussian(prior.mean,prior.var,1)); 
+		tmpSamps = tmp.sample(500);
+
+		#Find the likelihood at each sampled point
+		probs = np.zeros(500).tolist()
+		for i in range(0,500):
+			if(not inverse):
+				probs[i] = self.pointEvalND(softClass,tmpSamps[i]); 
+			else:
+				probs[i] = 1-self.pointEvalND(softClass,tmpSamps[i]); 
+		#Find the average likelihood, which is the weight factor
+		sumSamp = sum(probs)/500; 
+
+		#Multiply the sampled weight factor by the previous weight
+		#or add in log space
+		logSamps = np.log(sumSamp); 
+		logWeight = np.log(prior.weight)+logSamps; 
+		#Extract final weight
+		weight = np.exp(logWeight); 
+
+		post = Gaussian(muHat,varHat,weight); 
+
+		return post;
 
 
 def test1DSoftmax():
@@ -1117,6 +1181,46 @@ def testDiscritization():
 	plt.show();
 
 
+def testLWIS():
+	pz = Softmax(); 
+	pose = [0,0,0]; 
+	pz.buildTriView(pose,length=2,steepness=10);
+	
+	prior = GM(); 
+	#prior.addG(Gaussian([1,0],[[1,0],[0,1]],1));
+
+	for i in range(0,100):
+		prior.addG(Gaussian([np.random.random()*4-2,np.random.random()*4-2],[[0.1,0],[0,0.1]],1))
+	prior.normalizeWeights(); 
+
+
+	post = GM(); 
+	for g in prior:
+		post.addG(pz.lwisUpdate(g,0,500,inverse=True)); 
+
+	#post.display(); 
+
+
+	[x1,y1,c1] = prior.plot2D(low=[-5,-5],high=[5,5],vis=False); 
+	[x3,y3,c3] = pz.plot2D(low=[-5,-5],high=[5,5],vis=False); 
+	[x2,y2,c2] = post.plot2D(low=[-5,-5],high=[5,5],vis=False); 
+
+	diffs = c2-c1; 
+	print(np.amax(c2)); 
+	print(np.amax(diffs)); 
+	print(np.amin(diffs));
+
+	fig,axarr = plt.subplots(4); 
+	axarr[0].contourf(x1,y1,c1); 
+	axarr[0].set_title('Prior'); 
+	axarr[1].contourf(x3,y3,c3); 
+	axarr[1].set_title('Likelihood'); 
+	axarr[2].contourf(x2,y2,c2); 
+	axarr[2].set_title('Posterior'); 
+	axarr[3].contourf(x2,y2,diffs); 
+	axarr[3].set_title('Diffs'); 
+	plt.show(); 
+
 if __name__ == "__main__":
 
 	#test1DSoftmax(); 
@@ -1130,8 +1234,8 @@ if __name__ == "__main__":
 	#testTriView(); 
 	#testMakeNear(); 
 	#testLogisticRegression(); 
-	testDiscritization(); 
-
+	#testDiscritization(); 
+	testLWIS(); 
 	
 
 

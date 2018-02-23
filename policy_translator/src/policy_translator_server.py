@@ -30,8 +30,10 @@ import tf
 import numpy as np
 import math
 import os
+import time
 
 # import voi # obs_mapping in callbacks
+from pose import Pose
 from gaussianMixtures import GM
 from POMDPTranslator import POMDPTranslator
 from belief_handling import rehydrate_msg, dehydrate_msg, discrete_rehydrate, discrete_dehydrate
@@ -51,7 +53,10 @@ class PolicyTranslatorServer(object):
         self.pt = POMDPTranslator()
 
         rospy.init_node('policy_translator_server')
-        self.listener = tf.TransformListener()
+        self.cop_pose = None
+#        self.listener = tf.TransformListener()
+#        cop_name = rospy.get_param('cop')
+#        self.cop_pose = Pose(cop_name)
         s = rospy.Service('translator',policy_translator_service,self.handle_policy_translator)
 
         # Observations -> likelihood queue
@@ -103,24 +108,39 @@ class PolicyTranslatorServer(object):
                             weights=weights_updated,
                             means=means_updated,
                             variances=variances_updated)
+        
+        # write observations for update to text file
+        qs = []
+        if obs is not None:
+            for observation in obs:
+                if observation is str:
+                    qs.append(observation[-1])
+                else:
+                    observation = ''.join(observation)
+                    qs.append(observation)
+            qs = ''.join(qs)
+        else:
+            qs = 'no observations'
+        with open(os.path.dirname(__file__) + "/../tmp/obs_{}.txt".format(time.time()),'a+') as f:
+            f.write(qs+'\n')
 
         return res
 
-    def tf_update(self,name):
-        '''
-        Get the pose of the robot making the service request using a ROS
-        transform ('tf') lookup and return that pose.
-        '''
-        return (0,0,0)
-        # name = name.lower()
-        # ref = "/" + name + "/odom"
-        # child = "/" + name + "/base_footprint"
-        # (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
-        # x = trans[0]
-        # y = trans[1]
-        # (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
-        # pose = [x, y, np.rad2deg(
-        # return pose
+    # def tf_update(self,name):
+    #     '''
+    #     Get the pose of the robot making the service request using a ROS
+    #     transform ('tf') lookup and return that pose.
+    #     '''
+    #     # return (0,0,0)
+    #     name = name.lower()
+    #     ref = "/" + name + "/odom"
+    #     child = "/" + name + "/base_footprint"
+    #     (trans, rot) = self.listener.lookupTransform(ref, child, rospy.Time(0))
+    #     x = trans[0]
+    #     y = trans[1]
+    #     (_, _, theta) = tf.transformations.euler_from_quaternion(rot)
+    #     pose = [x, y, np.rad2deg()]
+    #     return pose
 
     def translator_wrapper(self,name,obs,weights=None,means=None,variances=None):
         '''
@@ -131,7 +151,12 @@ class PolicyTranslatorServer(object):
         copPoses = []
 
         belief = rehydrate_msg(weights,means,variances)
-        position = self.tf_update(name)
+        if self.cop_pose is None:
+            self.cop_pose = Pose(name)
+        position = self.cop_pose.pose
+        position[2] = (position[2] * 180) / np.pi
+        
+#        position = self.tf_update(name)
 
         copPoses.append(position)
 
@@ -197,8 +222,8 @@ class PolicyTranslatorServer(object):
         """
         # strip the space from message
         question = human_push.data.lstrip()
-        room_num, model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(room_num, model, class_idx, sign)
+        room_num, model, class_idx, sign = self.pt.obs2models(question,self.cop_pose.pose)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("HUMAN PUSH OBS ADDED")
 
     def robot_pull_callback(self, data):
@@ -214,7 +239,7 @@ class PolicyTranslatorServer(object):
         """
         question = [data.question,data.ans]
         room_num, model, class_idx, sign = self.pt.obs2models(question)
-        self.queue.add(room_num, model, class_idx, sign)
+        self.queue.add(question, room_num, model, class_idx, sign)
         print("ROBOT PULL OBS ADDED")
 
 def Test_Callbacks():

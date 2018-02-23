@@ -42,7 +42,7 @@ class MainTester(object):
 	"""
         running_experiment = True
 
-        experiment_runspeed_hz = 4
+        experiment_runspeed_hz = .2;
         
         map_bounds = [-5, -2.5, 5, 2.5]
         max_num_robots = 2 # Maximum number of robots our experiment is designed for

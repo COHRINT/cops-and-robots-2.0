@@ -9,7 +9,7 @@ Classes: GM,Gaussian
 Allows for the creation, use, and compression of mixtures
 of multivariate normals, or Gaussian Mixture Models (GMM).
 
-
+Version 1.3.2.1: Added Mahalanobis Distance to mixands
 
 ***********************************************************
 '''
@@ -19,7 +19,7 @@ __author__ = "Luke Burks"
 __copyright__ = "Copyright 2016, Cohrint"
 __credits__ = ["Luke Burks", "Nisar Ahmed"]
 __license__ = "GPL"
-__version__ = "1.3.1"
+__version__ = "1.3.2.1"
 __maintainer__ = "Luke Burks"
 __email__ = "luke.burks@colorado.edu"
 __status__ = "Development"
@@ -71,6 +71,16 @@ class Gaussian:
 		if(self.weight != b.weight):
 			return False;
 		return True;
+
+	def mahalanobisDistance(self,point):
+                
+		p = np.matrix(point).T; 
+		mu = np.matrix(self.mean).T; 
+		var = np.matrix(self.var); 
+		
+		diff = p-mu; 
+		return np.sqrt(diff.T*var.I*diff).tolist()[0][0];
+
 
 
 
@@ -894,6 +904,7 @@ class GM:
 
 
 
+
 def TestGMProduct():
 	a = GM([1,8,3],[1,1,1],[1,1,1]);
 	b = GM([4,2,6],[1,1,1],[1,1,1]);
@@ -1090,6 +1101,13 @@ def TestDiscretization():
 	plt.show();
 
 
+def TestMahalanobisDistance():
+
+	pose = [0,0]; 
+	dist = Gaussian([3,0],[[3,0],[0,1]],1); 
+
+	print(dist.mahalanobisDistance(pose)); 
+
 if __name__ == "__main__":
 
 	#TestGMProduct();
@@ -1101,4 +1119,5 @@ if __name__ == "__main__":
 	#TestComparison();
 	#TestSample();
 	#TestSample2D();
-	TestDiscretization();
+	#TestDiscretization();
+	TestMahalanobisDistance(); 

@@ -31,6 +31,7 @@ import re
 from softmaxModels import Softmax
 from scipy.stats import multivariate_normal as mvn
 from obs_q_map import gen_questions
+import time
 
 
 class POMDPTranslator(object):
@@ -81,6 +82,7 @@ class POMDPTranslator(object):
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 			weightSums.append(tmpw);
+			
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
 		# print(questsHigh);
@@ -97,7 +99,7 @@ class POMDPTranslator(object):
 
 		#3. find position and questions from lower level pomdp for that room
 
-
+                # DO NOT COMMENT THESE LINES !!!!!!!!!!!!!!
 		roomConversion = [5,4,0,2,3,1];
 		room_conv = roomConversion[room];
 
@@ -119,8 +121,8 @@ class POMDPTranslator(object):
 			roomCount+=1;
 
 		if(copRoom == room_conv):
-			displacement = [0,0,0];
 			dela = 1.0
+			displacement = [dela,0,0];
 			if(movement ==0):
 				displacement = [-dela,0,0];
 			elif(movement == 1):
@@ -171,13 +173,18 @@ class POMDPTranslator(object):
 		#questions = self.getQuestionStrings(questsFull);
 		questions = [];
 		for i in range(0,len(questsFull)):
-			print questsFull
-			print i
-			print questsFull[i][0]
-			print questsFull[i][1]
+			#print questsFull
+			#print i
+			#print questsFull[i][0]
+			#print questsFull[i][1]
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
                         
+		#5.1 Make new belief map with goal_pose on it
+		pose = copPoses[-1]
+		#print("MAP COP POSE TO PLOT: {}".format(pose))
+		self.makeBeliefMap(newBel,pose,goal_pose); 
+
 
 		#6. return new belief and goal pose
 		return [newBel,goal_pose,[questions,questsFull]];
@@ -248,6 +255,13 @@ class POMDPTranslator(object):
 		questWeights = [];
 
 		for i in a:
+			#print(i); 
+			if(i[1][1] != 0 and i[1][1] != 4):
+				i[1][1] -= 1; 
+			elif(i[1][1] == 0):
+				i[1][1] = 3; 
+			elif(i[1][1] == 4):
+				i[1][1] = 7; 
 			if(i[1][1] not in quests):
 				quests.append(i[1][1]);
 				questWeights.append(i[0]);
@@ -287,7 +301,160 @@ class POMDPTranslator(object):
 				suma += a.Gs[k].weight*b.Gs[l].weight*mvn.pdf(b.Gs[l].mean,a.Gs[k].mean, np.matrix(a.Gs[k].var)+np.matrix(b.Gs[l].var));
 		return suma;
 
-	def beliefUpdate(self, belief, responses = None,copPoses = None):
+
+	def assignRooms(self,belief):
+		#1. partition means into separate GMs, 1 for each room
+		allBels = [];
+                allBounds = []
+		for room in self.map_.rooms:
+			tmp = GM();
+			tmpw = 0;
+                        
+			allBounds.append([self.map_.rooms[room]['min_x'],self.map_.rooms[room]['min_y'],self.map_.rooms[room]['max_x'],self.map_.rooms[room]['max_y']]);
+			for g in belief:
+				m = [g.mean[2],g.mean[3]];
+                                # if mean is inside the room
+				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
+					tmp.addG(deepcopy(g));
+					tmpw+=g.weight;
+                     
+                        if(tmp.size==0):
+            	                centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
+            	                centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
+            	                var = np.identity(4).tolist(); 
+            	                tmp.addG(Gaussian([0,0,centx,centy],var,0.0001));                  
+			        allBels.append(tmp);
+		return allBels;
+
+
+	def beliefUpdate(self,belief,responses = None, copPoses = None):
+		# #Create Cop View Cone
+		# pose = copPoses[-1];
+		# viewCone = Softmax();
+		# viewCone.buildTriView(pose,length=1,steepness=10);
+		# for i in range(0,len(viewCone.weights)):
+		# 	viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+
+		#Update Cop View Cone
+		# newerBelief = GM(); 
+		# for j in range(1,5):
+		# 	tmpBel = viewCone.runVBND(belief,j); 
+		# 	if(j==1):
+		# 		tmpBel.scalerMultiply(.4); 
+		# 	newerBelief.addGM(tmpBel);
+        
+		#Dont Update Cop View Cone
+		#newerBelief = belief
+
+		#Distance Cutoff
+		#How many standard deviations away from the cop should gaussians be updated with view cone? 
+		distCut = 2; 
+
+		#Update Cop View Cone Using LWIS
+		newerBelief = GM(); 
+
+		for pose in copPoses:
+			#Create Cop View Cone
+			#pose = copPoses[-1];
+			viewCone = Softmax();
+			viewCone.buildTriView(pose,length=1,steepness=10);
+			for i in range(0,len(viewCone.weights)):
+				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
+			for g in belief:		
+				#If the gaussian is suffciently close to the pose
+				#based on mahalanobis distance.
+				#Logic: M-dist basically says how many standard devs away the point is from the mean
+				#If it's more than distCut, it should be left alone
+				gprime = Gaussian(); 
+				gprime.mean = [g.mean[2],g.mean[3]]; 
+				gprime.var = [[g.var[2][2],g.var[2][3]],[g.var[3][2],g.var[3][3]]];
+				gprime.weight = g.weight; 
+				#print(gprime.mean,gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5])); 
+				if(gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]) <= distCut):
+					print("************MAHALALALALALA******************")
+					newG = viewCone.lwisUpdate(g,0,500,inverse=True); 
+					newerBelief.addG(newG); 
+				else:
+				    newerBelief.addG(g); 
+					#after each bayes update for the view cone, re-normalize
+					#Just to be sure, it never hurts to check   
+			newerBelief.normalizeWeights(); 
+#		newerBelief= belief
+        
+
+		#Update From Responses
+		if(responses is not None):
+			for res in responses:
+				roomNum = res[0];
+				mod = res[1];
+				clas = res[2];
+				sign = res[3];
+
+				if(roomNum == 0):
+					#apply to all
+					if(sign==True):
+						newerBelief = mod.runVBND(newerBelief,0);
+					else:
+						tmp = GM();
+						for j in range(1,mod.size):
+							tmp.addGM(mod.runVBND(newerBelief,j));
+						newerBelief = tmp;
+				else:
+					print('ROOM NUM: {}'.format(roomNum))
+					#apply to all rooms
+					if(sign == True):
+						newerBelief = mod.runVBND(newerBelief,clas);
+					else:
+						tmp = GM();
+						for j in range(1,mod.size):
+							if(j!=clas):
+								tmp.addGM(mod.runVBND(newerBelief,j));
+						newerBelief = tmp;
+				#Each response recieves a full bayes update, so we need to normalize each time
+				newerBelief.normalizeWeights(); 
+		
+		#Condense the belief
+		newerBelief.condense(15); 
+
+                print("*********************")
+		print(newerBelief.size)
+                print("*********************")
+
+		#Make sure there is a belief in each room
+		#A bit of a hack, but if this isn't here the lower level query fails
+		# for room in self.map_.rooms:
+		# 	centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
+	 #        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
+	 #        var = np.identity(4).tolist();  
+	 #        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
+
+		#3. recombine beliefs (if we're still doing that sort of thing)
+		newBelief = newerBelief
+		newBelief.normalizeWeights();
+
+
+		#4. update cops position to current position
+		for g in newBelief:
+			g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
+			g.var[0][0] = 0.1;
+			g.var[0][1] = 0;
+			g.var[1][0] = 0;
+			g.var[1][1] = 0.1;
+
+		#5. update belief with robber dynamics
+		for g in newBelief:
+			g.var[2][2] += 0.05;
+			g.var[3][3] += 0.05;
+
+                print("*********************")
+		print(newBelief.size)
+                print("*********************")
+
+
+                return newBelief;
+
+
+	def oldbeliefUpdate(self, belief, responses = None,copPoses = None):
 		print('UPDATING BELIEF')
 		#1. partition means into separate GMs, 1 for each room
 		allBels = [];
@@ -337,7 +504,11 @@ class POMDPTranslator(object):
 		for i in range(0,len(allBels)):
 			newerBelief = GM(); 
 			for j in range(1,5):
-				newerBelief.addGM(viewCone.runVBND(allBels[i],j)); 
+				tmpBel = viewCone.runVBND(allBels[i],j); 
+				if(j==1):
+					tmpBel.scalerMultiply(.8); 
+				newerBelief.addGM(tmpBel); 
+
 			allBels[i]=newerBelief;
 
 		for i in range(0,len(allBels)):
@@ -399,7 +570,7 @@ class POMDPTranslator(object):
 				g.mean[3] = min(g.mean[3],allBounds[allBels.index(gm)][3]+0.01);
 
 		for i in range(0,len(allBels)):
-                        allBels[i].condense(10);
+                        allBels[i].condense(15);
 #			allBels[i] = allBels[i].kmeansCondensationN(6)
 
 
@@ -420,8 +591,8 @@ class POMDPTranslator(object):
 
 		#5. add uncertainty for robber position
 		for g in newBelief:
-			g.var[2][2] += 1
-			g.var[3][3] += 1
+			g.var[2][2] += 0;
+			g.var[3][3] += 0;
 
 		# newBelief.normalizeWeights();
 
@@ -434,7 +605,7 @@ class POMDPTranslator(object):
 
 		return newBelief;
 
-	def makeBeliefMap(self,belief,copPose = [0,0,0]):
+	def makeBeliefMap(self,belief,copPose = [0,0,0],goal_pose = [0,0,0]):
 
 		print("MAKING NEW BELIEF MAP!")
 		fig = Figure()
@@ -457,12 +628,15 @@ class POMDPTranslator(object):
 		    y = m.objects[obj].y_len;
 		    theta = m.objects[obj].orient;
 		    col = m.objects[obj].color
-		    tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		    # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		  #   if(m.objects[obj].shape == 'oval'):
 		  #       # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		  #   else:
 				# tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 				# #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
+	            tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+                    # tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 		    ax.add_patch(tmp)
 
 		bearing = -90;
@@ -476,9 +650,23 @@ class POMDPTranslator(object):
 		cop = patches.Circle((copPose[0],copPose[1]),radius=0.2,fc = 'white',ec='black');
 		ax.add_patch(cop)
 
+		#Add cops goal pose as red target
+		ax.scatter(goal_pose[0],goal_pose[1],marker='x',s=50,c='r'); 
+#		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30); 
+
+		#Add room labels
+		ax.text(-3,2,'Kitchen'); 
+		ax.text(-5,-1.5,'Dining\n Room',fontsize=10); 
+		ax.text(-3,-1.5,'Study'); 
+		ax.text(2,-1.5,'Library'); 
+		ax.text(-1,0,'Hallway'); 
+		ax.text(3,2,'Billiard Room',fontsize=10); 
+
+
 		ax.axis('scaled')
 		print('about to save plot')
 		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
+		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief_{}.png'.format(time.time())),bbox_inches='tight',pad_inches=0)
 		#canvas.print_figure('tmpBelief.png',bbox_inches='tight',pad_inches=0)
 
 
@@ -504,7 +692,7 @@ class POMDPTranslator(object):
 
 		return (obj.centroid[0]-s2, obj.centroid[1]-s1)
 
-	def obs2models(self,obs):
+	def obs2models(self,obs,pose):
 		"""Map received observation to the appropriate softmax model and class.
 		Observation may be a str type with a pushed observation or a list with
 		question and answer.
@@ -537,6 +725,15 @@ class POMDPTranslator(object):
 						print self.map_.rooms[room]['objects']
 						print room_num
 				break
+
+		# if observation is relative to the cop
+		if re.search('cop',obs.lower()):
+			model = Softmax()
+			model.buildOrientedRecModel((pose[0],pose[1]),pose[2]*180/np.pi,0.5,0.5)
+			room_num = 0
+			for i in range(0,len(model.weights)):
+				model.weights[i] = [0,0,model.weights[i][0],model.weights[i][1]]
+
 		# if no model is found, try looking for room mentioned in observation
 		if model is None:
 			for room in self.map_.rooms:
