@@ -360,6 +360,20 @@ class POMDPTranslator(object):
 		#Dont Update Cop View Cone
 		#newerBelief = belief
 
+		#4. update cops position to current position
+		for g in belief:
+			g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
+			g.var[0][0] = 0.1;
+			g.var[0][1] = 0;
+			g.var[1][0] = 0;
+			g.var[1][1] = 0.1;
+
+		#5. update belief with robber dynamics
+		for g in belief:
+			g.var[2][2] += 0.05;
+			g.var[3][3] += 0.05;
+
+
 		#Distance Cutoff
 		#How many standard deviations away from the cop should gaussians be updated with view cone? 
 		distCut = 2; 
@@ -446,19 +460,19 @@ class POMDPTranslator(object):
 		newBelief = newerBelief
 		newBelief.normalizeWeights();
 
+		#Moved to before observation updates
+		# #4. update cops position to current position
+		# for g in newBelief:
+		# 	g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
+		# 	g.var[0][0] = 0.1;
+		# 	g.var[0][1] = 0;
+		# 	g.var[1][0] = 0;
+		# 	g.var[1][1] = 0.1;
 
-		#4. update cops position to current position
-		for g in newBelief:
-			g.mean = [copPoses[-1][0],copPoses[-1][1],g.mean[2],g.mean[3]];
-			g.var[0][0] = 0.1;
-			g.var[0][1] = 0;
-			g.var[1][0] = 0;
-			g.var[1][1] = 0.1;
-
-		#5. update belief with robber dynamics
-		for g in newBelief:
-			g.var[2][2] += 0.05;
-			g.var[3][3] += 0.05;
+		# #5. update belief with robber dynamics
+		# for g in newBelief:
+		# 	g.var[2][2] += 0.05;
+		# 	g.var[3][3] += 0.05;
 
                 print("*********************")
 		print(newBelief.size)
