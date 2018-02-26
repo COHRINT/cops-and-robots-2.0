@@ -47,9 +47,22 @@ import cv2
 from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge, CvBridgeError
 
+
 class PolicyTranslatorServer(object):
 
     def __init__(self, check="MAP"):
+
+        #Late hack to gather data
+        self.allObs = [];
+        self.fileName = 'obs_{}.npy'.format(time.clock()); 
+
+        #Yes this is probably the worst way to adhoc a timer: Luke
+        self.questionCounter = 0; 
+        #The interface will only recieve questions every "questionDivide" updates
+        #Effectively,the interface will update at a rate 'questionDivide' times slower for robot pull
+        #But everything else will work normally
+        self.questionDivide = 10; 
+
         self.pt = POMDPTranslator()
 
         rospy.init_node('policy_translator_server')
@@ -109,6 +122,21 @@ class PolicyTranslatorServer(object):
                             means=means_updated,
                             variances=variances_updated)
         
+        #Hack observations into npy file
+        qs = []
+        if obs is not None:
+            for observation in obs:
+                if observation is str:
+                    qs.append(observation[-1]+'\n')
+                else:
+                    observation = ''.join(str(e) for e in observation[-1])
+                    qs.append(observation+'\n')
+            qs = ''.join(qs)
+        else:
+            qs = 'no observations'
+        allObs.append(qs); 
+        np.save(open(self.fileName),self.allObs);
+
         # write observations for update to text file
         qs = []
         if obs is not None:
@@ -168,7 +196,9 @@ class PolicyTranslatorServer(object):
         q_msg.qids = [0 for x in range(0,len(questions[0]))]
         q_msg.questions = questions[0]
         q_msg.weights = [0 for x in range(0,len(questions[0]))]
-        self.q_pub.publish(q_msg)
+        if(self.questionCounter%self.questionDivide == 0):
+            self.q_pub.publish(q_msg)
+        self.questionCounter += 1; 
 
         # Publish the saved image to a rosptopic
         print("Reading image")

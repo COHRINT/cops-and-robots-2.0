@@ -20,7 +20,8 @@ import rospy
 from std_msgs.msg import Bool
 from core.robo_tools.pose import Pose
 from core.robo_tools.planner import GoalPlanner
-
+import time
+import numpy as np
 
 class Robot(object):
     """Class definition for the generic robot object.
@@ -40,12 +41,19 @@ class Robot(object):
 
     def __init__(self, name, goal_planner_type='stationary'):
         
+        
+
         # Stop attribute
 #        rospy.Subscriber('/'+name.lower()+'/stop', Bool, self.stop_callback)
         
         # Object attributes
         self.name = name.lower()
         self.Pose = Pose(self.name)
+
+        #Late hack for saving positions
+        self.allPoses = []; 
+        self.fileName = name+'_'+'goal_planner_type_'+str(time.clock())+'.npy'; 
+
 
         # Select and instantiate the goal planner
         if goal_planner_type == 'stationary':
@@ -98,6 +106,11 @@ class Robot(object):
         
         print(self.name + " pose: " + str(self.Pose.pose))
         
+
+        #Maybe save the positions here? 
+        self.allPoses.append(self.Pose.pose); 
+        np.save(open(self.fileName),self.allPoses); 
+
         # Update the robot's goal pose
         self.goal_planner.update(self.Pose.pose) # generally goes to planner.py update()
 

@@ -64,7 +64,18 @@ class POMDPTranslator(object):
 		self.rooms_map = {hall:'hallway',bill:'billiard room',stud:'study',libb:'library',dinn:'dining room',kitt:'kitchen'}
 		self.rooms_map_inv = {'hallway':hall,'billiard room':bill,'study':stud,'library':libb,'dining room':dinn,'kitchen':kitt}
 
+
+		#Late hack to save everything
+		self.allBels = []; 
+		self.fileName = 'beliefs_{}.npy'.format(time.clock()); 
+
+
 	def getNextPose(self,belief,obs=None,copPoses=None):
+
+		#Late hack to save everything
+		self.allBels.append(belief); 
+		np.save(open(self.fileName),self.allBels); 
+
 		print('GETTING NEW POSE')
 		#0. update belief
 		newBel = self.beliefUpdate(belief,obs,copPoses);
