@@ -100,7 +100,7 @@ class robberEvasion():
 		while not rospy.is_shutdown():
 			# Choose destination of least cost
 			curCost, curDestination = self.floydChooseDestination()
-			rospy.loginfo("Stealing goods at " + curDestination + " with danger level of " + str(curCost))
+			rospy.loginfo("Stealing goods at " + curDestination + " with safety level of " + str(curCost))
 
 			# Travel to destination
 			goal = mov_msgs.MoveBaseGoal()
@@ -118,10 +118,10 @@ class robberEvasion():
 			# While robber is travelling to destination, evaluate the path it is following every few seconds
 			# state = self.mover_base.get_state()
 			pathFailure = False
-			while (pathFailure==False) or (self.isAtGoal==False): #(status[state]=='PENDING' or status[state]=='ACTIVE') and
+			while (pathFailure==False) and (self.isAtGoal==False): #(status[state]=='PENDING' or status[state]=='ACTIVE') and
 				# Evaluate cost of path
 				newCost = self.evaluateFloydCost(self.objLocations[curDestination], curDestination)
-				print ("New Cost: " + str(newCost))
+				print ("New Value: " + str(newCost))
 
 				# Check if path is too dangerous
 				if (newCost < curCost*dangerWeight):
@@ -141,8 +141,6 @@ class robberEvasion():
 
 				# if (status[state] == "SUCCEEDED"):
 				# 	self.isAtGoal = True
-
-			print("lol")
 
 
 			# Check what robber has accomplished
