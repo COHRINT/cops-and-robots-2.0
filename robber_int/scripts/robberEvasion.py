@@ -92,8 +92,8 @@ class robberEvasion():
 
 		# Evasion Parameters
 		reevaluationTime = 3 # Time to wait before reevaluating the path robber is following
-		dangerWeight = .1# Amount of danger before robber should choose a new path
-		self.copDangerVsObjValueWeight = .75
+		dangerWeight = .5 # Amount of danger before robber should choose a new path
+		self.copDangerVsObjValueWeight = .75 # cost = weight * copCost + (1-weight) * objValue
 
 
 		# Begin Evasion
