@@ -12,9 +12,9 @@ robots:
   Deckard:
     goal_planner: simple
   Pris:
-    goal_planner: simple
+    goal_planner: pomdp
   Roy:
     goal_planner: simple
   Zhora:
-    goal_planner: rob_int
+    goal_planner: simple
 

@@ -52,8 +52,7 @@ class Robot(object):
 
         #Late hack for saving positions
         self.allPoses = []; 
-        self.fileName = name+'_'+'goal_planner_type_'+str(time.clock())+'.npy'; 
-
+        self.fileName = name+'_'+'goal_planner_type_'+str(time.time())[0:-4]+'.npy'; 
 
         # Select and instantiate the goal planner
         if goal_planner_type == 'stationary':
@@ -109,7 +108,7 @@ class Robot(object):
 
         #Maybe save the positions here? 
         self.allPoses.append(self.Pose.pose); 
-        np.save(open(self.fileName),self.allPoses); 
+        np.save(open(self.fileName,'w'),self.allPoses); 
 
         # Update the robot's goal pose
         self.goal_planner.update(self.Pose.pose) # generally goes to planner.py update()
