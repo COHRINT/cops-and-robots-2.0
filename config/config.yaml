@@ -16,5 +16,5 @@ robots:
   Roy:
     goal_planner: simple
   Zhora:
-    goal_planner: simple
+    goal_planner: rob_int
 

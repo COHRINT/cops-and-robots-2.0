@@ -126,6 +126,11 @@ class robberEvasion():
 				# Check if path is too dangerous
 				if (newCost < curCost*dangerWeight):
 					pathFailure = True
+				robGridLocY, robGridLocX = self.convertPoseToGridLocation(self.robLoc.pose.position.y, self.robLoc.pose.position.x)
+				poseGridLocY, poseGridLocX = self.convertPoseToGridLocation(self.objLocations[curDestination].pose.position.y,  self.objLocations[curDestination].pose.position.x)
+				if (robGridLocX == poseGridLocX) and (robGridLocY == poseGridLocY):
+					self.isAtGoal = True
+					pathFailure = False
 
 				# Display Costmap
 				# copGridLocY, copGridLocX = self.convertPoseToGridLocation(self.copLoc.pose.position.y , self.copLoc.pose.position.x)
@@ -141,6 +146,7 @@ class robberEvasion():
 
 				# if (status[state] == "SUCCEEDED"):
 				# 	self.isAtGoal = True
+			
 
 
 			# Check what robber has accomplished
@@ -150,12 +156,19 @@ class robberEvasion():
 			elif self.isAtGoal:
 				rospy.loginfo("MWUAHAHAHAHAHA You've successfully stolen valuable goods from the " + curDestination)
 				self.isAtGoal = False
-				del objLocations[vertexKeys[i]]
-				del objNames[maximum]
+				del self.objLocations[curDestination]
+				del self.objNames[curDestination]
+			
+			if not self.objLocations:
+				break
+
 			# elif status[state] != 'SUCCEEDED': # Failure in getting to object
 			# 	rospy.loginfo("Robber failed to reach object with error code " + str(state) + ": " + status[state] + ". Finding something else to steal.")
 			# else: # SUCCESSFUL ROBBERY
 			# 	rospy.loginfo("MWUAHAHAHAHAHA You've successfully stolen valuable goods from the " + curDestination)
+
+		while True:
+			rospy.loginfo("All goods stolen. The pigs will never win...")
 
 	# Sends goal of robber to robber_evasion_planner
 	def handleRobberSrv(self, req):
