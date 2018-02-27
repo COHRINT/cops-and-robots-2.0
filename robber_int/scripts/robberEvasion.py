@@ -169,6 +169,7 @@ class robberEvasion():
 
 		while True:
 			rospy.loginfo("All goods stolen. The pigs will never win...")
+			rospy.sleep(30)
 
 	# Sends goal of robber to robber_evasion_planner
 	def handleRobberSrv(self, req):
