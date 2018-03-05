@@ -54,7 +54,7 @@ class PolicyTranslatorServer(object):
 
         #Late hack to gather data
         self.allObs = [];
-        self.fileName = 'obs_{}.npy'.format(time.clock()); 
+        self.fileName = 'theobsfile_{}.npy'.format(str(time.time())[0:-4]); 
 
         #Yes this is probably the worst way to adhoc a timer: Luke
         self.questionCounter = 0; 
@@ -134,8 +134,14 @@ class PolicyTranslatorServer(object):
             qs = ''.join(qs)
         else:
             qs = 'no observations'
-        allObs.append(qs); 
-        np.save(open(self.fileName),self.allObs);
+        self.allObs.append(qs); 
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+        f = open(os.path.dirname(__file__) + self.fileName,'w'); 
+        print('Saving obs at'); 
+        print(f); 
+        print(os.getcwd()); 
+        np.save(f,self.allObs);
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
         # write observations for update to text file
         qs = []

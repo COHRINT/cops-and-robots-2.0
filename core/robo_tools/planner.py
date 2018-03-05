@@ -28,13 +28,13 @@ class GoalPlanner(object):
     Publishes goals to the rostopic: /robot_name/move_base_simple/goal
     """
     reached_pose_proximity = 0.5 # distance until a pose is reached
-    
+
     __metaclass__ = ABCMeta
 
     def __init__(self, robot_name=None, robot_pose=None):
         """
         Initializes a goalPlanner object
-        
+
         Parameters
         ---------
         robot_pose : simply to initialize self.prev_goal_pose for when update() gets called
@@ -78,7 +78,7 @@ class GoalPlanner(object):
             return True
         else:
             return False
-        
+
     @abstractmethod
     def get_goal_pose(self,pose=None):
         """Returns a goal pose using the subclasser's get_goal_pose method
@@ -92,7 +92,7 @@ class GoalPlanner(object):
 
         """
         pass
-        
+
     def update(self,pose=None):
         """
         Updates the goal pose of the robot
@@ -100,11 +100,11 @@ class GoalPlanner(object):
         ---------
         positions [x,y, degrees] floats
         """
-        
+
 #        print("ENTERING GOAL PLANNER UDPATE")
 
         old_goal_pose = self.prev_goal_pose # 1st time = None
-            
+
         new_goal_pose = self.get_goal_pose(pose)
 
         print(self.robot_name + "'s goal: " +str(new_goal_pose))
@@ -116,19 +116,19 @@ class GoalPlanner(object):
         # record the new goal pose for the next time around
         self.prev_goal_pose = new_goal_pose
         self.prev_pose = pose
-        
+
 #        set_trace()
 
     def is_new_pose(self,old_pose,new_pose):
         """
         Checks if the old_pose and new_pose are roughly equal
 
-        Returns 
+        Returns
         -------
         True : poses different
         False : poses roughly equal
         """
-        
+
         if old_pose is not None and new_pose is not None:
             if new_pose[0] != old_pose[0] or new_pose[1] != old_pose[1]:
 #                print("New Goal pose")
@@ -139,7 +139,7 @@ class GoalPlanner(object):
         else:
 #            print("New pose")
             return True
-        
+
 
     def create_ROS_goal_message(self, goal_pose=None):
         """
@@ -150,12 +150,12 @@ class GoalPlanner(object):
         """
         print("----------------"+self.robot_name+" new goal----------------")
         rospy.sleep(0.5) # sleep so that the msg get's published (doesn't publish if we don't pause here..)
-        
+
         if goal_pose is None:
             print("No goal pose given to the create_ROS_goal_message function")
             print("Check planner.py")
             raise
-        
+
         move_base_goal = PoseStamped()
 
         theta = np.rad2deg(goal_pose[2])
@@ -169,7 +169,7 @@ class GoalPlanner(object):
         move_base_goal.header.frame_id = '/map'
         move_base_goal.header.stamp = rospy.Time.now()
         self.pub.publish(move_base_goal)
-        
+
     def return_position(self):
         print("Returning " + self.robot_name + " to original pose: " +str(self.original_pose))
         self.create_ROS_goal_message(self.original_pose)

@@ -67,14 +67,20 @@ class POMDPTranslator(object):
 
 		#Late hack to save everything
 		self.allBels = []; 
-		self.fileName = 'beliefs_{}.npy'.format(time.clock()); 
+		self.fileName = 'thebeliefsfile_{}.npy'.format(str(time.time())[0:-4]); 
 
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
 		#Late hack to save everything
 		self.allBels.append(belief); 
-		np.save(open(self.fileName),self.allBels); 
+		f =open(os.path.dirname(__file__) + self.fileName,'w'); 
+		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+		print('Saving Beliefs at:'); 
+		print(f); 
+		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+		print(os.getcwd()); 
+		np.save(f,self.allBels); 
 
 		print('GETTING NEW POSE')
 		#0. update belief
