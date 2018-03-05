@@ -117,8 +117,9 @@ class POMDPTranslator(object):
 		#3. find position and questions from lower level pomdp for that room
 
                 # DO NOT COMMENT THESE LINES !!!!!!!!!!!!!!
-		roomConversion = [5,4,0,2,3,1];
-		room_conv = roomConversion[room];
+		#roomConversion = [5,4,0,2,3,1];
+		#room_conv = roomConversion[room];
+		room_conv = room; 
 
 		[movement,questsLow,weightsLow] = self.getLowerAction(belief,room_conv);
 
