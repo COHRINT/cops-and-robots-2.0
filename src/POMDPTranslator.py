@@ -370,8 +370,8 @@ class POMDPTranslator(object):
 
 		#5. update belief with robber dynamics
 		for g in belief:
-			g.var[2][2] += 0.05;
-			g.var[3][3] += 0.05;
+			g.var[2][2] += 0.03;
+			g.var[3][3] += 0.03;
 
 
 		#Distance Cutoff

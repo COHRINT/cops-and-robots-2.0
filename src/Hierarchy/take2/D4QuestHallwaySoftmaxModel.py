@@ -122,7 +122,7 @@ class ModelSpec:
 								if(np.sqrt((x1-x2)**2 + (y1-y2)**2) < 1):
 									self.r[i].addG(Gaussian(np.array(([x1*cutFactor,y1*cutFactor,x2*cutFactor,y2*cutFactor])-np.array(self.delA[i])).tolist(),var,100));
 
-
+			
 
 			# for r in self.r:
 			# 	r.display(); 
@@ -139,4 +139,4 @@ if __name__ == '__main__':
 	a = ModelSpec(); 
 	a.buildTransition(); 
 	a.buildReward(gen = True); 
-	a.buildObs(gen = True); 
+	a.buildObs(gen = False); 
