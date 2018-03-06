@@ -1,6 +1,6 @@
-Useful aliases for running the CnR experiment
-Append to ~/.bashrc file
-*File routes need to be configured per computer*
+# Useful aliases for running the CnR experiment
+# Append to ~/.bashrc file
+# *File routes need to be configured per computer*
 
 # Have ROS sourced first
 source /opt/ros/kinetic/setup.bash
@@ -14,6 +14,7 @@ alias deck='ssh odroid@deckard'
 alias pris='ssh odroid@pris'
 
 alias pol='roslaunch policy_translator policy_translator.launch'
+alias rint='rosrun robber_intelligence robberEvasion.py'
 alias vsys='roslaunch ~/catkin_ws/src/cops-and-robots-2.0/launch/vicon_sys.launch'
 alias gui='cnr2;cd ~/catkin_ws/src/cops-and-robots-2.0;python gui.py'
 alias obsd='roslaunch observation_interface interface.launch cop:=deckard'
