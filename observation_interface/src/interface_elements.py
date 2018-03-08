@@ -51,9 +51,9 @@ groupbox_style = "\
                         font-size: 12pt;    \
                         font-weight: 10;    \
                         text-align: center; \
-                        background-color: #546E7A; \
                     }"
 
+# background-color:  \546E7A;
 yes_btn_style = "\
                 QPushButton {   \
                     color: white;   \
@@ -88,8 +88,9 @@ question_text_style = "\
                         QLabel {    \
                             font: bold; \
                             font-size: 9pt;   \
-                            color: white;  \
                         }"
+
+                        # color: white;  \
 
 send_btn_style = "\
                     QPushButton {   \
@@ -112,15 +113,15 @@ widget_title_style = "\
                     font-size: 12pt;    \
                     font-weight: 10;    \
                     text-align: center; \
-                    color: white;  \
                 }"
+                # color: white;  \
 
 answer_indicator_style = "\
                             .QLabel {   \
                                 max-width: 10px;    \
                                 max-height: 20px;   \
-                                color: white;  \
                             }"
+                            # color: white;  \
 
 
 class RobotPull(QWidget):
