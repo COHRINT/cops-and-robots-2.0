@@ -155,8 +155,8 @@ class PolicyTranslatorServer(object):
             qs = ''.join(qs)
         else:
             qs = 'no observations'
-        with open(os.path.dirname(__file__) + "/../tmp/obs_{}.txt".format(time.time()),'a+') as f:
-            f.write(qs)
+        # with open(os.path.dirname(__file__) + "/../tmp/obs_{}.txt".format(time.time()),'a+') as f:
+        #     f.write(qs)
 
         return res
 

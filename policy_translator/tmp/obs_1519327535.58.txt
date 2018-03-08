@@ -1,7 +1,0 @@
-Is Zhora inside the library?True
-Is Zhora inside the dining room?True
-Is Zhora inside the kitchen?True
-Is Zhora behind the fern?True
-
-
-

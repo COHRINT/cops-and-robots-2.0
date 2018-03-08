@@ -1,5 +1,0 @@
-Is Zhora inside the study?True
-Is Zhora inside the library?False
-
-
-

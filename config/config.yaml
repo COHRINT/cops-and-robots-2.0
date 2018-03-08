@@ -1,3 +1,4 @@
+
 # 1) Set map 'mapA', 'mapB', 'mapC'
 # 2) Set 'cop', 'rob', or 'no' (include the single quotes)
 # 3) Set goal_planner to 'pomdp' 'simple' 'stationary' 'rob_int' ... etc
