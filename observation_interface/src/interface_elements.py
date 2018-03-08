@@ -43,6 +43,7 @@ PullQuestion_style = "\
                         .QWidget {   \
                             min-width: 300px;   \
                             max-width: 300px;   \
+                            background-color: #546E7A; \
                         }"
 
 groupbox_style = "\
@@ -50,6 +51,7 @@ groupbox_style = "\
                         font-size: 12pt;    \
                         font-weight: 10;    \
                         text-align: center; \
+                        background-color: #546E7A; \
                     }"
 
 yes_btn_style = "\
@@ -86,6 +88,7 @@ question_text_style = "\
                         QLabel {    \
                             font: bold; \
                             font-size: 9pt;   \
+                            color: white;  \
                         }"
 
 send_btn_style = "\
@@ -109,12 +112,14 @@ widget_title_style = "\
                     font-size: 12pt;    \
                     font-weight: 10;    \
                     text-align: center; \
+                    color: white;  \
                 }"
 
 answer_indicator_style = "\
                             .QLabel {   \
                                 max-width: 10px;    \
                                 max-height: 20px;   \
+                                color: white;  \
                             }"
 
 
@@ -389,8 +394,8 @@ object_relations = ["behind","in front of","left of","right of"] # removed 'near
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster","the cop"] 
-            # removed Deckard from objects as no voi questions exist for Deckard. 
+            "the fridge","the mars poster","the cop"]
+            # removed Deckard from objects as no voi questions exist for Deckard.
             # See voi.py in policy_translator package
             # added 'the cop'
 
@@ -585,7 +590,7 @@ class MapDisplay(QWidget):
         self.format = QImage.Format_RGB888
 
         self.initUI()
-        
+
 
     def initUI(self):
         self.main_layout = QVBoxLayout()
@@ -604,7 +609,7 @@ class MapDisplay(QWidget):
         self.show()
 
     def map_update(self, map_msg): # callback for the policy translator publisher
-        # load image from the topic 
+        # load image from the topic
         image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
         height, width, channel = image.shape
         bytesPerLine = 3 * width
