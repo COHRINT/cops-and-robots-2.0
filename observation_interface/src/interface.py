@@ -14,7 +14,7 @@ interface_elements.py):
 
 __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
-__credits__ = ["Ian Loefgren"]
+__credits__ = ["Ian Loefgren", "Sousheel Vunnam"]
 __license__ = "GPL"
 __version__ = "2.0"
 __maintainer__ = "Ian Loefgren"
@@ -46,14 +46,8 @@ title_style = "\
                         font-size: 25pt;    \
                         font-weight: 100; \
                         text-align: center;    \
+                        color: white;  \
                     }"
-# QLabel {    \
-#     font-family: Helvetica Neue;    \
-#     font-size: 25pt;    \
-#     font-weight: 100; \
-#     text-align: center;    \
-# }"
-# color: white;  \
 
 logo_style = "\
                     QLabel {    \
@@ -64,10 +58,9 @@ logo_style = "\
 # Using material design colors: https://material.io/guidelines/style/color.html#color-color-palette
 main_widget_style = "\
                         QWidget {   \
-                            background-color: lightgray;     \
+                            background-color: #263238;     \
                         }"
-#
-# #263238;
+# lightgray
 
 class ObservationInterface(QMainWindow):
 
@@ -128,8 +121,8 @@ class ObservationInterface(QMainWindow):
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Kitchen')
 
-        self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
-        # self.main_layout.addWidget(self.cop_video,1,11,4,1,Qt.AlignCenter)
+        # self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
+        self.main_layout.addWidget(self.cop_video,1,11,4,1,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_2,3,0,2,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_3,5,0,2,2,Qt.AlignCenter)
@@ -141,8 +134,8 @@ class ObservationInterface(QMainWindow):
         self.belief_map = MapDisplay()
 
         self.main_layout.addWidget(self.robot_pull,5,3,2,3,Qt.AlignTop)
-        self.main_layout.addWidget(self.belief_map,1,6,4,6,Qt.AlignCenter)
-        # self.main_layout.addWidget(self.belief_map,1,3,4,7,Qt.AlignCenter)
+        # self.main_layout.addWidget(self.belief_map,1,6,4,6,Qt.AlignCenter)
+        self.main_layout.addWidget(self.belief_map,1,3,4,7,Qt.AlignCenter)
         self.main_layout.addWidget(self.human_push,5,7,2,5,Qt.AlignTop)
 
         self.setWindowTitle(self.app_name)
