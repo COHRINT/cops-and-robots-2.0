@@ -97,12 +97,12 @@ class ObservationInterface(QMainWindow):
         self.title = QLabel(self.app_name)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setStyleSheet(title_style)
-        self.main_layout.addWidget(self.title,0,4,1,4,)
+        self.main_layout.addWidget(self.title,0,0,1,13)
 
         # COHRINT logo
         self.logo = QLabel()
         self.logo_image = QPixmap()
-        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + '/black_cohrint_symbshort.png'))
+        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + '/gold_cohrint_symbshort.png'))
         self.logo_image = self.logo_image.scaled(93,100,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logo.setPixmap(self.logo_image)
         self.main_layout.addWidget(self.logo,0,12,1,1,Qt.AlignRight)
@@ -130,7 +130,7 @@ class ObservationInterface(QMainWindow):
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
         self.human_push = HumanPush()
-        self.human_push.setStyleSheet("background-color: #546E7A");  
+        self.human_push.setStyleSheet("background-color: #546E7A");
         print("MAP display")
         self.belief_map = MapDisplay()
 

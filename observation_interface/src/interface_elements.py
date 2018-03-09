@@ -51,7 +51,7 @@ groupbox_style = "\
                         font-size: 12pt;    \
                         font-weight: 10;    \
                         text-align: center; \
-                        background-color: #546E7A; \
+                        background-color: #B0BEC5; \
                     }"
 
 
@@ -104,7 +104,7 @@ send_btn_style = "\
 clear_btn_style = "\
                     QPushButton {   \
                         color: black;   \
-                        background-color: lightgray;    \
+                        background-color: #B0BEC5;    \
                         font-size: 11pt;    \
                         min-height: 25px;   \
                     }"
@@ -500,7 +500,7 @@ class HumanPush(QWidget):
         self.main_layout.addLayout(self.btn_column)
 
         # self.setSizePolicy(QSizePolicy())
-        self.setAutoFillBackground(True); 
+        self.setAutoFillBackground(True);
         palette = self.palette()
         role = self.backgroundRole()
         palette.setColor(role, QColor('green'))
@@ -613,7 +613,7 @@ class MapDisplay(QWidget):
 
         self.setLayout(self.main_layout)
 
-        self.setAutoFillBackground(True); 
+        self.setAutoFillBackground(True);
         palette = self.palette()
         role = self.backgroundRole()
         palette.setColor(role, QColor('green'))
