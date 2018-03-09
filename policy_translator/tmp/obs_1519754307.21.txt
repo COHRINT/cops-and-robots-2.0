@@ -1,0 +1,2 @@
+Is Zhora behind the chair?False
+Is Zhora inside the library?False

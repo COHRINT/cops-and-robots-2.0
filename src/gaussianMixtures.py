@@ -339,7 +339,12 @@ class GM:
 		suma = 0;
 		self.clean();
 		for g in self.Gs:
-			suma += g.weight*mvn.pdf(x,g.mean,g.var);
+			try:
+				suma += g.weight*mvn.pdf(x,g.mean,g.var);
+			except(ValueError):
+				g.var = np.identity(len(g.mean)).tolist(); 
+				g.weight = g.weight*0.1; 
+				print('singular covariance handled');
 		return suma;
 
 

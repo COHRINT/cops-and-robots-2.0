@@ -402,7 +402,7 @@ objects = ["the bookcase","the cassini poster","the chair","the checkers table",
 area_relations = ["inside"] # removed 'near', 'outside'
 
 areas = ["the study","the billiard room","the hallway","the dining room",
-            "the kitchen","the library"]
+            "the kitchen","the conservatory"]
 
 movement_types = ["moving","stopped"]
 
@@ -498,7 +498,11 @@ class HumanPush(QWidget):
         self.main_layout.addLayout(self.btn_column)
 
         # self.setSizePolicy(QSizePolicy())
-
+        self.setAutoFillBackground(True); 
+        palette = self.palette()
+        role = self.backgroundRole()
+        palette.setColor(role, QColor('green'))
+        self.setPalette(palette)
         self.setLayout(self.main_and_title)
 
     def make_codebook(self,boxes,tab_widget_layout):
@@ -606,6 +610,12 @@ class MapDisplay(QWidget):
         self.main_layout.addWidget(self.pic_label)
 
         self.setLayout(self.main_layout)
+
+        self.setAutoFillBackground(True); 
+        palette = self.palette()
+        role = self.backgroundRole()
+        palette.setColor(role, QColor('green'))
+        self.setPalette(palette)
         self.show()
 
     def map_update(self, map_msg): # callback for the policy translator publisher

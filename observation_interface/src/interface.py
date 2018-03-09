@@ -137,6 +137,7 @@ class ObservationInterface(QMainWindow):
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
         self.human_push = HumanPush()
+        self.human_push.setStyleSheet("background-color: #546E7A");  
         print("MAP display")
         self.belief_map = MapDisplay()
 

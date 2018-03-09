@@ -124,7 +124,6 @@ class MainTester(object):
                                                         cent_x = (max_x + min_x) / 2
                                                         cent_y = (max_y + min_y) / 2
                                                         cop_initial_belief.addG(Gaussian([0,0,cent_x,cent_y],[[0.5,0,0,0],[0,0.5,0,0],[0,0,0.5,0],[0,0,0,0.5]],1))
-                                                        
                                                 cop_initial_belief.normalizeWeights()
                                                 
 					        self.robots[robot] = Cop(cop_initial_belief,
