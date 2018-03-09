@@ -54,6 +54,7 @@ groupbox_style = "\
                         background-color: #546E7A; \
                     }"
 
+
 yes_btn_style = "\
                 QPushButton {   \
                     color: white;   \
@@ -90,6 +91,7 @@ question_text_style = "\
                             font-size: 9pt;   \
                             color: white;  \
                         }"
+
 
 send_btn_style = "\
                     QPushButton {   \

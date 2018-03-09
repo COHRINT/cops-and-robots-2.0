@@ -14,7 +14,7 @@ interface_elements.py):
 
 __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
-__credits__ = ["Ian Loefgren"]
+__credits__ = ["Ian Loefgren", "Sousheel Vunnam"]
 __license__ = "GPL"
 __version__ = "2.0"
 __maintainer__ = "Ian Loefgren"
@@ -48,12 +48,6 @@ title_style = "\
                         text-align: center;    \
                         color: white;  \
                     }"
-# QLabel {    \
-#     font-family: Helvetica Neue;    \
-#     font-size: 25pt;    \
-#     font-weight: 100; \
-#     text-align: center;    \
-# }"
 
 logo_style = "\
                     QLabel {    \
@@ -64,10 +58,9 @@ logo_style = "\
 # Using material design colors: https://material.io/guidelines/style/color.html#color-color-palette
 main_widget_style = "\
                         QWidget {   \
-                            background-color: #263238;    \
+                            background-color: #263238;     \
                         }"
 # lightgray
-
 
 class ObservationInterface(QMainWindow):
 
