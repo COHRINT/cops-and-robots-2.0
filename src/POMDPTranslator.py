@@ -657,24 +657,27 @@ class POMDPTranslator(object):
 
 		m = self.map_;
 		for obj in m.objects:
-		    cent = m.objects[obj].centroid;
-		    x = m.objects[obj].x_len;
-		    y = m.objects[obj].y_len;
-		    theta = m.objects[obj].orient;
-		    col = m.objects[obj].color
-		    # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		  #   if(m.objects[obj].shape == 'oval'):
-		  #       # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		  #   else:
+			cent = m.objects[obj].centroid;
+			x = m.objects[obj].x_len;
+			y = m.objects[obj].y_len;
+			theta = m.objects[obj].orient;
+			col = m.objects[obj].color
+			# tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+			# tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+			if(m.objects[obj].shape == 'oval'):
+				# tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+				tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+			else:
+				tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 				# tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-				# #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
-	            tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+
+	            ########
                     # tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
-		    ax.add_patch(tmp)
+			ax.add_patch(tmp)
 
-		fig.get_size_inches()
-		fig.set_size_inches(width,height)
+		figsize = fig.get_size_inches()
+		fig.set_size_inches(figsize[0],figsize[1])
 
 		bearing = -90;
 		l = 1;
@@ -717,8 +720,8 @@ class POMDPTranslator(object):
 		""" Returns a 2x1 tuple of x and y coordinate of lower left corner """
                 # LOL the x and y dimensions are defined to be length and width in map_maker...
                 # Below they are used oppositely
-		length = obj.length
-		width = obj.width
+		length = obj.y_len
+		width = obj.x_len
 
 		theta1 = obj.orient*math.pi/180;
 		h = math.sqrt((length/2)*(length/2) + (width/2)*(width/2));

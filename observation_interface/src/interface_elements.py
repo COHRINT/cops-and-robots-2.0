@@ -54,6 +54,16 @@ groupbox_style = "\
                         background-color: #B0BEC5; \
                     }"
 
+tab_style = "\
+                    .QWidget {  \
+                        background-color: white; \
+                    }"
+tab_widget_style = "\
+                    .QWidget {  \
+                        background-color: white; \
+                        color: #B0BEC5; \
+                    }"
+
 
 yes_btn_style = "\
                 QPushButton {   \
@@ -89,9 +99,14 @@ question_text_style = "\
                         QLabel {    \
                             font: bold; \
                             font-size: 9pt;   \
-                            color: white;  \
+                            background-color: #B0BEC5  \
                         }"
-
+past_question_text_style = "\
+                        QLabel {    \
+                            font: bold; \
+                            font-size: 9pt;   \
+                            color: white \
+                        }"
 
 send_btn_style = "\
                     QPushButton {   \
@@ -115,6 +130,16 @@ widget_title_style = "\
                     font-weight: 10;    \
                     text-align: center; \
                     color: white;  \
+                    background-color: #263238;  \
+                }"
+
+i_know_robber_style = "\
+                QLabel {    \
+                    font-size: 10pt;    \
+                    font-weight: 10;    \
+                    text-align: center; \
+                    color: white;  \
+                    background-color: #263238;  \
                 }"
 
 answer_indicator_style = "\
@@ -123,6 +148,12 @@ answer_indicator_style = "\
                                 max-height: 20px;   \
                                 color: white;  \
                             }"
+
+tab_widget_style = "\
+                QTabWidget {   \
+                    color: white;  \
+                    background-color: #B0BEC5; \
+                }"
 
 
 class RobotPull(QWidget):
@@ -169,11 +200,11 @@ class RobotPull(QWidget):
 
         # create last question and last answer labels
         self.last_question = QLabel("Last question was: ")
-        self.last_question.setStyleSheet(question_text_style)
+        self.last_question.setStyleSheet(past_question_text_style)
         self.prev_q_layout.addWidget(self.last_question)
 
         self.last_answer = QLabel("Last answer was: ")
-        self.last_answer.setStyleSheet(question_text_style)
+        self.last_answer.setStyleSheet(past_question_text_style)
         self.prev_q_layout.addWidget(self.last_answer)
 
         # main widget layout
@@ -441,8 +472,10 @@ class HumanPush(QWidget):
         self.tabs = QTabWidget()
         self.position_objects_tab = QWidget()
         self.position_objects_tab.layout = QHBoxLayout()
+        self.position_objects_tab.setStyleSheet(tab_widget_style)
         self.position_area_tab = QWidget()
         self.position_area_tab.layout = QHBoxLayout()
+        self.position_area_tab.setStyleSheet(tab_widget_style)
         self.movement_tab = QWidget()
         self.movement_tab.layout = QHBoxLayout()
         self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
@@ -451,9 +484,11 @@ class HumanPush(QWidget):
 
         # add statement 'I know a robber is...' next to tabs
         self.statment_preface = QLabel('I know a robber...')
+        self.statment_preface.setStyleSheet(i_know_robber_style)
         self.main_layout.addWidget(self.statment_preface)
 
         # add tabs to main layout
+        self.tabs.setStyleSheet(tab_widget_style)
         self.main_layout.addWidget(self.tabs)
 
         self.widget_list = []
