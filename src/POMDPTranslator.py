@@ -60,27 +60,27 @@ class POMDPTranslator(object):
 		dinn = 3
 		kitt = 1
 		stud = 0
-                
+
 		self.rooms_map = {hall:'hallway',bill:'billiard room',stud:'study',libb:'library',dinn:'dining room',kitt:'kitchen'}
 		self.rooms_map_inv = {'hallway':hall,'billiard room':bill,'study':stud,'library':libb,'dining room':dinn,'kitchen':kitt}
 
 
 		#Late hack to save everything
-		self.allBels = []; 
-		self.fileName = 'thebeliefsfile_{}.npy'.format(str(time.time())[0:-4]); 
+		self.allBels = [];
+		self.fileName = 'thebeliefsfile_{}.npy'.format(str(time.time())[0:-4]);
 
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
 		#Late hack to save everything
-		self.allBels.append(belief); 
-		f =open(os.path.dirname(__file__) + self.fileName,'w'); 
+		self.allBels.append(belief);
+		f =open(os.path.dirname(__file__) + self.fileName,'w');
 		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-		print('Saving Beliefs at:'); 
-		print(f); 
+		print('Saving Beliefs at:');
+		print(f);
 		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-		print(os.getcwd()); 
-		np.save(f,self.allBels); 
+		print(os.getcwd());
+		np.save(f,self.allBels);
 
 		print('GETTING NEW POSE')
 		#0. update belief
@@ -99,7 +99,7 @@ class POMDPTranslator(object):
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 			weightSums.append(tmpw);
-			
+
 		#2. find action from upper level pomdp
 		[room,questsHigh,weightsHigh] = self.getUpperAction(weightSums);
 		# print(questsHigh);
@@ -132,7 +132,7 @@ class POMDPTranslator(object):
 		pose = copPoses[-1];
 		roomCount = 0;
 		copRoom = 7;
-		for room in self.map_.rooms:  
+		for room in self.map_.rooms:
                         if(pose[0] < self.map_.rooms[room]['max_x'] and pose[0] > self.map_.rooms[room]['min_x'] and pose[1] < self.map_.rooms[room]['max_y'] and pose[1] > self.map_.rooms[room]['min_y']):
 				copRoom = self.rooms_map_inv[room]
 				break;
@@ -197,14 +197,14 @@ class POMDPTranslator(object):
 			#print questsFull[i][1]
 			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
 
-                        
+
 		#5.1 Make new belief map with goal_pose on it
 		pose = copPoses[-1]
 		#print("MAP COP POSE TO PLOT: {}".format(pose))
-		self.makeBeliefMap(newBel,pose,goal_pose); 
+		self.makeBeliefMap(newBel,pose,goal_pose);
 
 		#Save the belief map, save the observations that led to it
-		#For belief map, copy the tmp belief file 
+		#For belief map, copy the tmp belief file
 		#For the observations, grab the strings
 
 		#6. return new belief and goal pose
@@ -276,13 +276,13 @@ class POMDPTranslator(object):
 		questWeights = [];
 
 		for i in a:
-			#print(i); 
+			#print(i);
 			if(i[1][1] != 0 and i[1][1] != 4):
-				i[1][1] -= 1; 
+				i[1][1] -= 1;
 			elif(i[1][1] == 0):
-				i[1][1] = 3; 
+				i[1][1] = 3;
 			elif(i[1][1] == 4):
-				i[1][1] = 7; 
+				i[1][1] = 7;
 			if(i[1][1] not in quests):
 				quests.append(i[1][1]);
 				questWeights.append(i[0]);
@@ -330,7 +330,7 @@ class POMDPTranslator(object):
 		for room in self.map_.rooms:
 			tmp = GM();
 			tmpw = 0;
-                        
+
 			allBounds.append([self.map_.rooms[room]['min_x'],self.map_.rooms[room]['min_y'],self.map_.rooms[room]['max_x'],self.map_.rooms[room]['max_y']]);
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
@@ -338,12 +338,12 @@ class POMDPTranslator(object):
 				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
-                     
+
                         if(tmp.size==0):
             	                centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
             	                centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
-            	                var = np.identity(4).tolist(); 
-            	                tmp.addG(Gaussian([0,0,centx,centy],var,0.0001));                  
+            	                var = np.identity(4).tolist();
+            	                tmp.addG(Gaussian([0,0,centx,centy],var,0.0001));
 			        allBels.append(tmp);
 		return allBels;
 
@@ -357,13 +357,13 @@ class POMDPTranslator(object):
 		# 	viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
 
 		#Update Cop View Cone
-		# newerBelief = GM(); 
+		# newerBelief = GM();
 		# for j in range(1,5):
-		# 	tmpBel = viewCone.runVBND(belief,j); 
+		# 	tmpBel = viewCone.runVBND(belief,j);
 		# 	if(j==1):
-		# 		tmpBel.scalerMultiply(.4); 
+		# 		tmpBel.scalerMultiply(.4);
 		# 	newerBelief.addGM(tmpBel);
-        
+
 		#Dont Update Cop View Cone
 		#newerBelief = belief
 
@@ -382,11 +382,11 @@ class POMDPTranslator(object):
 
 
 		#Distance Cutoff
-		#How many standard deviations away from the cop should gaussians be updated with view cone? 
-		distCut = 2; 
+		#How many standard deviations away from the cop should gaussians be updated with view cone?
+		distCut = 2;
 
 		#Update Cop View Cone Using LWIS
-		newerBelief = GM(); 
+		newerBelief = GM();
 
 		for pose in copPoses:
 			#Create Cop View Cone
@@ -395,27 +395,27 @@ class POMDPTranslator(object):
 			viewCone.buildTriView(pose,length=1,steepness=10);
 			for i in range(0,len(viewCone.weights)):
 				viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
-			for g in belief:		
+			for g in belief:
 				#If the gaussian is suffciently close to the pose
 				#based on mahalanobis distance.
 				#Logic: M-dist basically says how many standard devs away the point is from the mean
 				#If it's more than distCut, it should be left alone
-				gprime = Gaussian(); 
-				gprime.mean = [g.mean[2],g.mean[3]]; 
+				gprime = Gaussian();
+				gprime.mean = [g.mean[2],g.mean[3]];
 				gprime.var = [[g.var[2][2],g.var[2][3]],[g.var[3][2],g.var[3][3]]];
-				gprime.weight = g.weight; 
-				#print(gprime.mean,gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5])); 
+				gprime.weight = g.weight;
+				#print(gprime.mean,gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]));
 				if(gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]) <= distCut):
 					print("************MAHALALALALALA******************")
-					newG = viewCone.lwisUpdate(g,0,500,inverse=True); 
-					newerBelief.addG(newG); 
+					newG = viewCone.lwisUpdate(g,0,500,inverse=True);
+					newerBelief.addG(newG);
 				else:
-				    newerBelief.addG(g); 
+				    newerBelief.addG(g);
 					#after each bayes update for the view cone, re-normalize
-					#Just to be sure, it never hurts to check   
-			newerBelief.normalizeWeights(); 
+					#Just to be sure, it never hurts to check
+			newerBelief.normalizeWeights();
 #		newerBelief= belief
-        
+
 
 		#Update From Responses
 		if(responses is not None):
@@ -446,10 +446,10 @@ class POMDPTranslator(object):
 								tmp.addGM(mod.runVBND(newerBelief,j));
 						newerBelief = tmp;
 				#Each response recieves a full bayes update, so we need to normalize each time
-				newerBelief.normalizeWeights(); 
-		
+				newerBelief.normalizeWeights();
+
 		#Condense the belief
-		newerBelief.condense(15); 
+		newerBelief.condense(15);
 
                 print("*********************")
 		print(newerBelief.size)
@@ -460,8 +460,8 @@ class POMDPTranslator(object):
 		# for room in self.map_.rooms:
 		# 	centx = (self.map_.rooms[room]['max_x'] + self.map_.rooms[room]['min_x'])/2;
 	 #        centy = (self.map_.rooms[room]['max_y'] + self.map_.rooms[room]['min_y'])/2;
-	 #        var = np.identity(4).tolist();  
-	 #        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));  
+	 #        var = np.identity(4).tolist();
+	 #        newerBelief.addG(Gaussian([0,0,centx,centy],var,0.00001));
 
 		#3. recombine beliefs (if we're still doing that sort of thing)
 		newBelief = newerBelief
@@ -499,7 +499,7 @@ class POMDPTranslator(object):
 		for room in self.map_.rooms:
 			tmp = GM();
 			tmpw = 0;
-                        
+
 			allBounds.append([self.map_.rooms[room]['min_x'],self.map_.rooms[room]['min_y'],self.map_.rooms[room]['max_x'],self.map_.rooms[room]['max_y']]);
 			for g in belief:
 				m = [g.mean[2],g.mean[3]];
@@ -507,7 +507,7 @@ class POMDPTranslator(object):
 				if(m[0] < self.map_.rooms[room]['max_x'] and m[0] > self.map_.rooms[room]['min_x'] and m[1] < self.map_.rooms[room]['max_y'] and m[1] > self.map_.rooms[room]['min_y']):
 					tmp.addG(deepcopy(g));
 					tmpw+=g.weight;
-                                      
+
 			tmp.normalizeWeights();
 			allBels.append(tmp);
 
@@ -526,7 +526,7 @@ class POMDPTranslator(object):
 		viewCone.buildTriView(pose,length=1,steepness=10);
 		for i in range(0,len(viewCone.weights)):
 			viewCone.weights[i] = [0,0,viewCone.weights[i][0],viewCone.weights[i][1]];
-		
+
 		#Only update room that cop is in with view cone update
 		#Make sure to renormalize that room
 		# newerBelief = GM();
@@ -537,12 +537,12 @@ class POMDPTranslator(object):
 
 		#Update all rooms
 		for i in range(0,len(allBels)):
-			newerBelief = GM(); 
+			newerBelief = GM();
 			for j in range(1,5):
-				tmpBel = viewCone.runVBND(allBels[i],j); 
+				tmpBel = viewCone.runVBND(allBels[i],j);
 				if(j==1):
-					tmpBel.scalerMultiply(.8); 
-				newerBelief.addGM(tmpBel); 
+					tmpBel.scalerMultiply(.8);
+				newerBelief.addGM(tmpBel);
 
 			allBels[i]=newerBelief;
 
@@ -653,26 +653,32 @@ class POMDPTranslator(object):
 		bel = bcut.discretize2D(low = [self.bounds[0],self.bounds[1]],high=[self.bounds[2],self.bounds[3]],delta=self.delta);
                 print(np.amax(bel))
 		#ax.contourf(x_space,y_space,bel,cmap="viridis",vmin=0,vmax=0.0004);
-                
+
 		ax.contourf(x_space,y_space,bel,cmap="viridis");
 
 		m = self.map_;
 		for obj in m.objects:
-		    cent = m.objects[obj].centroid;
-		    x = m.objects[obj].x_len;
-		    y = m.objects[obj].y_len;
-		    theta = m.objects[obj].orient;
-		    col = m.objects[obj].color
-		    # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		  #   if(m.objects[obj].shape == 'oval'):
-		  #       # tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-		  #   else:
+			cent = m.objects[obj].centroid;
+			x = m.objects[obj].x_len;
+			y = m.objects[obj].y_len;
+			theta = m.objects[obj].orient;
+			col = m.objects[obj].color
+			# tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+			# tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+			if(m.objects[obj].shape == 'oval'):
+				# tmp = patches.Ellipse((cent[0] - x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
+				tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+			else:
+				tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
 				# tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
-				# #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
-	            tmp = patches.Ellipse((cent[0],cent[1]),width = x, height=y,angle=theta,fc=col,ec='black');
+
+	            ########
                     # tmp = patches.Rectangle((cent[0]- x/2,cent[1]-y/2),width = x, height=y,angle=theta,fc=col,ec='black');
 		        #tmp = patches.Rectangle(self.findLLCorner(m.objects[obj]),width = x, height=y,angle=theta,fc=col,ec='black');
-		    ax.add_patch(tmp)
+			ax.add_patch(tmp)
+
+		figsize = fig.get_size_inches()
+		fig.set_size_inches(figsize[0],figsize[1])
 
 		bearing = -90;
 		l = 1;
@@ -686,22 +692,22 @@ class POMDPTranslator(object):
 		ax.add_patch(cop)
 
 		#Add cops goal pose as red target
-		ax.scatter(goal_pose[0],goal_pose[1],marker='x',s=50,c='r'); 
-#		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30); 
+		ax.scatter(goal_pose[0],goal_pose[1],marker='x',s=50,c='r');
+#		ax.scatter(goal_pose[0],goal_pose[1],marker='o',s=30);
 
 		#Add room labels
-		ax.text(-3,2,'Kitchen'); 
-		ax.text(-5,-1.5,'Dining\n Room',fontsize=10); 
-		ax.text(-3,-1.5,'Study'); 
-		ax.text(2,-1.5,'Library'); 
-		ax.text(-1,0,'Hallway'); 
-		ax.text(3,2,'Billiard Room',fontsize=10); 
+		ax.text(-3,2,'Kitchen');
+		ax.text(-5,-1.5,'Dining\n Room',fontsize=10);
+		ax.text(-3,-1.5,'Study');
+		ax.text(2,-1.5,'Library');
+		ax.text(-1,0,'Hallway');
+		ax.text(3,2,'Billiard Room',fontsize=10);
 
 
 		ax.axis('scaled')
 		print('about to save plot')
 		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief.png'),bbox_inches='tight',pad_inches=0)
-		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief_{}.png'.format(time.time())),bbox_inches='tight',pad_inches=0)
+#		canvas.print_figure(os.path.abspath(os.path.dirname(__file__) + '/../tmp/tmpBelief_{}.png'.format(time.time())),bbox_inches='tight',pad_inches=0)
 		#canvas.print_figure('tmpBelief.png',bbox_inches='tight',pad_inches=0)
 
 
@@ -715,8 +721,8 @@ class POMDPTranslator(object):
 		""" Returns a 2x1 tuple of x and y coordinate of lower left corner """
                 # LOL the x and y dimensions are defined to be length and width in map_maker...
                 # Below they are used oppositely
-		length = obj.length
-		width = obj.width
+		length = obj.y_len
+		width = obj.x_len
 
 		theta1 = obj.orient*math.pi/180;
 		h = math.sqrt((length/2)*(length/2) + (width/2)*(width/2));

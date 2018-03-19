@@ -14,7 +14,7 @@ interface_elements.py):
 
 __author__ = "Ian Loefgren"
 __copyright__ = "Copyright 2017, Cohrint"
-__credits__ = ["Ian Loefgren"]
+__credits__ = ["Ian Loefgren", "Sousheel Vunnam"]
 __license__ = "GPL"
 __version__ = "2.0"
 __maintainer__ = "Ian Loefgren"
@@ -39,12 +39,14 @@ from observation_interface.srv import *
 from observation_interface.msg import *
 #from Caught.msg import *
 
+
 title_style = "\
                     QLabel {    \
                         font-family: Helvetica Neue;    \
                         font-size: 25pt;    \
                         font-weight: 100; \
                         text-align: center;    \
+                        color: white;  \
                     }"
 
 logo_style = "\
@@ -53,11 +55,12 @@ logo_style = "\
                         margin: 0px;    \
                     }"
 
+# Using material design colors: https://material.io/guidelines/style/color.html#color-color-palette
 main_widget_style = "\
                         QWidget {   \
-                            background-color: lightgray;    \
+                            background-color: #263238;     \
                         }"
-
+# lightgray
 
 class ObservationInterface(QMainWindow):
 
@@ -65,7 +68,7 @@ class ObservationInterface(QMainWindow):
 
     def __init__(self):
 
-       
+
         rospy.init_node('obs_interface')
         self.app_name = 'Cops and Robots 2.0'
 
@@ -74,7 +77,7 @@ class ObservationInterface(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self.initUI()
 
-        
+
 
         rospy.Subscriber('/caught',Caught,self.caught_callback)
         self.caught_pub = rospy.Publisher('/caught_confirm',Caught,queue_size=10)
@@ -88,17 +91,18 @@ class ObservationInterface(QMainWindow):
         # create the main layout
         self.main_layout = QGridLayout()
         self.main_widget.setLayout(self.main_layout)
+        self.main_widget.setStyleSheet(main_widget_style)
 
         # create title
         self.title = QLabel(self.app_name)
         self.title.setAlignment(Qt.AlignCenter)
         self.title.setStyleSheet(title_style)
-        self.main_layout.addWidget(self.title,0,4,1,4,)
+        self.main_layout.addWidget(self.title,0,0,1,13)
 
         # COHRINT logo
         self.logo = QLabel()
         self.logo_image = QPixmap()
-        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + '/black_cohrint_symbshort.png'))
+        check = self.logo_image.load(os.path.abspath(os.path.dirname(__file__) + '/gold_cohrint_symbshort.png'))
         self.logo_image = self.logo_image.scaled(93,100,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logo.setPixmap(self.logo_image)
         self.main_layout.addWidget(self.logo,0,12,1,1,Qt.AlignRight)
@@ -117,7 +121,8 @@ class ObservationInterface(QMainWindow):
         self.cam_2 = SecurityCamera(2,'Hallway')
         self.cam_3 = SecurityCamera(3,'Kitchen')
 
-        self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
+        # self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
+        self.main_layout.addWidget(self.cop_video,1,11,4,1,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_1,1,0,2,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_2,3,0,2,2,Qt.AlignCenter)
         self.main_layout.addWidget(self.cam_3,5,0,2,2,Qt.AlignCenter)
@@ -125,11 +130,13 @@ class ObservationInterface(QMainWindow):
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
         self.human_push = HumanPush()
+        self.human_push.setStyleSheet("background-color: #546E7A");
         print("MAP display")
         self.belief_map = MapDisplay()
 
         self.main_layout.addWidget(self.robot_pull,5,3,2,3,Qt.AlignTop)
-        self.main_layout.addWidget(self.belief_map,1,6,4,6,Qt.AlignCenter)
+        # self.main_layout.addWidget(self.belief_map,1,6,4,6,Qt.AlignCenter)
+        self.main_layout.addWidget(self.belief_map,1,3,4,7,Qt.AlignCenter)
         self.main_layout.addWidget(self.human_push,5,7,2,5,Qt.AlignTop)
 
         self.setWindowTitle(self.app_name)

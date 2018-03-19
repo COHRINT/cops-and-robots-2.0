@@ -43,6 +43,7 @@ PullQuestion_style = "\
                         .QWidget {   \
                             min-width: 300px;   \
                             max-width: 300px;   \
+                            background-color: #546E7A; \
                         }"
 
 groupbox_style = "\
@@ -50,7 +51,19 @@ groupbox_style = "\
                         font-size: 12pt;    \
                         font-weight: 10;    \
                         text-align: center; \
+                        background-color: #B0BEC5; \
                     }"
+
+tab_style = "\
+                    .QWidget {  \
+                        background-color: white; \
+                    }"
+tab_widget_style = "\
+                    .QWidget {  \
+                        background-color: white; \
+                        color: #B0BEC5; \
+                    }"
+
 
 yes_btn_style = "\
                 QPushButton {   \
@@ -86,6 +99,13 @@ question_text_style = "\
                         QLabel {    \
                             font: bold; \
                             font-size: 9pt;   \
+                            background-color: #B0BEC5  \
+                        }"
+past_question_text_style = "\
+                        QLabel {    \
+                            font: bold; \
+                            font-size: 9pt;   \
+                            color: white \
                         }"
 
 send_btn_style = "\
@@ -99,7 +119,7 @@ send_btn_style = "\
 clear_btn_style = "\
                     QPushButton {   \
                         color: black;   \
-                        background-color: lightgray;    \
+                        background-color: #B0BEC5;    \
                         font-size: 11pt;    \
                         min-height: 25px;   \
                     }"
@@ -109,13 +129,31 @@ widget_title_style = "\
                     font-size: 12pt;    \
                     font-weight: 10;    \
                     text-align: center; \
+                    color: white;  \
+                    background-color: #263238;  \
+                }"
+
+i_know_robber_style = "\
+                QLabel {    \
+                    font-size: 10pt;    \
+                    font-weight: 10;    \
+                    text-align: center; \
+                    color: white;  \
+                    background-color: #263238;  \
                 }"
 
 answer_indicator_style = "\
                             .QLabel {   \
                                 max-width: 10px;    \
                                 max-height: 20px;   \
+                                color: white;  \
                             }"
+
+tab_widget_style = "\
+                QTabWidget {   \
+                    color: white;  \
+                    background-color: #B0BEC5; \
+                }"
 
 
 class RobotPull(QWidget):
@@ -162,11 +200,11 @@ class RobotPull(QWidget):
 
         # create last question and last answer labels
         self.last_question = QLabel("Last question was: ")
-        self.last_question.setStyleSheet(question_text_style)
+        self.last_question.setStyleSheet(past_question_text_style)
         self.prev_q_layout.addWidget(self.last_question)
 
         self.last_answer = QLabel("Last answer was: ")
-        self.last_answer.setStyleSheet(question_text_style)
+        self.last_answer.setStyleSheet(past_question_text_style)
         self.prev_q_layout.addWidget(self.last_answer)
 
         # main widget layout
@@ -389,15 +427,15 @@ object_relations = ["behind","in front of","left of","right of"] # removed 'near
 
 objects = ["the bookcase","the cassini poster","the chair","the checkers table",
             "the desk","the dining table","the fern","the filing cabinet",
-            "the fridge","the mars poster","the cop"] 
-            # removed Deckard from objects as no voi questions exist for Deckard. 
+            "the fridge","the mars poster","the cop"]
+            # removed Deckard from objects as no voi questions exist for Deckard.
             # See voi.py in policy_translator package
             # added 'the cop'
 
 area_relations = ["inside"] # removed 'near', 'outside'
 
 areas = ["the study","the billiard room","the hallway","the dining room",
-            "the kitchen","the library"]
+            "the kitchen","the conservatory"]
 
 movement_types = ["moving","stopped"]
 
@@ -434,8 +472,10 @@ class HumanPush(QWidget):
         self.tabs = QTabWidget()
         self.position_objects_tab = QWidget()
         self.position_objects_tab.layout = QHBoxLayout()
+        self.position_objects_tab.setStyleSheet(tab_widget_style)
         self.position_area_tab = QWidget()
         self.position_area_tab.layout = QHBoxLayout()
+        self.position_area_tab.setStyleSheet(tab_widget_style)
         self.movement_tab = QWidget()
         self.movement_tab.layout = QHBoxLayout()
         self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
@@ -444,9 +484,11 @@ class HumanPush(QWidget):
 
         # add statement 'I know a robber is...' next to tabs
         self.statment_preface = QLabel('I know a robber...')
+        self.statment_preface.setStyleSheet(i_know_robber_style)
         self.main_layout.addWidget(self.statment_preface)
 
         # add tabs to main layout
+        self.tabs.setStyleSheet(tab_widget_style)
         self.main_layout.addWidget(self.tabs)
 
         self.widget_list = []
@@ -493,7 +535,11 @@ class HumanPush(QWidget):
         self.main_layout.addLayout(self.btn_column)
 
         # self.setSizePolicy(QSizePolicy())
-
+        self.setAutoFillBackground(True);
+        palette = self.palette()
+        role = self.backgroundRole()
+        palette.setColor(role, QColor('green'))
+        self.setPalette(palette)
         self.setLayout(self.main_and_title)
 
     def make_codebook(self,boxes,tab_widget_layout):
@@ -585,7 +631,7 @@ class MapDisplay(QWidget):
         self.format = QImage.Format_RGB888
 
         self.initUI()
-        
+
 
     def initUI(self):
         self.main_layout = QVBoxLayout()
@@ -601,10 +647,16 @@ class MapDisplay(QWidget):
         self.main_layout.addWidget(self.pic_label)
 
         self.setLayout(self.main_layout)
+
+        self.setAutoFillBackground(True);
+        palette = self.palette()
+        role = self.backgroundRole()
+        palette.setColor(role, QColor('green'))
+        self.setPalette(palette)
         self.show()
 
     def map_update(self, map_msg): # callback for the policy translator publisher
-        # load image from the topic 
+        # load image from the topic
         image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
         height, width, channel = image.shape
         bytesPerLine = 3 * width

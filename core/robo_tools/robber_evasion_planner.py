@@ -40,6 +40,8 @@ class robberEvasionGoalPlanner(GoalPlanner):
 		"""
 		rospy.wait_for_service('robberEvasionGoal')
 
+		print('Now getting Robber evasion goal'); 
+
 		isAtGoal = False
 		if self.reached_pose(pose, self.goal_pose):
 			isAtGoal = True
@@ -58,5 +60,9 @@ class robberEvasionGoalPlanner(GoalPlanner):
 			self.goal_pose = goal_pose
 			return goal_pose
 		except rospy.ServiceException, e:
+			print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+			print("Robber intelligence planner exception!!!!!!!!!")
+			print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+			
 			return pose
 
