@@ -60,7 +60,14 @@ main_widget_style = "\
                         QWidget {   \
                             background-color: #263238;     \
                         }"
-# lightgray
+# Used to be lightgray
+
+quit_btn_style = "\
+                    QPushButton {   \
+                        color: white;   \
+                        background-color: #E57373;  \
+                    }"
+
 
 class ObservationInterface(QMainWindow):
 
@@ -110,6 +117,7 @@ class ObservationInterface(QMainWindow):
         # create quit button and add at top left corner
         self.quit_btn = QPushButton('QUIT')
         self.quit_btn.clicked.connect(self.close)
+        self.quit_btn.setStyleSheet(quit_btn_style)
         self.main_layout.addWidget(self.quit_btn,0,0)
 
         # create and add instances of all elements
