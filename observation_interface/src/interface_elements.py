@@ -149,6 +149,7 @@ answer_indicator_style = "\
                                 color: white;  \
                             }"
 
+
 tab_widget_style = "\
                 QTabWidget {   \
                     color: white;  \

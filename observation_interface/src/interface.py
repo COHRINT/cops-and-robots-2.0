@@ -68,6 +68,11 @@ quit_btn_style = "\
                         background-color: #E57373;  \
                     }"
 
+human_push_style = "\
+                    QWidget {   \
+                        background-color: #B0BEC5  \
+                    }"
+
 
 class ObservationInterface(QMainWindow):
 
@@ -138,7 +143,8 @@ class ObservationInterface(QMainWindow):
         # right side -> includes all questions and belief map
         self.robot_pull = RobotPull()
         self.human_push = HumanPush()
-        self.human_push.setStyleSheet("background-color: #546E7A");
+        # self.human_push.setStyleSheet("background-color: #B0BEC5");
+        self.human_push.setStyleSheet(human_push_style)
         print("MAP display")
         self.belief_map = MapDisplay()
 
