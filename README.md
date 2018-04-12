@@ -24,7 +24,7 @@ Cops and Robots 2.0 is **an improved** revival of the original Cops and Robots e
  - Pris: $ pris
  - Zhora: $ zhora
 7) Configure robots:
- - On Cop: $ cop:=robber_name
+ - On Cop: $ cop:="robber_name"
    - For example, if pris is the robber: $ cop:=pris
  - On Robber: $ rob
 8) Run experiment
