@@ -27,12 +27,12 @@ The current version under development is CnR 2.1, please visit that branch for a
  - Zhora: $ zhora
 7) Configure robots:
  - On Cop: $ cop:=robber_name
-   - For example if pris is the robber: $ cop:=pris
+   - For example, if pris is the robber: $ cop:=pris
  - On Robber: $ rob
 8) Run experiment
  - Start Policy Translator: $ pol
  - Bring up interface: $ obs"first_letter_of_cop"
-   - For example if deckard is the cop: $ obsd
+   - For example, if deckard is the cop: $ obsd
  - Begin experiment: $ python main.py
 9) In the terminal window prompting "When vicon_nav.launch has ....", press ENTER
 10) Type '1' and hit ENTER to run the experiment
