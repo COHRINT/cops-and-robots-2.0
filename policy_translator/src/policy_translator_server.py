@@ -185,6 +185,9 @@ class PolicyTranslatorServer(object):
         copPoses = []
 
         belief = rehydrate_msg(weights,means,variances)
+
+#        set_trace()
+        
         if self.cop_pose is None:
             self.cop_pose = Pose(name)
         position = self.cop_pose.pose

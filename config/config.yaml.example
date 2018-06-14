@@ -3,17 +3,17 @@
 # 2) Set 'cop', 'rob', or 'no' (include the single quotes)
 # 3) Set goal_planner to 'pomdp' 'simple' 'stationary' 'rob_int' ... etc
 
-map: mapC
+map: mapA
 cop_rob: # label as 'rob' or 'cop' (INCLUDE SINGLE QUOTES)
-    Deckard: 'no'
-    Pris: 'cop'
+    Deckard: 'cop'
+    Pris: 'no'
     Roy: 'no'
     Zhora: 'rob'
 robots:
   Deckard:
-    goal_planner: simple
-  Pris:
     goal_planner: pomdp
+  Pris:
+    goal_planner: simple
   Roy:
     goal_planner: simple
   Zhora:

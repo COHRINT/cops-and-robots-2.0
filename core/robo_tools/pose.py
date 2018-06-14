@@ -41,7 +41,12 @@ class Pose(object):
 
         rospy.Subscriber(bf_topic, TransformStamped, self.update_pose_callback)
 
-        print("Waiting for /" + robot_name +"/base_footprint to become available")
+        """
+        Note if you just calibrated, then the robot will be on [0,0,0] and the program will hang up here.
+        The solution is simple, move the robot anywhere in the continuous space except exactly [0,0,0]
+        """
+        print("Waiting for /" + robot_name +"/base_footprint to become available or start " + robot_name + " not on [0,0,0]")
+
         # self.pose == [0,0,0] for some reason the first pose returned from vicon is [0,0,0]
         # so let's update it
         while self.received is False or self.pose == [0,0,0]: # update the pose once before continuing

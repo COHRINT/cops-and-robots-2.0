@@ -72,15 +72,16 @@ class POMDPTranslator(object):
 
 	def getNextPose(self,belief,obs=None,copPoses=None):
 
+                belief.display()
 		#Late hack to save everything
 		self.allBels.append(belief);
-		f =open(os.path.dirname(__file__) + self.fileName,'w');
-		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-		print('Saving Beliefs at:');
-		print(f);
-		print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-		print(os.getcwd());
-		np.save(f,self.allBels);
+		# f =open(os.path.dirname(__file__) + self.fileName,'w');
+		# print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+		# print('Saving Beliefs at:');
+		# print(f);
+		# print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+#		print(os.getcwd());
+#		np.save(f,self.allBels);
 
 		print('GETTING NEW POSE')
 		#0. update belief
@@ -181,10 +182,13 @@ class POMDPTranslator(object):
 		h = sorted(h,key = self.getKey,reverse=True);
 		questsFull = [];
 		weightsFull = [];
+                print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 		for i in h:
 			questsFull.append(i[1]);
 			weightsFull.append(i[0]);
-
+#                print(len(self.question_list))
+#                print(questsFull)
+#                print(len(questsFull))
 
 
 		#5. use questioner function to publish questions
@@ -195,7 +199,10 @@ class POMDPTranslator(object):
 			#print i
 			#print questsFull[i][0]
 			#print questsFull[i][1]
-			questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
+                        try:
+			        questions.append(self.question_list[questsFull[i][0]][questsFull[i][1]]);
+                        except:
+                                continue
 
 
 		#5.1 Make new belief map with goal_pose on it
@@ -406,7 +413,6 @@ class POMDPTranslator(object):
 				gprime.weight = g.weight;
 				#print(gprime.mean,gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]));
 				if(gprime.mahalanobisDistance([pose[0]-np.cos(pose[2])*.5,pose[1]-np.sin(pose[2])*.5]) <= distCut):
-					print("************MAHALALALALALA******************")
 					newG = viewCone.lwisUpdate(g,0,500,inverse=True);
 					newerBelief.addG(newG);
 				else:

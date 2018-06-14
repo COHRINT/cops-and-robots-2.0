@@ -1,4 +1,7 @@
 *.pyc
+*.npy
+config/config.yaml
+policy_translator/tmp/tmpBelief.png
 build/
 devel/
 .catkin_workspace
